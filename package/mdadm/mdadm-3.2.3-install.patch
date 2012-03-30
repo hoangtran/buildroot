@@ -1,0 +1,12 @@
+diff -Naur mdadm-3.2.3.orig/Makefile mdadm-3.2.3/Makefile
+--- mdadm-3.2.3.orig/Makefile	2011-12-15 11:13:08.000000000 +0700
++++ mdadm-3.2.3/Makefile	2012-03-30 17:43:06.645880862 +0700
+@@ -90,7 +90,7 @@
+ # LDFLAGS = -static
+ # STRIP = -s
+ 
+-INSTALL = /usr/bin/install
++INSTALL = $(shell which install)
+ DESTDIR = 
+ BINDIR  = /sbin
+ MANDIR  = /usr/share/man
