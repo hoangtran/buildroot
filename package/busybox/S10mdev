@@ -3,9 +3,25 @@
 # Start mdev....
 #
 
+# Directory where sysfs is mounted
+SYSFS_DIR=/sys
+
 case "$1" in
   start)
-	echo "Starting mdev..."
+        # mount sysfs if it's not yet mounted
+        if [ ! -d $SYSFS_DIR ]; then
+	    echo "${0}: SYSFS_DIR \"$SYSFS_DIR\" not found"
+	    exit 1
+        fi
+        grep -q "^sysfs $SYSFS_DIR" /proc/mounts ||
+	mount -t sysfs /sys /sys ||
+	exit 1
+	# populate /dev (normally)
+        echo -n "Populating /dev using mdev: "
+        echo -e '/sbin/mdev' > /proc/sys/kernel/hotplug
+	mount -t tmpfs mdev /dev
+	mkdir /dev/pts
+	mount -t devpts /devpts /dev/pts || (echo "FAIL" && exit 1)
 	/sbin/mdev -s
 	;;
   stop)
