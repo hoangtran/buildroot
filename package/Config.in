@@ -32,11 +32,12 @@ source "package/ltrace/Config.in"
 source "package/memstat/Config.in"
 source "package/netperf/Config.in"
 source "package/oprofile/Config.in"
+source "package/pv/Config.in"
 source "package/rt-tests/Config.in"
 source "package/strace/Config.in"
 source "package/whetstone/Config.in"
 source "package/valgrind/Config.in"
-source "package/pv/Config.in"
+source "package/xdd/Config.in"
 endmenu
 
 menu "Development tools"

@@ -1,0 +1,4 @@
+config BR2_PACKAGE_XDD
+	bool "xdd"
+	help
+	   Tool for testing perfomance
