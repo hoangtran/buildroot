@@ -10,8 +10,10 @@ kmem:x:9:
 wheel:x:10:root
 video:x:28:
 audio:x:29:
+www-data:x:33:
 utmp:x:43:
 staff:x:50:
+lock:x:54:
 haldaemon:x:68:
 dbus:x:81:
 netdev:x:82:

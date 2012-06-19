@@ -162,6 +162,8 @@ define LINUX_CONFIGURE_CMDS
 		$(call KCONFIG_ENABLE_OPT,CONFIG_DEVTMPFS_MOUNT,$(@D)/.config))
 	$(if $(BR2_ROOTFS_DEVICE_CREATION_DYNAMIC_MDEV),
 		$(call KCONFIG_SET_OPT,CONFIG_UEVENT_HELPER_PATH,\"/sbin/mdev\",$(@D)/.config))
+	$(if $(BR2_PACKAGE_SYSTEMD),
+		$(call KCONFIG_ENABLE_OPT,CONFIG_CGROUPS,$(@D)/.config))
 	yes '' | $(TARGET_MAKE_ENV) $(MAKE1) $(LINUX_MAKE_FLAGS) -C $(@D) oldconfig
 endef
 
@@ -181,6 +183,15 @@ define LINUX_INSTALL_KERNEL_IMAGE_TO_TARGET
 endef
 endif
 
+
+define LINUX_INSTALL_HOST_TOOLS
+	# Installing dtc (device tree compiler) as host tool, if selected
+	if grep -q "CONFIG_DTC=y" $(@D)/.config; then 	\
+		$(INSTALL) -D -m 0755 $(@D)/scripts/dtc/dtc $(HOST_DIR)/usr/bin/dtc ;	\
+	fi
+endef
+
+
 define LINUX_INSTALL_IMAGES_CMDS
 	cp $(LINUX_IMAGE_PATH) $(BINARIES_DIR)
 endef
@@ -195,23 +206,25 @@ define LINUX_INSTALL_TARGET_CMDS
 		rm -f $(TARGET_DIR)/lib/modules/$(LINUX_VERSION_PROBED)/build ;		\
 		rm -f $(TARGET_DIR)/lib/modules/$(LINUX_VERSION_PROBED)/source ;	\
 	fi
+	$(LINUX_INSTALL_HOST_TOOLS)
 endef
 
 include linux/linux-ext-*.mk
 
 $(eval $(call GENTARGETS))
 
-linux-menuconfig linux-xconfig linux-gconfig linux-nconfig linux26-menuconfig linux26-xconfig linux26-gconfig linux26-nconfig: dirs $(LINUX_DIR)/.stamp_configured
+ifeq ($(BR2_LINUX_KERNEL),y)
+linux-menuconfig linux-xconfig linux-gconfig linux-nconfig linux26-menuconfig linux26-xconfig linux26-gconfig linux26-nconfig: dirs linux-configure
 	$(MAKE) $(LINUX_MAKE_FLAGS) -C $(LINUX_DIR) \
 		$(subst linux-,,$(subst linux26-,,$@))
 	rm -f $(LINUX_DIR)/.stamp_{built,target_installed,images_installed}
 
-linux-savedefconfig linux26-savedefconfig: dirs $(LINUX_DIR)/.stamp_configured
+linux-savedefconfig linux26-savedefconfig: dirs linux-configure
 	$(MAKE) $(LINUX_MAKE_FLAGS) -C $(LINUX_DIR) \
 		$(subst linux-,,$(subst linux26-,,$@))
 
 ifeq ($(BR2_LINUX_KERNEL_USE_CUSTOM_CONFIG),y)
-linux-update-config linux26-update-config: $(LINUX_DIR)/.config
+linux-update-config linux26-update-config: linux-configure $(LINUX_DIR)/.config
 	cp -f $(LINUX_DIR)/.config $(BR2_LINUX_KERNEL_CUSTOM_CONFIG_FILE)
 
 linux-update-defconfig linux26-update-defconfig: linux-savedefconfig
@@ -219,6 +232,7 @@ linux-update-defconfig linux26-update-defconfig: linux-savedefconfig
 else
 linux-update-config linux26-update-config: ;
 linux-update-defconfig linux26-update-defconfig: ;
+endif
 endif
 
 # Support for rebuilding the kernel after the cpio archive has

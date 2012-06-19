@@ -124,6 +124,7 @@ config BR2_x86_64
 
 config BR2_xtensa
 	bool "Xtensa"
+	depends on BR2_DEPRECATED
 	help
 	  Xtensa is a Tensilica processor IP architecture.
 	  http://en.wikipedia.org/wiki/Xtensa
@@ -171,7 +172,6 @@ config BR2_arm1176jz_s
 	bool "arm1176jz-s"
 config BR2_arm1176jzf_s
 	bool "arm1176jzf-s"
-comment "cortex-A8/A9 needs gcc >= 4.4.x"
 config BR2_cortex_a8
 	bool "cortex-A8"
 config BR2_cortex_a9
@@ -221,20 +221,18 @@ config BR2_ARM_EABI
 	bool "EABI"
 config BR2_ARM_OABI
 	bool "OABI"
+	depends on !BR2_GCC_VERSION_4_7_X
 endchoice
 
 choice
 	prompt "Target ABI"
 	depends on BR2_bfin
-	default BR2_BFIN_FLAT
+	default BR2_BFIN_FDPIC
 config BR2_BFIN_FDPIC
 	bool "FDPIC"
 config BR2_BFIN_FLAT
 	bool "FLAT"
-config BR2_BFIN_FLAT_SEP_DATA
-	bool "FLAT (Separate data)"
-config BR2_BFIN_SHARED_FLAT
-	bool "Shared FLAT"
+	select BR2_PREFER_STATIC_LIB
 endchoice
 
 choice
@@ -362,7 +360,6 @@ config BR2_x86_core2
 	bool "core2"
 config BR2_x86_atom
 	bool "atom"
-comment "atom needs gcc >= 4.5.x"
 config BR2_x86_k6
 	bool "k6"
 config BR2_x86_k6_2
@@ -410,7 +407,6 @@ config BR2_x86_64_core2
 	bool "core2"
 config BR2_x86_64_atom
 	bool "atom"
-comment "atom needs gcc >= 4.5.x"
 endchoice
 
 choice
@@ -426,7 +422,6 @@ config BR2_sparc_cypress
 	bool "cypress"
 config BR2_sparc_v8
 	bool "v8"
-comment "LEON SPARC needs gcc = 4.4.x"
 config BR2_sparc_sparchfleon
 	bool "hfleon"
 config BR2_sparc_sparchfleonv8
@@ -550,13 +545,10 @@ config BR2_powerpc_8540
 	bool "8540 / e500v1"
 config BR2_powerpc_8548
 	bool "8548 / e500v2"
-comment "e300c2 needs gcc >= 4.4.x"
 config BR2_powerpc_e300c2
 	bool "e300c2"
-comment "e300c3 needs gcc >= 4.4.x"
 config BR2_powerpc_e300c3
 	bool "e300c3"
-comment "e500mc needs gcc >= 4.4.x"
 config BR2_powerpc_e500mc
 	bool "e500mc"
 endchoice
@@ -598,6 +590,7 @@ config BR2_ARCH
 	default "i686"		if BR2_x86_pentium4
 	default "i686"		if BR2_x86_pentium_m
 	default "i686"		if BR2_x86_pentiumpro
+	default "i686"		if BR2_x86_prescott
 	default "i686"		if BR2_x86_nocona
 	default "i686"		if BR2_x86_core2
 	default "i686"		if BR2_x86_atom
@@ -829,7 +822,7 @@ config BR2_GCC_TARGET_ABI
 	default n32		if BR2_MIPS_ABI32
 	default eabi		if BR2_MIPS_EABI
 	default o64		if BR2_MIPS_OABI64
-	default n64		if BR2_MIPS_ABI64
+	default 64		if BR2_MIPS_ABI64
 	default mmixware	if BR2_mmix && BR2_MMIX_ABI_native
 	default gnu		if BR2_mmix && !BR2_MMIX_ABI_native
 	default altivec		if BR2_powerpc && BR2_PPC_ABI_altivec

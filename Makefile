@@ -24,7 +24,7 @@
 #--------------------------------------------------------------
 
 # Set and export the version string
-export BR2_VERSION:=2012.05-git
+export BR2_VERSION:=2012.08-git
 
 # Check for minimal make version (note: this check will break at make 10.x)
 MIN_MAKE_VERSION=3.81
@@ -178,13 +178,6 @@ BUILD_DIR:=$(BASE_DIR)/build
 
 ifeq ($(BR2_HAVE_DOT_CONFIG),y)
 
-# cc-option
-# Usage: cflags-y+=$(call cc-option, -march=winchip-c6, -march=i586)
-# sets -march=winchip-c6 if supported else falls back to -march=i586
-# without checking the latter.
-cc-option=$(shell if $(TARGET_CC) $(TARGET_CFLAGS) $(1) -S -o /dev/null -xc /dev/null \
-	> /dev/null 2>&1; then echo "$(1)"; else echo "$(2)"; fi ;)
-
 #############################################################
 #
 # Hide troublesome environment variables from sub processes
@@ -201,34 +194,6 @@ unexport GREP_OPTIONS
 unexport CONFIG_SITE
 
 GNU_HOST_NAME:=$(shell support/gnuconfig/config.guess)
-
-#############################################################
-#
-# Setup the proper filename extensions for the host
-#
-##############################################################
-ifneq ($(findstring linux,$(GNU_HOST_NAME)),)
-HOST_EXEEXT:=
-HOST_LIBEXT:=.a
-HOST_SHREXT:=.so
-endif
-ifneq ($(findstring apple,$(GNU_HOST_NAME)),)
-HOST_EXEEXT:=
-HOST_LIBEXT:=.a
-HOST_SHREXT:=.dylib
-endif
-ifneq ($(findstring cygwin,$(GNU_HOST_NAME)),)
-HOST_EXEEXT:=.exe
-HOST_LIBEXT:=.lib
-HOST_SHREXT:=.dll
-HOST_LOADLIBES=-lcurses -lintl
-export HOST_LOADLIBES
-endif
-ifneq ($(findstring mingw,$(GNU_HOST_NAME)),)
-HOST_EXEEXT:=.exe
-HOST_LIBEXT:=.lib
-HOST_SHREXT:=.dll
-endif
 
 ##############################################################
 #
@@ -271,10 +236,11 @@ BZCAT:=$(call qstrip,$(BR2_BZCAT))
 XZCAT:=$(call qstrip,$(BR2_XZCAT))
 TAR_OPTIONS=$(call qstrip,$(BR2_TAR_OPTIONS)) -xf
 
-GNU_TARGET_SUFFIX:=-$(call qstrip,$(BR2_GNU_TARGET_SUFFIX))
-
 # packages compiled for the host go here
 HOST_DIR:=$(call qstrip,$(BR2_HOST_DIR))
+
+# locales to generate
+GENERATE_LOCALE=$(call qstrip,$(BR2_GENERATE_LOCALE))
 
 # stamp (dependency) files go here
 STAMP_DIR:=$(BASE_DIR)/stamps
@@ -286,13 +252,11 @@ TARGET_SKELETON=$(TOPDIR)/fs/skeleton
 
 ifeq ($(BR2_CCACHE),y)
 CCACHE:=$(HOST_DIR)/usr/bin/ccache
-CCACHE_CACHE_DIR=$(HOME)/.buildroot-ccache
+BUILDROOT_CACHE_DIR = $(call qstrip,$(BR2_CCACHE_DIR))
+export BUILDROOT_CACHE_DIR
 HOSTCC  := $(CCACHE) $(HOSTCC)
 HOSTCXX := $(CCACHE) $(HOSTCXX)
 endif
-
-include toolchain/Makefile.in
-include package/Makefile.in
 
 #############################################################
 #
@@ -303,6 +267,7 @@ include package/Makefile.in
 
 all: world
 
+include package/Makefile.in
 include support/dependencies/dependencies.mk
 
 # We also need the various per-package makefiles, which also add
@@ -335,9 +300,13 @@ ifeq ($(BR2_ENABLE_LOCALE_PURGE),y)
 TARGETS+=target-purgelocales
 endif
 
-include fs/common.mk
+ifneq ($(BR2_TOOLCHAIN_EXTERNAL_GLIBC)$(BR2_TOOLCHAIN_CTNG_eglibc)$(BR2_TOOLCHAIN_CTNG_glibc),)
+ifneq ($(GENERATE_LOCALE),)
+TARGETS+=target-generatelocales
+endif
+endif
 
-TARGETS+=erase-fakeroots
+include fs/common.mk
 
 TARGETS_CLEAN:=$(patsubst %,%-clean,$(TARGETS))
 TARGETS_SOURCE:=$(patsubst %,%-source,$(TARGETS) $(BASE_TARGETS))
@@ -377,23 +346,6 @@ prepare: $(BUILD_DIR)/buildroot-config/auto.conf
 
 world: prepare dirs dependencies $(BASE_TARGETS) $(TARGETS_ALL)
 
-$(HOST_DIR)/usr/share/buildroot/toolchainfile.cmake:
-	mkdir -p $(@D)
-	@echo -en "\
-	set(CMAKE_SYSTEM_NAME Linux)\n\
-	set(CMAKE_C_COMPILER $(TARGET_CC_NOCCACHE))\n\
-	set(CMAKE_CXX_COMPILER $(TARGET_CXX_NOCCACHE))\n\
-	set(CMAKE_C_FLAGS \"\$${CMAKE_C_FLAGS} $(TARGET_CFLAGS)\" CACHE STRING \"Buildroot CFLAGS\" FORCE)\n\
-	set(CMAKE_CXX_FLAGS \"\$${CMAKE_CXX_FLAGS} $(TARGET_CXXFLAGS)\" CACHE STRING \"Buildroot CXXFLAGS\" FORCE)\n\
-	set(CMAKE_INSTALL_SO_NO_EXE 0)\n\
-	set(CMAKE_PROGRAM_PATH \"$(HOST_DIR)/usr/bin\")\n\
-	set(CMAKE_FIND_ROOT_PATH \"$(STAGING_DIR)\")\n\
-	set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)\n\
-	set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)\n\
-	set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)\n\
-	set(ENV{PKG_CONFIG_SYSROOT_DIR} \"$(STAGING_DIR)\")\n\
-	" > $@
-
 .PHONY: all world dirs clean distclean source outputmakefile \
 	$(BASE_TARGETS) $(TARGETS) $(TARGETS_ALL) \
 	$(TARGETS_CLEAN) $(TARGETS_DIRCLEAN) $(TARGETS_SOURCE) \
@@ -427,16 +379,12 @@ $(BUILD_DIR)/.root:
 		if [ -d "$(TARGET_SKELETON)" ]; then \
 			cp -fa $(TARGET_SKELETON)/* $(TARGET_DIR)/; \
 		fi; \
-		touch $(STAGING_DIR)/.fakeroot.00000; \
 	fi
 	-find $(TARGET_DIR) -type d -name CVS -print0 -o -name .svn -print0 | xargs -0 rm -rf
 	-find $(TARGET_DIR) -type f \( -name .empty -o -name '*~' \) -print0 | xargs -0 rm -rf
 	touch $@
 
 $(TARGET_DIR): $(BUILD_DIR)/.root
-
-erase-fakeroots:
-	rm -f $(BUILD_DIR)/.fakeroot*
 
 target-finalize:
 ifeq ($(BR2_HAVE_DEVFILES),y)
@@ -505,6 +453,30 @@ target-purgelocales:
 		do \
 			grep -qx $$lang $(LOCALE_WHITELIST) || rm -rf $$dir/$$lang; \
 		done; \
+	done
+endif
+
+ifneq ($(GENERATE_LOCALE),)
+# Generate locale data. Basically, we call the localedef program
+# (built by the host-localedef package) for each locale. The input
+# data comes preferably from the toolchain, or if the toolchain does
+# not have them (Linaro toolchains), we use the ones available on the
+# host machine.
+target-generatelocales: host-localedef
+	$(Q)mkdir -p $(TARGET_DIR)/usr/lib/locale/
+	$(Q)for locale in $(GENERATE_LOCALE) ; do \
+		inputfile=`echo $${locale} | cut -f1 -d'.'` ; \
+		charmap=`echo $${locale} | cut -f2 -d'.'` ; \
+		if test -z "$${charmap}" ; then \
+			charmap="UTF-8" ; \
+		fi ; \
+		echo "Generating locale $${inputfile}.$${charmap}" ; \
+		I18NPATH=$(STAGING_DIR)/usr/share/i18n:/usr/share/i18n \
+		$(HOST_DIR)/usr/bin/localedef \
+			--prefix=$(TARGET_DIR) \
+			--`echo $(BR2_ENDIAN) | tr [A-Z] [a-z]`-endian \
+			-i $${inputfile} -f $${charmap} \
+			$${locale} ; \
 	done
 endif
 
@@ -602,7 +574,7 @@ silentoldconfig: $(BUILD_DIR)/buildroot-config/conf outputmakefile
 
 defconfig: $(BUILD_DIR)/buildroot-config/conf outputmakefile
 	@mkdir -p $(BUILD_DIR)/buildroot-config
-	@$(COMMON_CONFIG_ENV) $< --defconfig $(CONFIG_CONFIG_IN)
+	@$(COMMON_CONFIG_ENV) $< --defconfig$(if $(BR2_DEFCONFIG),=$(BR2_DEFCONFIG)) $(CONFIG_CONFIG_IN)
 
 %_defconfig: $(BUILD_DIR)/buildroot-config/conf $(TOPDIR)/configs/%_defconfig outputmakefile
 	@mkdir -p $(BUILD_DIR)/buildroot-config
@@ -654,6 +626,8 @@ help:
 	@echo
 	@echo 'Build:'
 	@echo '  all                    - make world'
+	@echo '  <package>-rebuild      - force recompile <package>'
+	@echo '  <package>-reconfigure  - force reconfigure <package>'
 	@echo
 	@echo 'Configuration:'
 	@echo '  menuconfig             - interactive curses-based configurator'
@@ -663,6 +637,7 @@ help:
 	@echo '  oldconfig              - resolve any unresolved symbols in .config'
 	@echo '  randconfig             - New config with random answer to all options'
 	@echo '  defconfig              - New config with default answer to all options'
+	@echo '                             BR2_DEFCONFIG, if set, is used as input'
 	@echo '  savedefconfig          - Save current config as ./defconfig (minimal config)'
 	@echo '  allyesconfig           - New config where all options are accepted with yes'
 	@echo '  allnoconfig            - New config where all options are answered with no'
@@ -724,54 +699,7 @@ release:
 print-version:
 	@echo $(BR2_VERSION_FULL)
 
-################################################################################
-# GENDOC -- generates the make targets needed to build a specific type of
-#           asciidoc documentation.
-#
-#  argument 1 is the name of the document and must be a subdirectory of docs/;
-#             the top-level asciidoc file must have the same name
-#  argument 2 is the type of document to generate (-f argument of a2x)
-#  argument 3 is the document type as used in the make target
-#  argument 4 is the output file extension for the document type
-#  argument 5 is the human text for the document type
-#  argument 6 (optional) are extra arguments for a2x
-#
-# The variable <DOCUMENT_NAME>_SOURCES defines the dependencies.
-################################################################################
-define GENDOC_INNER
-$(1): $(1)-$(3)
-.PHONY: $(1)-$(3)
-$(1)-$(3): $$(O)/docs/$(1)/$(1).$(4)
-
-$$(O)/docs/$(1)/$(1).$(4): docs/$(1)/$(1).txt $$($(call UPPERCASE,$(1))_SOURCES)
-	@echo "Generating $(5) $(1)..."
-	$(Q)mkdir -p $$(@D)
-	$(Q)a2x $(6) -f $(2) -d book -L -r $(TOPDIR)/docs/images \
-	  -D $$(@D) $$<
-endef
-
-################################################################################
-# GENDOC -- generates the make targets needed to build asciidoc documentation.
-#
-#  argument 1 is the name of the document and must be a subdirectory of docs/;
-#             the top-level asciidoc file must have the same name
-#
-# The variable <DOCUMENT_NAME>_SOURCES defines the dependencies.
-################################################################################
-define GENDOC
-$(call GENDOC_INNER,$(1),xhtml,html,html,HTML)
-$(call GENDOC_INNER,$(1),chunked,split-html,chunked,Split HTML)
-$(call GENDOC_INNER,$(1),pdf,pdf,pdf,PDF,--dblatex-opts "-P latex.output.revhistory=0")
-$(call GENDOC_INNER,$(1),text,txt,text,Text)
-$(call GENDOC_INNER,$(1),epub,epub,epub,EPUB)
-clean: clean-$(1)
-clean-$(1):
-	$(Q)$(RM) -rf $(O)/docs/$(1)
-.PHONY: $(1) clean-$(1)
-endef
-
-MANUAL_SOURCES = $(wildcard docs/manual/*.txt) $(wildcard docs/images/*)
-$(eval $(call GENDOC,manual))
+include docs/manual/manual.mk
 
 .PHONY: $(noconfig_targets)
 

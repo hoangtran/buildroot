@@ -12,7 +12,7 @@
 #
 ######################################################################
 
-QT_VERSION = 4.8.0
+QT_VERSION = 4.8.1
 QT_SOURCE  = qt-everywhere-opensource-src-$(QT_VERSION).tar.gz
 QT_SITE    = http://get.qt.nokia.com/qt/source
 QT_DEPENDENCIES = host-pkg-config
@@ -583,8 +583,7 @@ define QT_INSTALL_STAGING_CMDS
 	$(MAKE) -C $(@D) install
 	mkdir -p $(HOST_DIR)/usr/bin
 	mv $(addprefix $(STAGING_DIR)/usr/bin/,$(QT_HOST_PROGRAMS)) $(HOST_DIR)/usr/bin
-	rm -rf $(HOST_DIR)/usr/mkspecs
-	mv $(STAGING_DIR)/usr/mkspecs $(HOST_DIR)/usr
+	ln -sf $(STAGING_DIR)/usr/mkspecs $(HOST_DIR)/usr/mkspecs
 	$(QT_INSTALL_QT_CONF)
 endef
 
