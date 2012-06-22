@@ -68,6 +68,9 @@ endif
 ifeq ($$(BR2_TARGET_ROOTFS_$(2)_LZMA),y)
 	$(LZMA) -9 -c $$@ > $$@.lzma
 endif
+ifeq ($$(BR2_TARGET_ROOTFS_$(2)_URAMDISK),y)
+	$(HOST_DIR)/usr/bin/mkimage -A ppc -O Linux -T ramdisk -C gzip -d $$@.gz -n "ramdisk for $(TARGET_CPU)" $(BINARIES_DIR)/uRamdisk.bin
+endif
 
 rootfs-$(1)-show-depends:
 	@echo $(ROOTFS_$(2)_DEPENDENCIES)
