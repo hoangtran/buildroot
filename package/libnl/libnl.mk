@@ -4,7 +4,7 @@
 #
 #############################################################
 
-LIBNL_VERSION = 3.2.9
+LIBNL_VERSION = 3.2.11
 LIBNL_SITE = http://www.infradead.org/~tgr/libnl/files
 LIBNL_INSTALL_STAGING = YES
 LIBNL_DEPENDENCIES = host-bison
@@ -26,4 +26,4 @@ ifneq ($(BR2_PACKAGE_LIBNL_TOOLS),y)
 LIBNL_POST_INSTALL_TARGET_HOOKS += LIBNL_REMOVE_TOOLS
 endif
 
-$(eval $(call AUTOTARGETS))
+$(eval $(autotools-package))

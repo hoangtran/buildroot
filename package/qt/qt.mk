@@ -487,7 +487,7 @@ define QT_CONFIGURE_CMDS
 		PKG_CONFIG_SYSROOT_DIR="$(STAGING_DIR)" \
 		PKG_CONFIG="$(PKG_CONFIG_HOST_BINARY)" \
 		PKG_CONFIG_PATH="$(STAGING_DIR)/usr/lib/pkgconfig:$(PKG_CONFIG_PATH)" \
-		MAKEFLAGS="$(MAKEFLAGS) -j$(BR2_JLEVEL)" ./configure \
+		MAKEFLAGS="$(MAKEFLAGS) -j$(PARALLEL_JOBS)" ./configure \
 		$(if $(VERBOSE),-verbose,-silent) \
 		-force-pkg-config \
 		$(QT_CONFIGURE_OPTS) \
@@ -577,13 +577,20 @@ endef
 # everything in the STAGING_DIR), we move host programs such as qmake,
 # rcc or uic to the HOST_DIR so that they are available at the usual
 # location. A qt.conf file is generated to make sure that all host
-# programs still find all files they need.
+# programs still find all files they need. The .pc files are tuned to
+# remove the sysroot path from them, since pkg-config already adds it
+# automatically.
 define QT_INSTALL_STAGING_CMDS
 	$(MAKE) -C $(@D) install
 	mkdir -p $(HOST_DIR)/usr/bin
 	mv $(addprefix $(STAGING_DIR)/usr/bin/,$(QT_HOST_PROGRAMS)) $(HOST_DIR)/usr/bin
 	ln -sf $(STAGING_DIR)/usr/mkspecs $(HOST_DIR)/usr/mkspecs
 	$(QT_INSTALL_QT_CONF)
+	for i in moc uic rcc lupdate lrelease ; do \
+		$(SED) "s,^$${i}_location=.*,$${i}_location=$(HOST_DIR)/usr/bin/$${i}," \
+			$(STAGING_DIR)/usr/lib/pkgconfig/Qt*.pc ; \
+	done
+	$(SED) "s,$(STAGING_DIR)/,,g" $(STAGING_DIR)/usr/lib/pkgconfig/Qt*.pc
 endef
 
 # Library installation
@@ -635,4 +642,4 @@ define QT_UNINSTALL_TARGET_CMDS
 	-rm $(TARGET_DIR)/usr/lib/libphonon.so.*
 endef
 
-$(eval $(call GENTARGETS))
+$(eval $(generic-package))

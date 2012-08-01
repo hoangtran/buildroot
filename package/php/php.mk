@@ -4,7 +4,7 @@
 #
 #############################################################
 
-PHP_VERSION = 5.3.14
+PHP_VERSION = 5.3.15
 PHP_SOURCE = php-$(PHP_VERSION).tar.bz2
 PHP_SITE = http://www.php.net/distributions
 PHP_INSTALL_STAGING = YES
@@ -229,4 +229,4 @@ endef
 
 PHP_CONF_ENV += CFLAGS="$(PHP_CFLAGS)"
 
-$(eval $(call AUTOTARGETS))
+$(eval $(autotools-package))

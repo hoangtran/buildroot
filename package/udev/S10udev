@@ -180,7 +180,7 @@ case "$1" in
     mknod -m 0666 /dev/zero c 1 5
     mknod -m 0600 /dev/console c 5 1
 
-	#FIXME: create symlink /run -> /tmp
+    #FIXME: create symlink /run -> /tmp
     ln -sf /tmp /run
 
     echo "Starting the hotplug events dispatcher" "udevd"

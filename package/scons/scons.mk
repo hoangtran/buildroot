@@ -10,4 +10,7 @@ define HOST_SCONS_INSTALL_CMDS
 	(cd $(@D); python setup.py install --prefix=$(HOST_DIR)/usr)
 endef
 
-$(eval $(call GENTARGETS,host))
+$(eval $(host-generic-package))
+
+# variables used by other packages
+SCONS = $(HOST_DIR)/usr/bin/scons

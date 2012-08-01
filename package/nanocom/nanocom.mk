@@ -13,7 +13,7 @@ define NANOCOM_EXTRACT_CMDS
 endef
 
 define NANOCOM_BUILD_CMDS
-	$(MAKE) $(TARGET_CONFIGURE_OPTS) -C $(@D)
+	$(MAKE) CC="$(TARGET_CC) $(TARGET_CFLAGS) $(TARGET_LDFLAGS)" -C $(@D)
 endef
 
 define NANOCOM_INSTALL_TARGET_CMDS
@@ -24,4 +24,4 @@ define NANOCOM_UNINSTALL_TARGET_CMDS
 	$(RM) $(TARGET_DIR)/usr/bin/nanocom
 endef
 
-$(eval $(call GENTARGETS))
+$(eval $(generic-package))

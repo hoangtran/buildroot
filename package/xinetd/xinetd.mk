@@ -11,4 +11,6 @@ ifneq ($(BR2_INET_RPC),y)
 XINETD_CONF_ENV = CFLAGS="$(TARGET_CFLAGS) -DNO_RPC"
 endif
 
-$(eval $(call AUTOTARGETS))
+XINETD_MAKE_OPT = AR="$(TARGET_AR)"
+
+$(eval $(autotools-package))

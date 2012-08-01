@@ -35,4 +35,4 @@ endef
 
 UDEV_POST_INSTALL_TARGET_HOOKS += UDEV_INSTALL_INITSCRIPT
 
-$(eval $(call AUTOTARGETS))
+$(eval $(autotools-package))

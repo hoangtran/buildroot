@@ -3,9 +3,11 @@
 # libnfc
 #
 #############################################################
-LIBNFC_VERSION = 1.5.1
-LIBNFC_SITE = http://libnfc.googlecode.com/files/
-LIBNFC_SOURCE = libnfc-$(LIBNFC_VERSION).tar.gz
+LIBNFC_VERSION = 1446
+LIBNFC_SITE = http://libnfc.googlecode.com/svn/trunk/
+LIBNFC_SITE_METHOD = svn
+LIBNFC_LICENSE = LGPLv3+
+LIBNFC_LICENSE_FILES = COPYING
 LIBNFC_AUTORECONF = YES
 LIBNFC_INSTALL_STAGING = YES
 
@@ -21,4 +23,4 @@ else
 LIBNFC_CONF_OPT += --disable-example
 endif
 
-$(eval $(call AUTOTARGETS))
+$(eval $(autotools-package))
