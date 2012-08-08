@@ -1,0 +1,12 @@
+diff --git a/Makefile b/Makefile
+index 0d68fd5..bf9e7c6 100644
+--- a/Makefile
++++ b/Makefile
+@@ -137,7 +137,6 @@ ALL_CFLAGS += $(call check_gcc,-Wstrict-aliasing,)
+ # if not debugging, enable things that could confuse gdb
+ ifeq (,$(findstring -g,$(filter -g%,$(CFLAGS))))
+ ALL_CFLAGS += $(call check_gcc,-fweb,)
+-ALL_CFLAGS += $(call check_gcc,-frename-registers,)
+ ALL_CFLAGS += $(call check_gcc,-fomit-frame-pointer,)
+ endif
+ 
