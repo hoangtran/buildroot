@@ -9,7 +9,7 @@ IFPLUGD_SITE = http://0pointer.de/lennart/projects/ifplugd
 IFPLUGD_AUTORECONF = YES
 # install-strip unconditionally overwrites $(TARGET_DIR)/etc/ifplugd/ifplugd.*
 IFPLUGD_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) install-exec
-IFPLUGD_CONF_OPT = --disable-lynx
+IFPLUGD_CONF_OPT = --with-initdir=$(TARGET_DIR)/etc/init.d --disable-lynx
 IFPLUGD_DEPENDENCIES = libdaemon
 
 # Prefer big ifplugd
