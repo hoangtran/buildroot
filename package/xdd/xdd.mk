@@ -34,4 +34,4 @@ define XDD_CLEAN_CMDS
 	-$(MAKE) -C $(@D) clean
 endef
 
-$(eval $(call GENTARGETS,package,xdd))
+$(eval $(generic-package))
