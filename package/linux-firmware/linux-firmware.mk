@@ -3,7 +3,7 @@
 # linux-firmware
 #
 #############################################################
-LINUX_FIRMWARE_VERSION = 8ccddee5ee23a0e192da38d98bcbbbb41bf385dd
+LINUX_FIRMWARE_VERSION = 7560108a2c94a62056fa82d912282b901aa0904f
 LINUX_FIRMWARE_SITE = git://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git
 LINUX_FIRMWARE_SITE_METHOD = git
 
@@ -20,6 +20,17 @@ LINUX_FIRMWARE_FILES_$(BR2_PACKAGE_LINUX_FIRMWARE_RALINK_RT73) += \
 LINUX_FIRMWARE_FILES_$(BR2_PACKAGE_LINUX_FIRMWARE_RALINK_RT2XX) += \
 	rt2860.bin rt2870.bin rt3070.bin rt3071.bin rt3090.bin 	\
 	LICENCE.ralink-firmware.txt
+
+# rtl8192
+LINUX_FIRMWARE_FILES_$(BR2_PACKAGE_LINUX_FIRMWARE_RTL_8192) += \
+	rtlwifi/rtl8192cfw.bin rtlwifi/rtl8192cfwU.bin 		\
+	rtlwifi/rtl8192cfwU_B.bin rtlwifi/rtl8192cufw.bin	\
+	rtlwifi/rtl8192defw.bin rtlwifi/rtl8192sefw.bin		\
+	LICENCE.rtlwifi_firmware.txt
+
+# rtl8712
+LINUX_FIRMWARE_FILES_$(BR2_PACKAGE_LINUX_FIRMWARE_RTL_8712) += \
+	rtlwifi/rtl8712u.bin LICENCE.rtlwifi_firmware.txt
 
 # ar7010
 LINUX_FIRMWARE_FILES_$(BR2_PACKAGE_LINUX_FIRMWARE_ATHEROS_7010) += \
@@ -41,6 +52,9 @@ LINUX_FIRMWARE_FILES_$(BR2_PACKAGE_LINUX_FIRMWARE_TI_WL127X) += \
 	ti-connectivity/wl127x-fw-4-mr.bin			\
 	ti-connectivity/wl127x-fw-4-plt.bin			\
 	ti-connectivity/wl127x-fw-4-sr.bin			\
+	ti-connectivity/wl127x-fw-5-mr.bin			\
+	ti-connectivity/wl127x-fw-5-plt.bin			\
+	ti-connectivity/wl127x-fw-5-sr.bin			\
 	ti-connectivity/TIInit_7.2.31.bts 			\
 	LICENCE.ti-connectivity
 
@@ -56,6 +70,9 @@ LINUX_FIRMWARE_FILES_$(BR2_PACKAGE_LINUX_FIRMWARE_TI_WL128X) += \
 	ti-connectivity/wl128x-fw-4-mr.bin			\
 	ti-connectivity/wl128x-fw-4-plt.bin			\
 	ti-connectivity/wl128x-fw-4-sr.bin			\
+	ti-connectivity/wl128x-fw-5-mr.bin			\
+	ti-connectivity/wl128x-fw-5-plt.bin			\
+	ti-connectivity/wl128x-fw-5-sr.bin			\
 	ti-connectivity/TIInit_7.2.31.bts 			\
 	LICENCE.ti-connectivity
 

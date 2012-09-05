@@ -4,7 +4,7 @@
 #
 #############################################################
 
-SUDO_VERSION = 1.8.5p1
+SUDO_VERSION = 1.8.5p2
 SUDO_SITE    = http://www.sudo.ws/sudo/dist
 SUDO_CONF_OPT = \
 		--without-lecture \
@@ -13,5 +13,9 @@ SUDO_CONF_OPT = \
 		--with-logging=syslog \
 		--without-interfaces \
 		--without-pam
+
+define SUDO_PERMISSIONS
+/usr/bin/sudo			 f 4755	0 0 - - - - -
+endef
 
 $(eval $(autotools-package))
