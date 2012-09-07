@@ -1,0 +1,8 @@
+config BR2_PACKAGE_BWPING
+	bool "bwping"
+	help
+	BWPing is a tool to measure bandwidth and response times between two
+	hosts using Internet Control Message Protocol (ICMP) echo request/echo
+	reply mechanism
+
+	http://bwping.sourceforge.net/
