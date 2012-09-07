@@ -1,0 +1,7 @@
+config BR2_PACKAGE_IOZONE
+	bool "iozone"
+	help
+	  A filesystem benchmark tool for performing a broad filesystem analysis
+	  of a vendor computer platform
+
+	  http://www.iozone.org
