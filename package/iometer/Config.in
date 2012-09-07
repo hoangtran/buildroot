@@ -1,0 +1,5 @@
+config BR2_PACKAGE_IOMETER
+	bool "iometer"
+	help
+		An I/O subsystem measurement and characterization tool for single and clustered systems. 
+		http://www.iometer.org/

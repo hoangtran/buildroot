@@ -1,0 +1,40 @@
+diff --git a/src/IOPort.h b/src/IOPort.h
+index d40188c..9fe3b6e 100644
+--- a/src/IOPort.h
++++ b/src/IOPort.h
+@@ -80,6 +80,8 @@ namespace std {
+ #endif
+ using namespace std;
+ 
++#undef max
++#undef min
+ #include <sstream>
+ 
+ #include "IOCommon.h"
+diff --git a/src/Makefile-Linux.ppc b/src/Makefile-Linux.ppc
+index 749cd8a..2332eb0 100644
+--- a/src/Makefile-Linux.ppc
++++ b/src/Makefile-Linux.ppc
+@@ -66,9 +66,6 @@
+ 
+ RM=/bin/rm -f
+ MV=/bin/mv
+-TOUCH=/usr/bin/touch
+-STRIP=/usr/bin/strip
+-CXX=/opt/tools/ppc-tools/3.2/powerpc-linux/bin/g++
+ 
+ 
+ 
+diff --git a/src/Network.h b/src/Network.h
+index 36d1d13..fe5ab3b 100644
+--- a/src/Network.h
++++ b/src/Network.h
+@@ -78,6 +78,8 @@ namespace std {
+ #endif
+ using namespace std;
+ 
++#undef max
++#undef min
+ #include <sstream>
+ 
+ #include "IOCommon.h"
