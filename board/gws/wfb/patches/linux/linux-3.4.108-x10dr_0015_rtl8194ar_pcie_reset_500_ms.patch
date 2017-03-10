@@ -1,0 +1,12 @@
+--- linux-3.4.108/arch/arm/mach-goldengate/pcie.c.old	2016-04-14 11:54:47.748363897 +0200
++++ linux-3.4.108/arch/arm/mach-goldengate/pcie.c	2016-04-14 12:37:06.716318429 +0200
+@@ -1764,7 +1764,8 @@
+         temp &= ~gpio_value;
+         writel(temp, gpio_cfg);
+ 
+-        udelay(100);
++        printk("%s: Use mdelay(500) for pcie reset gpio: %d\r\n", __func__, gpio);
++        mdelay(500);
+ 
+         temp = readl(gpio_out);
+         temp |= gpio_value;

@@ -1,0 +1,32 @@
+From 53eb839ea25c8a7ed4c7f988dd2fc1db752e3b23 Mon Sep 17 00:00:00 2001
+From: Hoang Tran <hoang.tran@greenwavereality.com>
+Date: Mon, 29 Sep 2014 19:10:18 +0800
+Subject: [PATCH 06/12] bhr4 bridge_neighbor_update
+
+Signed-off-by: Hoang Tran <hoang.tran@greenwavereality.com>
+---
+ net/bridge/br_fdb.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/net/bridge/br_fdb.c b/net/bridge/br_fdb.c
+index 86eaeab..df5eb7e 100644
+--- a/net/bridge/br_fdb.c
++++ b/net/bridge/br_fdb.c
+@@ -485,8 +485,13 @@ void br_fdb_update(struct net_bridge *br, struct net_bridge_port *source,
+ 			}
+ #endif			
+ 			/* fastpath: update of existing entry */
+-			fdb->dst = source;
+ 			fdb->updated = jiffies;
++			if (fdb->dst != source) {
++				/* Source addr changed from one bridge port to another */
++				/* Signal this by a new neighbor notification */
++				fdb->dst = source;
++				fdb_notify(br, fdb, RTM_NEWNEIGH);
++			}
+ 		}
+ 	} else {
+ 		spin_lock(&br->hash_lock);
+-- 
+2.1.1
+

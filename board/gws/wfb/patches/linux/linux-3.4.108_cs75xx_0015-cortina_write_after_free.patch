@@ -1,0 +1,13 @@
+diff -Nur linux-3.4.104/drivers/net/ethernet/cs752x/src/fe/table/cs_fe_table_l3ip.c linux-3.4.104-new/drivers/net/ethernet/cs752x/src/fe/table/cs_fe_table_l3ip.c
+--- linux-3.4.104/drivers/net/ethernet/cs752x/src/fe/table/cs_fe_table_l3ip.c	2015-11-03 13:35:00.048420814 -0800
++++ linux-3.4.104-new/drivers/net/ethernet/cs752x/src/fe/table/cs_fe_table_l3ip.c	2015-11-03 13:34:21.208238622 -0800
+@@ -319,8 +319,8 @@
+ 		atomic_dec(&p_fe_entry->users);
+ 		if (atomic_read(&p_fe_entry->users) == 0) {
+ 			kfree(p_fe_entry->p_entry);
+-			kfree(p_sw_entry->data);
+ 			p_fe_entry->p_entry = NULL;
++			kfree(p_sw_entry->data);
+ 			p_sw_entry->data = NULL;
+ 			cs_fe_l3ip_table_type.used_entry--;
+ 			p_sw_entry->local_data &= ~FE_TABLE_ENTRY_USED;

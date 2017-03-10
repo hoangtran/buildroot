@@ -1,0 +1,26 @@
+From 00cc2d3f99b0ac146e38aa80aa10340505978d30 Mon Sep 17 00:00:00 2001
+From: Hoang Tran <hoang.tran@greenwavesystems.com>
+Date: Thu, 20 Aug 2015 12:00:53 -0700
+Subject: [PATCH 13/13] cs75xx bridge_timer_update_for_dst_mac
+
+Signed-off-by: Hoang Tran <hoang.tran@greenwavesystems.com>
+---
+ .../net/ethernet/cs752x/src/kernel_adapt/bridge/cs_hw_accel_bridge.c    | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/cs752x/src/kernel_adapt/bridge/cs_hw_accel_bridge.c b/drivers/net/ethernet/cs752x/src/kernel_adapt/bridge/cs_hw_accel_bridge.c
+index de98e79..352ade8 100644
+--- a/drivers/net/ethernet/cs752x/src/kernel_adapt/bridge/cs_hw_accel_bridge.c
++++ b/drivers/net/ethernet/cs752x/src/kernel_adapt/bridge/cs_hw_accel_bridge.c
+@@ -305,7 +305,7 @@ void k_jt_cs_bridge_br_fdb_get_lastuse(struct net_bridge_fdb_entry *f)
+ 	} else {
+ 		DBG(printk("\t%s unable to get last use by in_mac_sa, ret = %d\n", __func__, ret));
+ 	}
+-#if 0
++#if 1
+ 	hmu_value.type = CS_CORE_HMU_WATCH_OUT_MAC_DA;
+ 	for (i = 0; i < 6; i++)
+ 		hmu_value.value.mac_addr[i] = f->addr.addr[5 - i];
+-- 
+2.5.0
+

@@ -1,0 +1,335 @@
+From a4454e348a106e9d29322c1543bb0d04ad2d2e4e Mon Sep 17 00:00:00 2001
+From: Hoang Tran <hoang.tran@greenwavereality.com>
+Date: Mon, 29 Sep 2014 17:07:33 +0800
+Subject: [PATCH 03/13] cs75xx pwm
+
+Signed-off-by: Hoang Tran <hoang.tran@greenwavereality.com>
+Signed-off-by: Hoang Tran <hoang.tran@greenwavesystems.com>
+---
+ arch/arm/mach-goldengate/Kconfig                 |   1 +
+ arch/arm/mach-goldengate/Makefile                |   1 +
+ arch/arm/mach-goldengate/cortina-g2.c            |  46 +++++-
+ arch/arm/mach-goldengate/include/mach/platform.h |   1 +
+ arch/arm/mach-goldengate/pwm.c                   | 191 +++++++++++++++++++++++
+ 5 files changed, 239 insertions(+), 1 deletion(-)
+ create mode 100644 arch/arm/mach-goldengate/pwm.c
+
+diff --git a/arch/arm/mach-goldengate/Kconfig b/arch/arm/mach-goldengate/Kconfig
+index ee3fb8f..8c874a4 100644
+--- a/arch/arm/mach-goldengate/Kconfig
++++ b/arch/arm/mach-goldengate/Kconfig
+@@ -6,6 +6,7 @@ config MACH_CORTINA_G2
+ 	select ARM_GIC
+ 	select CPU_V7
+ 	select NEED_MACH_IO_H
++	select HAVE_PWM
+ 	help
+ 	  Include support for Cortex-A9 CPU on Cortina-Systems Baseboard.
+ 
+diff --git a/arch/arm/mach-goldengate/Makefile b/arch/arm/mach-goldengate/Makefile
+index 73ad1aa..296b3a8 100644
+--- a/arch/arm/mach-goldengate/Makefile
++++ b/arch/arm/mach-goldengate/Makefile
+@@ -8,6 +8,7 @@ obj-$(CONFIG_SMP)			+= platsmp.o headsmp.o
+ obj-$(CONFIG_HOTPLUG_CPU)		+= hotplug.o
+ #obj-$(CONFIG_CS75XX_SSP)		+= cs75xx_ssp.o
+ obj-$(CONFIG_CORTINA_G2_PCIE)		+= pcie.o
++obj-$(CONFIG_HAVE_PWM)			+= pwm.o
+ obj-$(CONFIG_CORTINA_G2_GLOBAL_TIMER)	+= global_timer.o
+ 
+ # Power Management
+diff --git a/arch/arm/mach-goldengate/cortina-g2.c b/arch/arm/mach-goldengate/cortina-g2.c
+index afbf402..a4299c9 100644
+--- a/arch/arm/mach-goldengate/cortina-g2.c
++++ b/arch/arm/mach-goldengate/cortina-g2.c
+@@ -34,7 +34,7 @@
+ #include <mach/gpio_alloc.h>
+ #include <linux/input.h>
+ #include <linux/gpio_keys.h>
+-
++#include <linux/leds_pwm.h>
+ 
+ #if 0 /* Disable OpenWRT gpio_button patch */
+ #include <linux/gpio_buttons.h>
+@@ -594,6 +594,26 @@ static struct platform_device cs75xx_gpio_device = {
+ 	.resource = cs75xx_gpio_resources,
+ };
+ 
++static struct resource cs75xx_pwm_resources[] = {
++	{
++		.name = "pwm_base",
++		.start = GOLDENGATE_PWM_BASE,
++		.end = GOLDENGATE_PWM_BASE + 7,
++		.flags = IORESOURCE_IO,
++	},
++};
++
++static struct platform_device cs75xx_pwm_device = {
++	.name = "cs75xx-pwm",
++	.id = -1,
++	.dev = {
++		.dma_mask = &cs75xx_dmamask,
++		.coherent_dma_mask = 0xffffffff,
++	},
++	.num_resources = ARRAY_SIZE(cs75xx_pwm_resources),
++	.resource = cs75xx_pwm_resources,
++};
++
+ static struct gpio_keys_button cs75xx_gpio_keys[] = {
+ #ifdef GPIO_WPS_SW
+ 	{
+@@ -718,6 +738,28 @@ static struct gpio_led cs75xx_leds[] = {
+ #endif
+ };
+ 
++static struct led_pwm cs75xx_pwm_leds[] = {
++	{
++		.name		= "pwm_led",
++		.pwm_id		= 0,
++		.max_brightness	= 4,
++		.pwm_period_ns	= 500,
++	},
++};
++
++static struct led_pwm_platform_data cs75xx_pwm_data = {
++	.num_leds	= ARRAY_SIZE(cs75xx_pwm_leds),
++	.leds		= cs75xx_pwm_leds,
++};
++
++static struct platform_device cs75xx_leds_pwm = {
++	.name	= "leds_pwm",
++	.id	= -1,
++	.dev	= {
++		.platform_data = &cs75xx_pwm_data,
++	},
++};
++
+ static struct gpio_led_platform_data cs75xx_led_platform_data = {
+ 	.leds		= cs75xx_leds,
+ 	.num_leds	= ARRAY_SIZE(cs75xx_leds),
+@@ -1603,11 +1645,13 @@ static struct platform_device *platform_devices[] __initdata = {
+ 	&goldengate_sd_device,
+ #endif				/* CS752X_SD */
+ 	&cs75xx_gpio_device,	/* CS75XX GPIO */
++	&cs75xx_pwm_device,
+ 	&cs75xx_gpio_keys_device,
+ #if 0 /* Disable OpenWRT gpio button patch */
+ 	&cs75xx_gpio_btns_device,
+ #endif /* Disable OpenWRT gpio button patch */
+ 	&cs75xx_led_device,
++	&cs75xx_leds_pwm,
+ 	&cs75xx_i2c_device,	/* CS75XX I2C */
+ 	&cs75xx_spi_device,	/* CS75XX SPI */
+ 	&goldengate_flash_device,	/* G2 NAND */
+diff --git a/arch/arm/mach-goldengate/include/mach/platform.h b/arch/arm/mach-goldengate/include/mach/platform.h
+index 1f0adbc..c9be824 100644
+--- a/arch/arm/mach-goldengate/include/mach/platform.h
++++ b/arch/arm/mach-goldengate/include/mach/platform.h
+@@ -147,6 +147,7 @@
+ #define GOLDENGATE_UART1_BASE		PER_UART1_CFG
+ #define GOLDENGATE_UART2_BASE		PER_UART2_CFG
+ #define GOLDENGATE_UART3_BASE		PER_UART3_CFG
++#define GOLDENGATE_PWM_BASE		PER_PWM_TIMER_PERIOD
+ #define GOLDENGATE_SPI_BASE		PER_SPI_CLK
+ #define GOLDENGATE_BIW_BASE		PER_BIW_CFG
+ #define GOLDENGATE_DMA_SSP_BASE		DMA_DMA_SSP_RXDMA_CONTROL
+diff --git a/arch/arm/mach-goldengate/pwm.c b/arch/arm/mach-goldengate/pwm.c
+new file mode 100644
+index 0000000..7e34645
+--- /dev/null
++++ b/arch/arm/mach-goldengate/pwm.c
+@@ -0,0 +1,191 @@
++/*
++ * arch/arm/mach-goldengate/pwm.c
++ *
++ * simple driver for PWM (Pulse Width Modulator) controller
++ *
++ * (C) by Hoang Tran <hoang.tran@greenwavereality.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
++ * 02110-1301, USA.
++ */
++
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/platform_device.h>
++#include <linux/slab.h>
++#include <linux/err.h>
++#include <linux/clk.h>
++#include <linux/io.h>
++#include <linux/pwm.h>
++
++static const struct platform_device_id pwm_id_table[] = {
++	{ "cs75xx-pwm", 0 },
++	{ },
++};
++MODULE_DEVICE_TABLE(platform, pwm_id_table);
++
++/* PWM registers and bits definitions */
++#define PWM_PERIOD	(0x00)
++#define PWM_DUTY	(0x04)
++
++struct pwm_device {
++	struct platform_device	*pdev;
++
++	const char	*label;
++	void __iomem	*io_base;
++
++	unsigned int	use_count;
++	unsigned int	pwm_id;
++};
++
++int pwm_config(struct pwm_device *pwm, int duty_ns, int period_ns)
++{
++	if (pwm == NULL || period_ns == 0 || duty_ns > period_ns)
++		return -EINVAL;
++
++	__raw_writel((period_ns*150000), pwm->io_base + PWM_PERIOD);
++	__raw_writel((duty_ns*150000), pwm->io_base + PWM_DUTY);
++
++	return 0;
++}
++EXPORT_SYMBOL(pwm_config);
++
++int pwm_enable(struct pwm_device *pwm)
++{
++	return 0;
++}
++EXPORT_SYMBOL(pwm_enable);
++
++void pwm_disable(struct pwm_device *pwm)
++{
++}
++EXPORT_SYMBOL(pwm_disable);
++
++static DEFINE_MUTEX(pwm_lock);
++static struct pwm_device* cs75xx_pwm;
++
++struct pwm_device *pwm_request(int pwm_id, const char *label)
++{
++	int found = 0;
++
++	mutex_lock(&pwm_lock);
++
++	if (cs75xx_pwm->pwm_id == pwm_id) {
++		found = 1;
++	}
++
++	if (found) {
++		if (cs75xx_pwm->use_count == 0) {
++			cs75xx_pwm->use_count++;
++			cs75xx_pwm->label = label;
++		} else
++			cs75xx_pwm = ERR_PTR(-EBUSY);
++	} else
++		cs75xx_pwm = ERR_PTR(-ENOENT);
++
++	mutex_unlock(&pwm_lock);
++	return cs75xx_pwm;
++}
++EXPORT_SYMBOL(pwm_request);
++
++void pwm_free(struct pwm_device *pwm)
++{
++	mutex_lock(&pwm_lock);
++
++	if (pwm->use_count) {
++		pwm->use_count--;
++		pwm->label = NULL;
++	} else
++		pr_warning("PWM device already freed\n");
++
++	mutex_unlock(&pwm_lock);
++}
++EXPORT_SYMBOL(pwm_free);
++
++static int __devinit pwm_probe(struct platform_device *pdev)
++{
++	struct resource *r;
++	int ret = 0;
++
++	cs75xx_pwm = kzalloc(sizeof(struct pwm_device), GFP_KERNEL);
++	if (cs75xx_pwm == NULL) {
++		dev_err(&pdev->dev, "failed to allocate memory\n");
++		return -ENOMEM;
++	}
++
++	cs75xx_pwm->use_count = 0;
++	cs75xx_pwm->pwm_id = 0;
++	cs75xx_pwm->pdev = pdev;
++
++	r = platform_get_resource(pdev, IORESOURCE_IO, 0);
++	if (r == NULL) {
++		dev_err(&pdev->dev, "no IO resource defined\n");
++		ret = -ENODEV;
++		goto err_free;
++	}
++
++	cs75xx_pwm->io_base = ioremap(r->start, resource_size(r));
++	if (cs75xx_pwm->io_base == NULL) {
++		dev_err(&pdev->dev, "failed to ioremap() registers\n");
++		ret = -ENODEV;
++		goto err_free;
++	}
++
++	platform_set_drvdata(pdev, cs75xx_pwm);
++	return 0;
++
++err_free:
++	kfree(cs75xx_pwm);
++	return ret;
++}
++
++static int __devexit pwm_remove(struct platform_device *pdev)
++{
++	struct pwm_device *pwm;
++	struct resource *r;
++
++	pwm = platform_get_drvdata(pdev);
++	if (pwm == NULL)
++		return -ENODEV;
++
++	iounmap(pwm->io_base);
++
++	kfree(pwm);
++	return 0;
++}
++
++static struct platform_driver pwm_driver = {
++	.driver		= {
++		.name	= "cs75xx-pwm",
++		.owner	= THIS_MODULE,
++	},
++	.probe		= pwm_probe,
++	.remove		= __devexit_p(pwm_remove),
++	.id_table	= pwm_id_table,
++};
++
++static int __init pwm_init(void)
++{
++	return platform_driver_register(&pwm_driver);
++}
++arch_initcall(pwm_init);
++
++static void __exit pwm_exit(void)
++{
++	platform_driver_unregister(&pwm_driver);
++}
++module_exit(pwm_exit);
++
++MODULE_LICENSE("GPL v2");
+-- 
+2.5.0
+

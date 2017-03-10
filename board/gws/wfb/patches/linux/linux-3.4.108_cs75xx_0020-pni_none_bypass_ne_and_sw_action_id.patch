@@ -1,0 +1,223 @@
+--- linux-3.4.104/arch/arm/mach-goldengate/include/mach/cs_flow_api.h	2015-11-16 15:25:24.386845343 -0800
++++ linux-3.4.104/arch/arm/mach-goldengate/include/mach/cs_flow_api.h	2015-11-16 16:54:35.507618048 -0800
+@@ -12,6 +12,8 @@
+ 	CS_FLOW_TYPE_MC_MEMBER = 6,    /* CORE_FWD_APP_TYPE_MCAST_CTRL */
+ 	CS_FLOW_TYPE_L2_DA_SA = 7,           /* CORE_FWD_APP_TYPE_L2_DA_SA */
+ 	CS_FLOW_TYPE_MC_L7_FILTER = 8,           /* CORE_FWD_APP_TYPE_MC_L7_FILTER */
++	CS_FLOW_TYPE_MC_SW_FILTER = 9,           /* CORE_FWD_APP_TYPE_MC_SW_FILTER */
++	CS_FLOW_TYPE_MC_HASH = 10,           /* CORE_FWD_APP_TYPE_MC_L7_FILTER */
+ } cs_flow_type_t;
+ 
+ typedef enum {
+@@ -88,6 +90,7 @@
+ 	cs_uint16_t	voq_offset;			/* VoQ offset for egress phy_port, VoQ index = (egress phy_port) * 8 + voq_offset, if phy_port <= 4 */
+ 	cs_uint32_t	life_time; 			/* 0 means no timeout, unit is tick (10ms) */
+ 	cs_uint32_t	swid_array[CS_FLOW_SWID_MAX]; 	/* for flow mgmt. among apps. (such as arp or netfilter) */
++	cs_uint32_t	sw_action_id;
+ 	cs_uint32_t	flag;				/* bit mask, see comment of FLOW_FLAG_* */
+ } cs_flow_t;
+ 
+--- linux-3.4.104/drivers/net/ethernet/cs752x/src/kernel_adapt/flow/cs_flow.c	2015-11-16 15:25:24.383845378 -0800
++++ linux-3.4.104/drivers/net/ethernet/cs752x/src/kernel_adapt/flow/cs_flow.c	2015-11-16 16:39:42.320167570 -0800
+@@ -197,6 +197,12 @@
+ 			else
+ 				rule_hash.apptype = CORE_FWD_APP_TYPE_MCAST_L7_FILTER;
+ 			break;
++		case CS_FLOW_TYPE_MC_HASH:
++			if (p_flow->ingress_pkt.natt_4_bytes == 0)
++				rule_hash.apptype = CORE_FWD_APP_TYPE_MCAST_CTRL;
++			else
++				rule_hash.apptype = CORE_FWD_APP_TYPE_MCAST_L7_FILTER;
++			break;
+ 		default:
+ 			printk("%s: unknown flow type=%d!!\n", __func__, p_flow->flow_type);
+ 			return CS_ERROR;
+@@ -210,7 +216,8 @@
+ 	memcpy(&(rule_hash.key.mac_da[0]), &(p_flow->ingress_pkt.da_mac[0]), CS_ETH_ADDR_LEN);
+ 	memcpy(&(rule_hash.key.mac_sa[0]), &(p_flow->ingress_pkt.sa_mac[0]), CS_ETH_ADDR_LEN);
+ 	if ((p_flow->flow_type != CS_FLOW_TYPE_MC_MEMBER) &&
+-		(p_flow->flow_type != CS_FLOW_TYPE_MC_L7_FILTER)) {
++		(p_flow->flow_type != CS_FLOW_TYPE_MC_L7_FILTER) &&
++		(p_flow->flow_type != CS_FLOW_TYPE_MC_HASH)) {
+ 		rule_hash.key.eth_type = p_flow->ingress_pkt.eth_type;
+ 	}
+ 
+@@ -223,7 +230,8 @@
+ 		}
+ #endif
+ 		if ((p_flow->flow_type != CS_FLOW_TYPE_MC_MEMBER) &&
+-			(p_flow->flow_type != CS_FLOW_TYPE_MC_L7_FILTER)) {
++			(p_flow->flow_type != CS_FLOW_TYPE_MC_L7_FILTER) &&
++			(p_flow->flow_type != CS_FLOW_TYPE_MC_HASH)) {
+ 			rule_hash.key.tpid_enc_1 = 0x4 | tpid_encap_type;   /* only need to turn on the MSB of TPID */
+ 			rule_hash.key._8021p_1 = p_flow->ingress_pkt.tag[0].priority & 0x7;
+ 			rule_hash.key.vid_1 = p_flow->ingress_pkt.tag[0].vlan_id;
+@@ -239,7 +247,8 @@
+ 		}
+ #endif
+ 		if ((p_flow->flow_type != CS_FLOW_TYPE_MC_MEMBER) &&
+-			(p_flow->flow_type != CS_FLOW_TYPE_MC_L7_FILTER)) {
++			(p_flow->flow_type != CS_FLOW_TYPE_MC_L7_FILTER) &&
++			(p_flow->flow_type != CS_FLOW_TYPE_MC_HASH)) {
+ 			rule_hash.key.tpid_enc_2 = 0x4 | tpid_encap_type;   /* only need to turn on the MSB of TPID */
+ 			rule_hash.key._8021p_2 = p_flow->ingress_pkt.tag[1].priority & 0x7;
+ 			rule_hash.key.vid_2 = p_flow->ingress_pkt.tag[1].vlan_id;
+@@ -283,7 +292,8 @@
+ #endif
+ 
+ 	if ((p_flow->flow_type != CS_FLOW_TYPE_MC_MEMBER) &&
+-		(p_flow->flow_type != CS_FLOW_TYPE_MC_L7_FILTER)) {
++		(p_flow->flow_type != CS_FLOW_TYPE_MC_L7_FILTER) &&
++		(p_flow->flow_type != CS_FLOW_TYPE_MC_HASH)) {
+ 	rule_hash.key.dscp = (p_flow->ingress_pkt.tos >> 2) & 0x3f;
+ 	rule_hash.key.pppoe_session_id_valid = p_flow->ingress_pkt.pppoe_session_id_valid;
+ 	rule_hash.key.pppoe_session_id = p_flow->ingress_pkt.pppoe_session_id;
+@@ -534,6 +544,13 @@
+ 		}
+ 	}
+ 
++	if (p_flow->sw_action_id != 0) {
++		rule_hash.fwd_result.l3.ip_sa_replace_en = 0;
++		rule_hash.fwd_result.l3.ip_da_replace_en = 0;
++		rule_hash.fwd_result.l3.ip_sa_index = p_flow->sw_action_id & 0x0fff;
++		rule_hash.fwd_result.l3.ip_da_index = (p_flow->sw_action_id >> 12) & 0x00ff;
++	}
++
+ 	ret = cs_flow_hash_add(&rule_hash, p_flow);
+ 	if (ret != CS_OK) {
+                 //printk("%s: cs_flow_hash_add() failed, ret=%d\n", __func__, ret);
+--- linux-3.4.104/drivers/net/ethernet/cs752x/src/ni/cs75xx_pni.c	2015-11-16 15:25:24.329846018 -0800
++++ linux-3.4.104/drivers/net/ethernet/cs752x/src/ni/cs75xx_pni.c	2015-11-16 16:51:32.483780631 -0800
+@@ -267,6 +267,132 @@
+ }
+ EXPORT_SYMBOL(cs_pni_xmit_ar988x);
+ 
++int cs_pni_xmit_none_bypass_ne(u8 instance, u16 lspid, u16 recirc_idx, u32 buf0, int len0,
++	u32 buf1, int len1, u32 buf2, int len2, void * data)
++{
++	ni_header_a_0_t ni_hdra;
++	ni_header_a_1_t ni_hdra1;
++	dma_swtxq_t *swtxq;
++
++	unsigned int wptr, word0, word1, word2, word3, word4, word5, rptr;
++	unsigned int desc_count;
++	dma_txdesc_t *curr_desc;
++	dma_txdesc_0_t  desc_word0;
++	volatile dma_wptr_t wptr_reg;
++	u32 free_desc;
++	int lso_tx_qid;
++
++	if (smp_processor_id() == 0)
++		lso_tx_qid = PE_DMA_LSO_TXQ_IDX - 1;
++	else
++		lso_tx_qid = PE_DMA_LSO_TXQ_IDX;
++
++	swtxq = &ni_private_data.swtxq[lso_tx_qid];
++
++#ifndef CS752X_NI_TX_COMPLETE_INTERRUPT
++	cs_ni_tx_queue_complete_free(lso_tx_qid);
++#endif
++	spin_lock(&swtxq->lock);
++	if (swtxq->wptr >= swtxq->finished_idx)
++		free_desc = swtxq->total_desc_num - swtxq->wptr - 1 +
++			swtxq->finished_idx;
++	else
++		free_desc = swtxq->finished_idx - swtxq->wptr - 1;
++
++	if (free_desc <= 1) {
++		printk("%s no more tx queue\n", __func__);
++		if	(((instance == 0) || (instance == 1)) && (pni_rxq[instance].cb_fn_xmit_done != NULL))
++			pni_rxq[instance].cb_fn_xmit_done(pni_rxq[instance].adapter, data);
++		spin_unlock(&swtxq->lock);
++		return -1;
++	}
++
++	ni_hdra.bits32 = HDRA_CPU_PKT;
++	//ni_hdra.bits.dvoq = voq;
++	ni_hdra.bits.pspid = lspid;
++	ni_hdra.bits.fwd_type = 0; /* Normal */
++	ni_hdra1.bits32 = 0;
++	ni_hdra1.bits.recirc_idx = recirc_idx;
++
++	wptr_reg.bits32 = readl(swtxq->wptr_reg);
++	wptr = wptr_reg.bits.wptr;
++
++	curr_desc = swtxq->desc_base + wptr;
++	if ((len0 + len1 + len2) < MIN_DMA_SIZE)
++		len0 = 64;
++
++	word0 = len0 | OWN_BIT | SOF_BIT;
++	if (buf1 == 0)
++		word0 |= EOF_BIT;
++
++	word3 = 0; /*cannot set LSO_BYPASS enable, that is for HW debug*/
++
++	if ((len0 + len1 + len2) < 64)
++		word3 |= LSO_IP_LENFIX_EN;
++
++	/* Enable UDP/TCP HW checksum offload */
++	word3 |= LSO_UDP_CHECKSUM_EN | LSO_TCP_CHECKSUM_EN | LSO_IPV4_FRAGMENT_EN;
++
++	word1 = buf0;
++	word2 = ((len0 + len1 + len2)<<16);
++	word4 = ni_hdra.bits32;
++	word5 = ni_hdra1.bits32;
++
++	curr_desc->word0.bits32 = word0;
++	curr_desc->word1.bits32 = word1;
++	curr_desc->word2.bits32 = word2;
++	curr_desc->word3.bits32 = word3;
++	curr_desc->word4.bits32 = word4;
++	curr_desc->word5.bits32 = word5;
++	swtxq->xmit_pkt[wptr] = data;
++	swtxq->wfo_pe_id[wptr] = instance + CS_WFO_IPC_PE0_CPU_ID;
++
++	if (buf1) {
++		wptr = (wptr+1) & (swtxq->total_desc_num-1);
++		curr_desc = swtxq->desc_base + wptr;
++		word0 = len1;
++		if (buf2 == 0)
++			word0 = word0 | EOF_BIT;
++		word1 = buf1;
++		wmb();
++		curr_desc->word0.bits32 = word0;
++		curr_desc->word1.bits32 = word1;
++		curr_desc->word2.bits32 = 0;
++		curr_desc->word3.bits32 = word3;
++		curr_desc->word4.bits32 = word4;
++		curr_desc->word5.bits32 = word5;
++		swtxq->xmit_pkt[wptr] = NULL;
++		swtxq->wfo_pe_id[wptr] = instance + CS_WFO_IPC_PE0_CPU_ID;
++	}
++
++	if (buf2) {
++		wptr = (wptr+1) & (swtxq->total_desc_num-1);
++		curr_desc = swtxq->desc_base + wptr;
++		word0 = len2 | EOF_BIT;
++		word1 = buf2;
++		wmb();
++		curr_desc->word0.bits32 = word0;
++		curr_desc->word1.bits32 = word1;
++		curr_desc->word2.bits32 = 0;
++		curr_desc->word3.bits32 = word3;
++		curr_desc->word4.bits32 = word4;
++		curr_desc->word5.bits32 = word5;
++		swtxq->xmit_pkt[wptr] = NULL;
++		swtxq->wfo_pe_id[wptr] = instance + CS_WFO_IPC_PE0_CPU_ID;
++	}
++	wmb();
++
++	wptr = (wptr+1) & (swtxq->total_desc_num-1);
++	writel(wptr, swtxq->wptr_reg);
++	swtxq->wptr = wptr;
++	spin_unlock(&swtxq->lock);
++	//printk("\t*** %s::voq %d, skb=%p wptr=%d buf0 %08x, len0 %d, buf1 %08x, len1 %d\n",
++	//	__func__, voq, skb, wptr, buf0, len0, buf1, len1);
++	return 0;
++}
++EXPORT_SYMBOL(cs_pni_xmit_none_bypass_ne);
++
++
+ void cs_pni_start_xmit(u8 voq, struct pni_dma_pkt *tx_pkt)
+ {
+ 	ni_header_a_0_t ni_hdra;

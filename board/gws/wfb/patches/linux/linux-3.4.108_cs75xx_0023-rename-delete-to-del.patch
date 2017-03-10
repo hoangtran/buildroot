@@ -1,0 +1,40 @@
+From 2624a3e2bbd4cefd020a553d9334877108524d78 Mon Sep 17 00:00:00 2001
+From: Jacob Pedersen <jacob.pedersen@greenwavereality.com>
+Date: Wed, 27 Jan 2016 11:22:31 +0100
+Subject: [PATCH] ref: Rename variable from delete to del to make it
+ includeable from c++ files.
+
+---
+ arch/arm/mach-goldengate/include/mach/cs75xx_fe_core_table.h | 2 +-
+ drivers/net/ethernet/cs752x/src/ni/cs752x_ioctl.c            | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/mach-goldengate/include/mach/cs75xx_fe_core_table.h b/arch/arm/mach-goldengate/include/mach/cs75xx_fe_core_table.h
+index 758d75c..9ae0462 100644
+--- a/arch/arm/mach-goldengate/include/mach/cs75xx_fe_core_table.h
++++ b/arch/arm/mach-goldengate/include/mach/cs75xx_fe_core_table.h
+@@ -105,7 +105,7 @@ typedef struct fe_ingress_qos_table_entry_s {
+ 	__u32 dip[4];
+ 	__u8	voq;
+ 	__u8  lspid;
+-	__u8  delete;
++	__u8  del;
+ } fe_ingress_qos_table_entry_t;
+ 
+ /*
+diff --git a/drivers/net/ethernet/cs752x/src/ni/cs752x_ioctl.c b/drivers/net/ethernet/cs752x/src/ni/cs752x_ioctl.c
+index 8eaf82a..675e409 100644
+--- a/drivers/net/ethernet/cs752x/src/ni/cs752x_ioctl.c
++++ b/drivers/net/ethernet/cs752x/src/ni/cs752x_ioctl.c
+@@ -873,7 +873,7 @@ int cs_ne_ioctl(struct net_device *dev, struct ifreq *rq, int cmd)
+ 			printk("dip------------------------------------------------%d.%d.%d.%d\n",p_rslt->dip[0],p_rslt->dip[1],p_rslt->dip[2],p_rslt->dip[3]);
+ 			printk("voq------------------------------------------------%d\n",p_rslt->voq);
+ 			printk("lspid----------------------------------------------%d\n",p_rslt->lspid);
+-			printk("delete---------------------------------------------%d\n",p_rslt->delete);
++			printk("delete---------------------------------------------%d\n",p_rslt->del);
+ 			printk("==============================================================================\n\n");
+ 
+ 			if (fe_cmd_hdr.cmd == CMD_INGRESS_QOS_RESET){
+-- 
+1.9.1
+

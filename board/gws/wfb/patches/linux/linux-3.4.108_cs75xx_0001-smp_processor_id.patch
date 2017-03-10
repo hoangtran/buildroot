@@ -1,0 +1,157 @@
+From 2b030838b4c263603ae8cc2941dc8e0272109c17 Mon Sep 17 00:00:00 2001
+From: Stefan Hallas Mulvad <kongen@greenwavereality.com>
+Date: Wed, 13 Nov 2013 23:32:44 +0100
+Subject: [PATCH 01/13] cs75xx smp_processor_id
+
+Signed-off-by: Hoang Tran <hoang.tran@greenwavereality.com>
+Signed-off-by: Hoang Tran <hoang.tran@greenwavesystems.com>
+---
+ .../net/ethernet/cs752x/src/core/cs_core_skb_cb.c   | 21 +++++++++++++++++++++
+ .../src/kernel_adapt/qos/cs_hw_accel_qos_multiq.c   | 17 +++++++++++++++--
+ drivers/net/ethernet/cs752x/src/ni/cs752x_eth.c     |  8 ++++++++
+ 3 files changed, 44 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/cs752x/src/core/cs_core_skb_cb.c b/drivers/net/ethernet/cs752x/src/core/cs_core_skb_cb.c
+index efd5784..526b378 100644
+--- a/drivers/net/ethernet/cs752x/src/core/cs_core_skb_cb.c
++++ b/drivers/net/ethernet/cs752x/src/core/cs_core_skb_cb.c
+@@ -96,6 +96,10 @@ cs_accel_cb_db_t *get_next_avail_entry(void)
+ #endif
+ 
+ #ifdef CONFIG_PER_CPU_CB_POOL
++
++#ifndef CONFIG_PREEMPT_NONE
++	get_cpu();
++#endif
+ 	if (smp_processor_id() == 0) {
+ 		cpu_pool = &accel_cb_pool_0;
+ 		cb_cnt_ptr = &accel_cb_cnt_0;
+@@ -109,6 +113,10 @@ cs_accel_cb_db_t *get_next_avail_entry(void)
+ 		pool_lock = &cb_pool_lock_1;
+ #endif
+ 	}
++#ifndef CONFIG_PREEMPT_NONE
++	put_cpu();
++#endif
++
+ #else
+ 	cpu_pool = &accel_cb_pool_0;
+ 	cb_cnt_ptr = &accel_cb_cnt_0;
+@@ -150,6 +158,10 @@ cs_accel_cb_db_t *expand_table_and_get_entry(void)
+ #endif
+ 
+ #ifdef CONFIG_PER_CPU_CB_POOL
++
++#ifndef CONFIG_PREEMPT_NONE
++	get_cpu();
++#endif
+ 	if (smp_processor_id() == 0) {
+ 		if (accel_cb_curr_size_0 == accel_cb_max_size)
+ 			return NULL;
+@@ -171,6 +183,9 @@ cs_accel_cb_db_t *expand_table_and_get_entry(void)
+ 		pool_lock = &cb_pool_lock_1;
+ #endif
+ 	}
++#ifndef CONFIG_PREEMPT_NONE
++	put_cpu();
++#endif
+ #else
+ 	if (accel_cb_curr_size_0 == accel_cb_max_size)
+ 		return NULL;
+@@ -259,6 +274,9 @@ int cs_accel_cb_del(struct sk_buff *skb)
+ #endif
+ 
+ #ifdef CONFIG_PER_CPU_CB_POOL
++#ifndef CONFIG_PREEMPT_NONE
++	get_cpu();
++#endif
+ 	if (raw_smp_processor_id() == 0) {
+ 		cpu_pool = &accel_cb_pool_0;
+ 		cb_cnt_ptr = &accel_cb_cnt_0;
+@@ -272,6 +290,9 @@ int cs_accel_cb_del(struct sk_buff *skb)
+ 		pool_lock = &cb_pool_lock_1;
+ #endif
+ 	}
++#ifndef CONFIG_PREEMPT_NONE
++	put_cpu();
++#endif
+ #else
+ 	cpu_pool = &accel_cb_pool_0;
+ 	cb_cnt_ptr = &accel_cb_cnt_0;
+diff --git a/drivers/net/ethernet/cs752x/src/kernel_adapt/qos/cs_hw_accel_qos_multiq.c b/drivers/net/ethernet/cs752x/src/kernel_adapt/qos/cs_hw_accel_qos_multiq.c
+index e645fa2..55bf781 100644
+--- a/drivers/net/ethernet/cs752x/src/kernel_adapt/qos/cs_hw_accel_qos_multiq.c
++++ b/drivers/net/ethernet/cs752x/src/kernel_adapt/qos/cs_hw_accel_qos_multiq.c
+@@ -35,6 +35,10 @@ extern u8 cs_ni_get_port_id(struct net_device *dev);
+ static int cs_qos_handle_dev_cpu_collision(struct sk_buff *skb,
+ 		struct netdev_queue *dev_queue)
+ {
++        int ret = 0;
++#ifndef CONFIG_PREEMPT_NONE
++        get_cpu();
++#endif
+ 	if (unlikely(dev_queue->xmit_lock_owner == smp_processor_id())) {
+ 		/* same cpu holding the lock. It may be a transient
+ 		 * configuration error, when hard_start_xmit() recurses. We
+@@ -44,10 +48,13 @@ static int cs_qos_handle_dev_cpu_collision(struct sk_buff *skb,
+ 		if (net_ratelimit())
+ 			printk(KERN_WARNING "Dead loop on netdeivce %s, fix it"
+ 					"urgently!\n", dev_queue->dev->name);
+-		return 0;
+ 	} else {
+-		return CS_ERROR;
++		ret = CS_ERROR;
+ 	}
++#ifndef CONFIG_PREEMPT_NONE
++	put_cpu();
++#endif
++	return ret;
+ } /* cs_qos_handle_dev_cpu_collision */
+ 
+ /* check if the qdisc is a multiq. (well.. most likely is) if HW
+@@ -73,10 +80,16 @@ int cs_qos_check_and_steal_multiq_skb(struct Qdisc *qdisc,
+ 
+ 	cs_qos_set_voq_id_to_skb_cs_cb(skb, dev, skb_get_queue_mapping(skb));
+ 
++#ifndef CONFIG_PREEMPT_NONE
++	get_cpu();
++#endif
+ 	HARD_TX_LOCK(dev, txq, smp_processor_id());
+ 	if (!netif_xmit_frozen_or_stopped(txq))
+ 		ret = dev_hard_start_xmit(skb, dev, txq);
+ 	HARD_TX_UNLOCK(dev, txq);
++#ifndef CONFIG_PREEMPT_NONE
++	put_cpu();
++#endif
+ 
+ 	switch (ret) {
+ 		case NETDEV_TX_OK:
+diff --git a/drivers/net/ethernet/cs752x/src/ni/cs752x_eth.c b/drivers/net/ethernet/cs752x/src/ni/cs752x_eth.c
+index d14e448..f4cc512 100644
+--- a/drivers/net/ethernet/cs752x/src/ni/cs752x_eth.c
++++ b/drivers/net/ethernet/cs752x/src/ni/cs752x_eth.c
+@@ -1062,6 +1062,10 @@ static int get_dma_lso_txqid(struct net_device *dev)
+ 	cs_virt_ni_t *virt_ni_ptr;
+ #endif
+ 
++#ifndef CONFIG_PREEMPT_NONE
++	get_cpu();
++#endif
++
+ #ifdef CONFIG_CS752X_VIRTUAL_NETWORK_INTERFACE
+ //#ifdef CONFIG_SMP
+ 	lso_tx_qid = (tp->port_id << 1) + smp_processor_id();
+@@ -1092,6 +1096,10 @@ static int get_dma_lso_txqid(struct net_device *dev)
+ 	}
+ #endif
+ 
++#ifndef CONFIG_PREEMPT_NONE
++	put_cpu();
++#endif
++
+ 	return lso_tx_qid;
+ } /* get_dma_lso_txqid */
+ 
+-- 
+2.5.0
+

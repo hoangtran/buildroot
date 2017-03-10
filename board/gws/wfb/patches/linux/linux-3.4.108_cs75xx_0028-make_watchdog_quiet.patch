@@ -1,0 +1,11 @@
+--- linux-3.4.104/drivers/watchdog/cs75xx_wdt.c	2016-03-23 16:28:29.092672695 +0100
++++ linux-3.4.104-new/drivers/watchdog/cs75xx_wdt.c	2016-03-24 10:48:56.250440847 +0100
+@@ -208,8 +208,6 @@
+    		smp_call_function(g2_wdt_stop, wdt, 1);
+ 		g2_wdt_stop(wdt);
+ 	} else {
+-		dev_printk(KERN_CRIT, wdt->dev,
+-			"unexpected close, not stopping watchdog!\n");
+    		smp_call_function(g2_wdt_keepalive, wdt, 1);
+ 		g2_wdt_keepalive(wdt);
+ 	}

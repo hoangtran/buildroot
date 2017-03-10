@@ -1,0 +1,64 @@
+diff -Nur linux-3.4.108/drivers/i2c/busses/i2c-cs75xx.c linux-3.4.108-new/drivers/i2c/busses/i2c-cs75xx.c
+--- linux-3.4.108/drivers/i2c/busses/i2c-cs75xx.c	2016-03-17 11:38:08.382316406 +0100
++++ linux-3.4.108-new/drivers/i2c/busses/i2c-cs75xx.c	2016-03-17 11:37:42.326466853 +0100
+@@ -142,7 +142,7 @@
+ 		}
+ 
+ 		if (drv_data->freq_scl != 100000 && drv_data->freq_scl != 400000) {
+-			printk("WRNG: I2C SCL set to %dKHz!\n", drv_data->freq_scl) ;
++			printk(KERN_DEBUG "WRNG: I2C SCL set to %dKHz!\n", drv_data->freq_scl) ;
+ 		}
+ 
+ 		reg_biw_cfg.bf.prer = drv_data->freq_rcl/ (5 * (drv_data->freq_scl + 1));
+@@ -251,7 +251,7 @@
+ 
+ 	case CS75XX_I2C_STATE_INVALID:
+ 	default:
+-		dev_err(&drv_data->adapter.dev,
++		dev_dbg(&drv_data->adapter.dev,
+ 			"cs75xx_i2c_fsm: Ctlr Error -- state: 0x%x, "
+ 			"ack: 0x%x, addr: 0x%x, flags: 0x%x, left: 0x%x\n",
+ 			 drv_data->state, drv_data->ack, drv_data->msg->addr,
+@@ -283,7 +283,7 @@
+ 
+ 	reg_biw_ctrl.wrd = readl(drv_data->reg_base + CS75XX_BIW_CTRL);
+ 	if (reg_biw_ctrl.bf.biwdone != 1)
+-		printk("no done!\n");
++		printk(KERN_DEBUG "no done!\n");
+ 	writel(reg_biw_ctrl.wrd, drv_data->reg_base + CS75XX_BIW_CTRL);
+ 
+ 	drv_data->ack = readl(drv_data->reg_base + CS75XX_BIW_ACK);
+@@ -358,7 +358,7 @@
+ 
+ 		if ((time_left <= 0) && drv_data->block) {
+ 			drv_data->state = CS75XX_I2C_STATE_IDLE;
+-			dev_err(&drv_data->adapter.dev,
++			dev_dbg(&drv_data->adapter.dev,
+ 				"CS75XX: I2C bus locked, block: %d, "
+ 				"time_left: %d\n", drv_data->block,
+ 				(int)time_left);
+@@ -427,7 +427,7 @@
+ 				if ((rc = cs75xx_i2c_execute_msg(drv_data, &msgs[i])) == 0)
+ 					break;
+ 			if (retry == drv_data->adapter.retries)
+-				printk("I2C master_xfer retry %d fail!\n", drv_data->adapter.retries);
++				printk(KERN_DEBUG "I2C master_xfer retry %d fail!\n", drv_data->adapter.retries);
+ 		}
+ 	}
+ 
+@@ -532,13 +532,13 @@
+ 
+ 	if (request_irq(drv_data->irq, cs75xx_i2c_intr, 0,
+ 			CS75XX_I2C_CTLR_NAME, drv_data)) {
+-		dev_err(&drv_data->adapter.dev,
++		dev_dbg(&drv_data->adapter.dev,
+ 			"CS75XX: Can't register intr handler irq: %d\n",
+ 			drv_data->irq);
+ 		rc = -EINVAL;
+ 		goto exit_unmap_regs;
+ 	} else if ((rc = i2c_add_numbered_adapter(&drv_data->adapter)) != 0) {
+-		dev_err(&drv_data->adapter.dev,
++		dev_dbg(&drv_data->adapter.dev,
+ 			"CS75XX: Can't add i2c adapter, rc: %d\n", -rc);
+ 		goto exit_free_irq;
+ 	}

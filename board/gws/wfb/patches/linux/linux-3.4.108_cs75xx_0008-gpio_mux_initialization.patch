@@ -1,0 +1,84 @@
+From 6a2b8ffcde4a56a585d2fb52f3c8ff21f2a48196 Mon Sep 17 00:00:00 2001
+From: Hoang Tran <hoang.tran@greenwavereality.com>
+Date: Mon, 29 Sep 2014 17:20:37 +0800
+Subject: [PATCH 08/13] cs75xx gpio_mux_initialization
+
+Signed-off-by: Hoang Tran <hoang.tran@greenwavereality.com>
+Signed-off-by: Hoang Tran <hoang.tran@greenwavesystems.com>
+---
+ arch/arm/mach-goldengate/cortina-g2.c | 15 +++++++++++++++
+ drivers/gpio/cs75xx-gpio.c            | 18 +++---------------
+ 2 files changed, 18 insertions(+), 15 deletions(-)
+
+diff --git a/arch/arm/mach-goldengate/cortina-g2.c b/arch/arm/mach-goldengate/cortina-g2.c
+index a4299c9..62f9608 100644
+--- a/arch/arm/mach-goldengate/cortina-g2.c
++++ b/arch/arm/mach-goldengate/cortina-g2.c
+@@ -2218,7 +2218,22 @@ static void __init goldengate_init(void)
+ #ifdef CONFIG_SPI_CS75XX
+ 	spi_register_board_info(spi_board_infos, ARRAY_SIZE(spi_board_infos));
+ #endif
++ 
++	/* Initialize GPIO pin muxing
++	 * GPIO_0 is shared with Pflash/nflash/sflash */
++	writel(0xff80ff00, IO_ADDRESS(GLOBAL_GPIO_MUX_0));
+ 
++	/* GPIO_1 is shared with TS/I2C/SPI/SSP/UART0 */
++	writel(0xfffffc88, IO_ADDRESS(GLOBAL_GPIO_MUX_1));
++
++	/* GPIO_2 is shared with TS/UART1/UART2/UART3/SD */
++	writel(0xffffffff, IO_ADDRESS(GLOBAL_GPIO_MUX_2));
++
++	/* GPIO_3 is shared with GMAC1/GMAC2 */
++	writel(0x00000000, IO_ADDRESS(GLOBAL_GPIO_MUX_3));
++
++	/* GPIO_4 is shared with LCD */
++	writel(0xffffffff, IO_ADDRESS(GLOBAL_GPIO_MUX_4));
+ }
+ 
+ #define CONFIG_CS752X_NR_QMBANK 1
+diff --git a/drivers/gpio/cs75xx-gpio.c b/drivers/gpio/cs75xx-gpio.c
+index 18d63cc..feee8d6 100644
+--- a/drivers/gpio/cs75xx-gpio.c
++++ b/drivers/gpio/cs75xx-gpio.c
+@@ -185,24 +185,15 @@ static int cs75xx_gpio_request(struct gpio_chip *chip, unsigned offset)
+ 
+ 	gpio_mux = __raw_readl(cs75xx_global_base + CS75XX_GPIO_MUX_0 +
+ 	                                  (offset / GPIO_BANK_SIZE) * 4);
+-	gpio_mux |= BIT(offset % GPIO_BANK_SIZE);
+-	__raw_writel(gpio_mux, cs75xx_global_base + CS75XX_GPIO_MUX_0 +
+-	                                  (offset / GPIO_BANK_SIZE) * 4);
++	if ((gpio_mux & BIT(offset % GPIO_BANK_SIZE)) == 0)
++		return -EINVAL;
+ 
+ 	return 0;
+ }
+ 
+ void cs75xx_gpio_free(struct gpio_chip *chip, unsigned offset)
+ {
+-	unsigned int gpio_mux;
+-
+-	gpio_mux = __raw_readl(cs75xx_global_base + CS75XX_GPIO_MUX_0 +
+-	                                  (offset / GPIO_BANK_SIZE) * 4);
+-	gpio_mux &= ~BIT(offset % GPIO_BANK_SIZE);
+-	__raw_writel(gpio_mux, cs75xx_global_base + CS75XX_GPIO_MUX_0 +
+-	                                  (offset / GPIO_BANK_SIZE) * 4);
+-
+-	return 0;
++	return ;
+ }
+ 
+ static void _set_gpio_direction(struct gpio_chip *chip, unsigned offset,
+@@ -369,9 +360,6 @@ static int __devexit cs75xx_gpio_remove(struct platform_device *pdev)
+ 
+ 	BUG_ON(gpiochip_remove(&cs75xx_gpio_chip));
+ 
+-	for (i = 0; i < GPIO_BANK_NUM; i++)
+-		__raw_writel(0x0, cs75xx_global_base + CS75XX_GPIO_MUX_0 + i*4);	// disable valid gpio pin
+-
+ 	return 0;
+ }
+ 
+-- 
+2.5.0
+

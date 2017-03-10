@@ -1,0 +1,1127 @@
+--- linux-3.4.104/arch/arm/mach-goldengate/include/mach/cs_flow_api.h	2015-06-23 11:47:13.982449573 -0700
++++ linux-3.4.104/arch/arm/mach-goldengate/include/mach/cs_flow_api.h	2015-07-01 14:15:43.531371929 -0700
+@@ -9,6 +9,7 @@
+ 	CS_FLOW_TYPE_L3_MC = 3,        /* CORE_FWD_APP_TYPE_L3_MCAST */
+ 	CS_FLOW_TYPE_L4_NATT = 4,      /* CORE_FWD_APP_TYPE_TUNNEL_L4_L7 */ 
+ 	CS_FLOW_TYPE_L2_PASS = 5,      /* CORE_FWD_APP_TYPE_L2_PASS */
++	CS_FLOW_TYPE_MC_MEMBER = 6,    /* CORE_FWD_APP_TYPE_MCAST_CTRL */
+ } cs_flow_type_t;
+ 
+ typedef enum {
+@@ -74,6 +75,8 @@
+ 	cs_uint32_t	natt_4_bytes; /* 4 bytes which locates after TCP or UDP header */
+ } cs_pkt_info_t;
+ 
++#define FLOW_FLAG_SKIP_HMU		0x0001		/* Skip hooking into Cortina hash monitor tree (flow-based HMU) */
++#define FLOW_FLAG_QOS_POL		0x0002		/* Enable QoS policy; the VoQ offset will be added into VoQ base of fwd_result */
+ typedef struct cs_flow {
+ 	cs_uint16_t	flow_id;			/* unique flow hash ID */
+ 	cs_flow_type_t	flow_type;
+@@ -83,8 +86,7 @@
+ 	cs_uint16_t	voq_offset;			/* VoQ offset for egress phy_port, VoQ index = (egress phy_port) * 8 + voq_offset, if phy_port <= 4 */
+ 	cs_uint32_t	life_time; 			/* 0 means no timeout, unit is tick (10ms) */
+ 	cs_uint32_t	swid_array[CS_FLOW_SWID_MAX]; 	/* for flow mgmt. among apps. (such as arp or netfilter) */
+-	cs_uint32_t	flag;				/* bit0: 0-hook to Cortina hash monitor tree (flow-based hmu), 1-no hook to flow-based hmu */
+-							/* other bits: reserved */
++	cs_uint32_t	flag;				/* bit mask, see comment of FLOW_FLAG_* */
+ } cs_flow_t;
+ 
+ cs_status_t cs_flow_add(CS_IN cs_dev_id_t device_id, CS_IN_OUT cs_flow_t *p_flow);
+--- linux-3.4.104/arch/arm/mach-goldengate/include/mach/cs_network_types.h	2015-06-23 11:47:13.983449573 -0700
++++ linux-3.4.104/arch/arm/mach-goldengate/include/mach/cs_network_types.h	2015-06-23 20:40:43.722859000 -0700
+@@ -30,11 +30,11 @@
+ 	CS_PORT_GMAC2		= 2,
+ 	CS_PORT_OFLD0		= 3, /* PE#0 */
+ 	CS_PORT_OFLD1		= 4, /* PE#1 */
+-	CS_PORT_CPU		= 5,  /* indicate port id of CPU port*/
+-	CS_PORT_WIFI0		= 6, /* wifi interface#0 */
+-	CS_PORT_WIFI1		= 7, /* wifi interface#1 */
+-	CS_PORT_WIFI2		= 8, /* wifi interface#2 */
+-	CS_PORT_WIFI3		= 9, /* wifi interface#3 */
++	CS_PORT_CPU		= 5, /* indicate port id of CPU port */
++	CS_PORT_CUSTOM0		= 6, /* customer defined interface#0 */
++	CS_PORT_CUSTOM1		= 7, /* customer defined interface#1 */
++	CS_PORT_CUSTOM2		= 8, /* customer defined interface#2 */
++	CS_PORT_CUSTOM3		= 9, /* customer defined interface#3 */
+ } cs_phy_port_id_t;
+ 
+ typedef enum {
+--- linux-3.4.104/drivers/net/ethernet/cs752x/src/core/cs_core_mcu.c	2015-06-23 11:47:14.714449623 -0700
++++ linux-3.4.104/drivers/net/ethernet/cs752x/src/core/cs_core_mcu.c	2015-07-09 20:14:06.320637173 -0700
+@@ -103,6 +103,8 @@
+ 	CS_CORE_HW_EXCEPT_DA_MAC_NO_MATCH_GMAC0,
+ 	CS_CORE_HW_EXCEPT_DA_MAC_NO_MATCH_GMAC1,
+ 	CS_CORE_HW_EXCEPT_DA_MAC_NO_MATCH_GMAC2,
++	CS_CORE_HW_MCIDX2,
++	CS_CORE_HW_MCIDX7,
+ 	CS_CORE_HW_EXCEPT_MAX,
+ } cs_core_hw_exception_rules_e;
+ 
+@@ -2708,7 +2710,9 @@ int cs_core_hw_except_add_rule(int type)
+	int ret;
+	unsigned int result_index;
+	fe_acl_entry_t acl_entry;
+-
++	cs_vtable_t *table = NULL;
++	int mc_class_sidx = 3;
++
+	memset(&acl_entry.rule, 0xff, sizeof(acl_entry.rule));
+	memset(&acl_entry.action, 0, sizeof(acl_entry.action));
+ 
+@@ -2717,6 +2721,11 @@ int cs_core_hw_except_add_rule(int type)
+		DBG(printk("%s: ACL rule already exists.\n", __func__));
+		return -1;
+	}
++
++	table = cs_core_vtable_get(CORE_VTABLE_TYPE_L3_MCAST_V4);
++	if (table) {
++		mc_class_sidx = table->class_index;
++	}
+	
+	/* ACL rule */
+	acl_entry.rule.misc.ne_vec = 0;
+@@ -2725,6 +2734,18 @@ int cs_core_hw_except_add_rule(int type)
+ 	acl_entry.rule.rule_valid = 1;
+ 
+ 	switch (type) {
++	case CS_CORE_HW_MCIDX2:
++		acl_entry.rule.misc.mc_idx = 0x2;
++		acl_entry.rule.misc.mc_idx_mask = 0x0;
++		acl_entry.rule.misc.class_svidx = mc_class_sidx;
++		acl_entry.rule.misc.class_svidx_mask = 0x0;
++		break;
++	case CS_CORE_HW_MCIDX7:
++		acl_entry.rule.misc.mc_idx = 0x7;
++		acl_entry.rule.misc.mc_idx_mask = 0x0;
++		acl_entry.rule.misc.class_svidx = mc_class_sidx;
++		acl_entry.rule.misc.class_svidx_mask = 0x0;
++		break;
+ 	case CS_CORE_HW_EXCEPT_TTL_EQUAL_1:
+ 		acl_entry.rule.l3.ttl_hoplimit = 1;
+ 		acl_entry.rule.l3.ttl_hoplimit_mask = 0;
+@@ -2837,6 +2847,11 @@
+ 		acl_entry.action.misc.drop = 1;
+ 		acl_entry.action.misc.permit = 0;
+ 		break;
++	case CS_CORE_HW_MCIDX2:
++	case CS_CORE_HW_MCIDX7:
++		acl_entry.action.l3.change_dscp_en = 0;
++		acl_entry.action.l3.dscp_vld = 1;
++		break;
+ 	default:
+ 		DBG(printk("%s:unknown action type = %d\n", __func__, type));
+ 		return -1;
+--- linux-3.4.104/drivers/net/ethernet/cs752x/src/core/cs_core_vtable.c	2015-07-01 11:17:38.390322546 -0700
++++ linux-3.4.104/drivers/net/ethernet/cs752x/src/core/cs_core_vtable.c	2015-06-26 16:17:36.351530601 -0700
+@@ -69,6 +69,7 @@
+ 	CS_HASHMASK_TUNNEL_L4_L7,	/* CORE_FWD_APP_TYPE_TUNNEL_L4_L7 */
+ 	CS_HASHMASK_L7_FLOW,		/* CORE_FWD_APP_TYPE_L7_GENERIC */
+ 	CS_HASHMASK_IPLIP_LAN,		/* CORE_FWD_APP_TYPE_IPLIP_LAN */
++	CS_HASHMASK_MCAST_CTRL,		/* CORE_FWD_APP_TYPE_MCAST_CTRL */
+ #if defined(CONFIG_CS75XX_HW_ACCEL_IPSEC_PASS) || defined(CONFIG_CS75XX_HW_ACCEL_L2TP_PASS)
+ 	CS_HASHMASK_L2_PASS,		/* CORE_FWD_APP_TYPE_L2_PASS */
+ #endif
+@@ -96,6 +97,7 @@
+ 	0,				/* CORE_QOS_APP_TYPE_L4_QOS_NAT*/
+ 	CS_HASHMASK_L7_FLOW,		/* CORE_QOS_APP_TYPE_L7_QOS_GENERIC*/
+ 	CS_HASHMASK_L3_FLOW_WITH_L4_CHKSUM, /*CORE_QOS_APP_TYPE_L3_QOS_GENERIC_WITH_CHKSUM*/
++	CS_HASHMASK_MCAST_CTRL,		/* CORE_QOS_APP_TYPE_MCAST_CTRL */
+ #endif //CONFIG_CS75XX_OFFSET_BASED_QOS
+ };
+ 
+@@ -190,6 +192,7 @@
+ #endif
+ 	"CORE_FWD_APP_TYPE_L7_GENERIC",
+ 	"CORE_FWD_APP_TYPE_IPLIP_LAN",
++	"CORE_FWD_APP_TYPE_MCAST_CTRL",
+ #if defined(CONFIG_CS75XX_HW_ACCEL_IPSEC_PASS) || defined(CONFIG_CS75XX_HW_ACCEL_L2TP_PASS)
+ 	"CORE_FWD_APP_TYPE_L2_PASS",
+ #endif
+@@ -208,6 +211,7 @@
+ 	"CORE_QOS_APP_TYPE_L4_QOS_NAT",
+ 	"CORE_QOS_APP_TYPE_L7_QOS_GENERIC",
+ 	"CORE_QOS_APP_TYPE_L3_QOS_GENERIC_WITH_CHKSUM",
++	"CORE_QOS_APP_TYPE_MCAST_CTRL",
+ 	"CORE_QOS_APP_TYPE_MAX",
+ } ;
+ 
+@@ -239,13 +243,12 @@
+ 			CORE_FWD_APP_TYPE_NONE, CORE_FWD_APP_TYPE_NONE,
+ 			CORE_FWD_APP_TYPE_NONE, CORE_FWD_APP_TYPE_NONE,
+ 			CORE_QOS_APP_TYPE_NONE, CORE_QOS_APP_TYPE_NONE}},
+-
+ #else
+-	{1, 2, 0,
++	{1, 3, 1,
+ 		{CORE_FWD_APP_TYPE_SEPARATE_LOGICAL_PORT, CORE_FWD_APP_TYPE_L2_MCAST,
++			CORE_FWD_APP_TYPE_MCAST_CTRL, CORE_FWD_APP_TYPE_NONE,
+ 			CORE_FWD_APP_TYPE_NONE, CORE_FWD_APP_TYPE_NONE,
+-			CORE_FWD_APP_TYPE_NONE, CORE_FWD_APP_TYPE_NONE,
+-			CORE_QOS_APP_TYPE_NONE, CORE_QOS_APP_TYPE_NONE}},
++			CORE_QOS_APP_TYPE_MCAST_CTRL, CORE_QOS_APP_TYPE_NONE}},
+ #endif
+ 	/* CORE_VTABLE_TYPE_L3_MCAST_V4 */
+ #ifdef SA_CHECK_ENABLE
+@@ -262,11 +265,11 @@
+ 			CORE_FWD_APP_TYPE_NONE,
+ 			CORE_QOS_APP_TYPE_L3_QOS_MULTICAST, CORE_QOS_APP_TYPE_NONE}},
+ #else
+-	{1, 6, 1,
++	{1, 3, 1,
+ 		{CORE_FWD_APP_TYPE_SEPARATE_LOGICAL_PORT, CORE_FWD_APP_TYPE_L3_MCAST,
+-			CORE_FWD_APP_TYPE_MCAST_WITHOUT_SRC, CORE_FWD_APP_TYPE_MCAST_WITH_SRC,
+-			CORE_FWD_APP_TYPE_MCAST_TO_DEST, CORE_FWD_APP_TYPE_IP_PROT,
+-			CORE_QOS_APP_TYPE_L3_QOS_MULTICAST, CORE_QOS_APP_TYPE_NONE}},
++			CORE_FWD_APP_TYPE_MCAST_CTRL, CORE_FWD_APP_TYPE_NONE,
++			CORE_FWD_APP_TYPE_NONE, CORE_FWD_APP_TYPE_NONE,
++			CORE_QOS_APP_TYPE_MCAST_CTRL, CORE_QOS_APP_TYPE_NONE}},
+ #endif
+ 	/* CORE_VTABLE_TYPE_L3_MCAST_V6 */
+ #ifdef SA_CHECK_ENABLE
+@@ -284,12 +287,11 @@
+ 			CORE_FWD_APP_TYPE_NONE, CORE_FWD_APP_TYPE_NONE,
+ 			CORE_QOS_APP_TYPE_L3_QOS_MULTICAST, CORE_QOS_APP_TYPE_NONE}},
+ #else
+-	{1, 5, 1,
++	{1, 3, 1,
+ 		{CORE_FWD_APP_TYPE_SEPARATE_LOGICAL_PORT, CORE_FWD_APP_TYPE_L3_MCAST,
+-			CORE_FWD_APP_TYPE_MCAST_WITHOUT_SRC, CORE_FWD_APP_TYPE_MCAST_WITH_SRC,
+-			CORE_FWD_APP_TYPE_MCAST_TO_DEST,
+-			CORE_FWD_APP_TYPE_NONE,
+-			CORE_QOS_APP_TYPE_L3_QOS_MULTICAST, CORE_QOS_APP_TYPE_NONE}},
++			CORE_FWD_APP_TYPE_MCAST_CTRL, CORE_FWD_APP_TYPE_NONE,
++			CORE_FWD_APP_TYPE_NONE, CORE_FWD_APP_TYPE_NONE,
++			CORE_QOS_APP_TYPE_MCAST_CTRL, CORE_QOS_APP_TYPE_NONE}},
+ #endif
+ 
+ 	/* CORE_VTABLE_TYPE_L2_FLOW */
+--- linux-3.4.104/drivers/net/ethernet/cs752x/src/include/cs_core_vtable.h	2015-06-23 11:47:14.109449582 -0700
++++ linux-3.4.104/drivers/net/ethernet/cs752x/src/include/cs_core_vtable.h	2015-07-02 15:26:22.901915097 -0700
+@@ -155,6 +155,7 @@
+ #endif
+ 	CORE_FWD_APP_TYPE_L7_GENERIC,
+ 	CORE_FWD_APP_TYPE_IPLIP_LAN,
++	CORE_FWD_APP_TYPE_MCAST_CTRL,
+ #if defined(CONFIG_CS75XX_HW_ACCEL_IPSEC_PASS) || defined(CONFIG_CS75XX_HW_ACCEL_L2TP_PASS)
+ 	CORE_FWD_APP_TYPE_L2_PASS,
+ #endif
+@@ -177,6 +178,7 @@
+ 	CORE_QOS_APP_TYPE_L4_QOS_NAT,
+ 	CORE_QOS_APP_TYPE_L7_QOS_GENERIC,
+ 	CORE_QOS_APP_TYPE_L3_QOS_GENERIC_WITH_CHKSUM,
++	CORE_QOS_APP_TYPE_MCAST_CTRL,
+ 	CORE_QOS_APP_TYPE_MAX,
+ } cs_core_qos_app_type_e;
+ 
+@@ -362,6 +364,12 @@
+ 		CS_HM_IP_FRAGMENT_MASK | CS_HM_LSPID_MASK)
+ #endif
+ 
++#define CS_HASHMASK_MCAST_CTRL (CS_HM_MAC_DA_MASK | \
++		CS_HM_IP_VLD_MASK | CS_HM_IP_FRAGMENT_MASK | \
++		CS_HM_L3_CHKSUM_ERR_MASK | CS_HM_IP_VER_MASK | \
++		CS_HM_IP_PROT_MASK | CS_HM_IP_SA_MASK | CS_HM_IP_DA_MASK | \
++		CS_HM_L4_VLD_MASK | CS_HM_MCIDX_MASK)
++
+ #ifdef CONFIG_CS75XX_MTU_CHECK
+ #define CS_HASHMASK_L3_MTU_IPOE (CS_HASHMASK_L3_FLOW | CS_HM_PKTLEN_RNG_MATCH_VECTOR_B0_MASK)
+ #define CS_HASHMASK_L3_MTU_PPPOE (CS_HASHMASK_L3_FLOW | CS_HM_PKTLEN_RNG_MATCH_VECTOR_B1_MASK)
+--- linux-3.4.104/drivers/net/ethernet/cs752x/src/kernel_adapt/cs_hw_accel_manager.c	2015-06-23 11:47:14.629449617 -0700
++++ linux-3.4.104/drivers/net/ethernet/cs752x/src/kernel_adapt/cs_hw_accel_manager.c	2015-07-01 14:20:14.399173565 -0700
+@@ -73,6 +73,12 @@
+ #include "cs_hw_accel_tunnel.h"
+ #endif
+ 
++#ifdef CONFIG_CS75XX_HW_ACCEL_WIRELESS
++#include "cs_hw_accel_wireless.h"
++#define CS_NODE_WIRELESS_HW_ACCEL_MODE		"wireless_hw_accel_mode"
++
++#endif
++
+ #define CS752X_PATH_CS		"driver/cs752x"
+ #define CS752X_PATH_CS_NE	"ne"
+ #define CS752X_PATH_CS_MANAGER	"accel_manager"
+@@ -126,6 +132,7 @@
+ EXPORT_SYMBOL(cs_kernel_mod_fastnet_enable);
+ 
+ struct proc_dir_entry *proc_driver_cs752x_ham = NULL;
++EXPORT_SYMBOL(proc_driver_cs752x_ham);
+ 
+ #ifdef CONFIG_CS752X_PROC
+ 
+@@ -155,6 +162,10 @@
+ u32 cs_hw_udp_offload_after_established = 0;
+ EXPORT_SYMBOL(cs_hw_udp_offload_after_established);
+ 
++u32 cs_hw_accel_wireless_mode = CS_WIRELESS_MODE_2_DEV;
++EXPORT_SYMBOL(cs_hw_accel_wireless_mode);
++
++
+ #if defined(CONFIG_CS75XX_HW_ACCEL_IPSEC_CTRL) ||\
+ 	defined(CONFIG_CS75XX_HW_ACCEL_L2TP_CTRL)
+ u32 cs_vpn_offload_mode = CS_VPN_OFFLOAD_IPSEC | CS_VPN_OFFLOAD_L2TP_OVER_IPSEC;
+@@ -1573,6 +1584,46 @@
+ 			CS752X_NODE_UDP_OFFLOAD_AFTER_ESTABLISHED);
+ 	return count;
+ }
++
++#ifdef CONFIG_CS75XX_HW_ACCEL_WIRELESS
++
++static int cs_proc_node_wireless_mode_read(char *buf, char **start,
++		off_t offset, int count, int *eof, void *data)
++{
++	u32 len = 0;
++
++	len += sprintf(buf + len, " cs_hw_accel_wireless_mode = %d support %d ssid\n",
++		cs_hw_accel_wireless_mode,
++		(cs_hw_accel_wireless_mode == CS_WIRELESS_MODE_4_DEV)?4:2);
++
++	*eof = 1;
++
++	return len;
++}
++
++static int cs_proc_node_wireless_mode_write(struct file *file,
++		const char *buffer, unsigned long count, void *data)
++{
++	char buf[32];
++	long value;
++	ssize_t len;
++	int i, j;
++
++	len = min(count, (unsigned long)(sizeof(buf) - 1));
++	if (copy_from_user(buf, buffer, len))
++		goto INVAL_EXIT;
++
++	buf[len] = '\0';
++	if (strict_strtol(buf, 0, &value))
++		goto INVAL_EXIT;
++
++	cs_hw_accel_wireless_set_mode(value);
++
++INVAL_EXIT:
++	return count;
++}
++#endif
++
+ int cs_proc_node_add(char *name, read_proc_t *hook_func_read,
+ 		write_proc_t *hook_func_write, struct proc_dir_entry *parent)
+ {
+@@ -1776,6 +1827,12 @@
+ 		proc_driver_cs752x_ham);
+ #endif
+ 
++#ifdef CONFIG_CS75XX_HW_ACCEL_WIRELESS
++	cs_proc_node_add(CS_NODE_WIRELESS_HW_ACCEL_MODE,
++		cs_proc_node_wireless_mode_read,
++		cs_proc_node_wireless_mode_write,
++		proc_driver_cs752x_ham);
++#endif
+ 	return 0;
+ 
+ }
+--- linux-3.4.104/drivers/net/ethernet/cs752x/src/kernel_adapt/flow/cs_flow.c	2015-06-23 11:47:14.113449582 -0700
++++ linux-3.4.104/drivers/net/ethernet/cs752x/src/kernel_adapt/flow/cs_flow.c	2015-07-10 00:34:53.724804682 -0700
+@@ -149,6 +149,10 @@
+ #endif
+ }
+ 
++/* ATTENTION:
++ * Never set any unnecessary value in cs_flow_t if the hash mask (flow type) doesn't need that value.
++ * Otherwise, hash entry might be wrong, packet can't hit the hash.
++ */
+ cs_status_t cs_flow_add(CS_IN cs_dev_id_t device_id, CS_IN_OUT cs_flow_t *p_flow)
+ {
+ 	cs_rule_hash_t rule_hash;
+@@ -184,6 +188,9 @@
+ 			rule_hash.apptype = CORE_FWD_APP_TYPE_L2_PASS;
+ 			break;
+ #endif
++		case CS_FLOW_TYPE_MC_MEMBER:
++			rule_hash.apptype = CORE_FWD_APP_TYPE_MCAST_CTRL;
++			break;
+ 		default:
+ 			printk("%s: unknown flow type=%d!!\n", __func__, p_flow->flow_type);
+ 			return CS_ERROR;
+@@ -196,7 +203,9 @@
+ 
+ 	memcpy(&(rule_hash.key.mac_da[0]), &(p_flow->ingress_pkt.da_mac[0]), CS_ETH_ADDR_LEN);
+ 	memcpy(&(rule_hash.key.mac_sa[0]), &(p_flow->ingress_pkt.sa_mac[0]), CS_ETH_ADDR_LEN);
+-	rule_hash.key.eth_type = p_flow->ingress_pkt.eth_type;
++	if (p_flow->flow_type != CS_FLOW_TYPE_MC_MEMBER) {
++		rule_hash.key.eth_type = p_flow->ingress_pkt.eth_type;
++	}
+ 
+ 	tpid_encap_type = p_flow->ingress_pkt.tag[0].tpid_encap_type;
+ 	if (tpid_encap_type == CS_VLAN_TPID_8100 || tpid_encap_type == CS_VLAN_TPID_9100 ||
+@@ -206,23 +215,27 @@
+ 			printk("%s: tpid_encap_type1=0x%x\n", __func__, tpid_encap_type);
+ 		}
+ #endif
+-		rule_hash.key.tpid_enc_1 = 0x4 | tpid_encap_type;   /* only need to turn on the MSB of TPID */
+-		rule_hash.key._8021p_1 = p_flow->ingress_pkt.tag[0].priority & 0x7;
+-		rule_hash.key.vid_1 = p_flow->ingress_pkt.tag[0].vlan_id;
++		if (p_flow->flow_type != CS_FLOW_TYPE_MC_MEMBER) {
++			rule_hash.key.tpid_enc_1 = 0x4 | tpid_encap_type;   /* only need to turn on the MSB of TPID */
++			rule_hash.key._8021p_1 = p_flow->ingress_pkt.tag[0].priority & 0x7;
++			rule_hash.key.vid_1 = p_flow->ingress_pkt.tag[0].vlan_id;
++		}
+ 	}
+ 
+ 	tpid_encap_type = p_flow->ingress_pkt.tag[1].tpid_encap_type;
+-        if (tpid_encap_type == CS_VLAN_TPID_8100 || tpid_encap_type == CS_VLAN_TPID_9100 ||
+-            tpid_encap_type == CS_VLAN_TPID_88A8 || tpid_encap_type == CS_VLAN_TPID_9200) {
++	if (tpid_encap_type == CS_VLAN_TPID_8100 || tpid_encap_type == CS_VLAN_TPID_9100 ||
++	    tpid_encap_type == CS_VLAN_TPID_88A8 || tpid_encap_type == CS_VLAN_TPID_9200) {
+ #ifdef CONFIG_CS752X_PROC
+-                if (cs_adapt_debug & CS752X_ADAPT_RULE_HASH) {
++		if (cs_adapt_debug & CS752X_ADAPT_RULE_HASH) {
+ 			printk("%s: tpid_encap_type2=0x%x\n", __func__, tpid_encap_type);
+ 		}
+ #endif
+-		rule_hash.key.tpid_enc_2 = 0x4 | tpid_encap_type;   /* only need to turn on the MSB of TPID */
+-		rule_hash.key._8021p_2 = p_flow->ingress_pkt.tag[1].priority & 0x7;
+-                rule_hash.key.vid_2 = p_flow->ingress_pkt.tag[1].vlan_id;
+-        }
++		if (p_flow->flow_type != CS_FLOW_TYPE_MC_MEMBER) {
++			rule_hash.key.tpid_enc_2 = 0x4 | tpid_encap_type;   /* only need to turn on the MSB of TPID */
++			rule_hash.key._8021p_2 = p_flow->ingress_pkt.tag[1].priority & 0x7;
++			rule_hash.key.vid_2 = p_flow->ingress_pkt.tag[1].vlan_id;
++		}
++	}
+ 
+ 	if (rule_hash.apptype != CORE_FWD_APP_TYPE_L2_FLOW) {
+ 		rule_hash.key.ip_valid = 1;
+@@ -333,13 +346,13 @@
+ 		  	rule_hash.fwd_result.l2.flow_vlan_op_en = 1;
+ 			if (tpid_encap_type1 == CS_VLAN_TPID_NONE) {
+ 				/* remove vlan tag */
+-                        	rule_hash.fvlan.first_vlan_cmd = CS_FE_VLAN_CMD_POP_A;
+-                        	rule_hash.fvlan.first_vid = vlan_id;
+-                        	rule_hash.fvlan.first_tpid_enc = tpid_encap_type;
++				rule_hash.fvlan.first_vlan_cmd = CS_FE_VLAN_CMD_POP_B;
++				rule_hash.fvlan.first_vid = vlan_id;
++				rule_hash.fvlan.first_tpid_enc = tpid_encap_type;
+ 			}
+ 			else {
+ 				/* swap the vlan tag */
+-                                rule_hash.fvlan.first_vlan_cmd = CS_FE_VLAN_CMD_SWAP_A;
++                                rule_hash.fvlan.first_vlan_cmd = CS_FE_VLAN_CMD_SWAP_B;
+                                 rule_hash.fvlan.first_vid = vlan_id1;
+                                 rule_hash.fvlan.first_tpid_enc = tpid_encap_type1;
+ 			}
+@@ -355,7 +368,7 @@
+                         if (tpid_encap_type1 != CS_VLAN_TPID_NONE) {
+                                 /* insert vlan tag */
+                         	rule_hash.fwd_result.l2.flow_vlan_op_en = 1;
+-                                rule_hash.fvlan.first_vlan_cmd = CS_FE_VLAN_CMD_PUSH_B;
++                                rule_hash.fvlan.first_vlan_cmd = CS_FE_VLAN_CMD_PUSH_C;
+                                 rule_hash.fvlan.first_vid = vlan_id1;
+                                 rule_hash.fvlan.first_tpid_enc = tpid_encap_type1;
+                         }
+@@ -378,13 +391,16 @@
+                         rule_hash.fwd_result.l2.flow_vlan_op_en = 1;
+                         if (tpid_encap_type1 == CS_VLAN_TPID_NONE) {
+                                 /* remove vlan tag */
+-                                rule_hash.fvlan.second_vlan_cmd = CS_FE_VLAN_CMD_POP_A;
+-                                rule_hash.fvlan.second_vid = vlan_id;
+-                                rule_hash.fvlan.second_tpid_enc = tpid_encap_type;
++				if (rule_hash.fvlan.first_vlan_cmd == CS_FE_VLAN_CMD_POP_B)
++					rule_hash.fvlan.second_vlan_cmd = CS_FE_VLAN_CMD_POP_B; /*POP ALL*/
++				else
++					rule_hash.fvlan.second_vlan_cmd = CS_FE_VLAN_CMD_POP_D; /*POP INNER*/
++				rule_hash.fvlan.second_vid = vlan_id;
++				rule_hash.fvlan.second_tpid_enc = tpid_encap_type;
+                         }
+                         else {
+                                 /* swap the vlan tag */
+-                                rule_hash.fvlan.second_vlan_cmd = CS_FE_VLAN_CMD_SWAP_A;
++                                rule_hash.fvlan.second_vlan_cmd = CS_FE_VLAN_CMD_SWAP_B;
+                                 rule_hash.fvlan.second_vid = vlan_id1;
+                                 rule_hash.fvlan.second_tpid_enc = tpid_encap_type1;
+                         }
+@@ -471,6 +487,10 @@
+                	}
+        	}
+ 
++	if ((p_flow->flag & FLOW_FLAG_QOS_POL) == FLOW_FLAG_QOS_POL) {
++		rule_hash.fwd_result.dest.voq_policy = 1;
++	}
++
+ 	/* if the phy_port of egress packet is 0xff, it means the packet should be dropped */
+ 	if (p_flow->egress_pkt.phy_port == 0xff) {
+ #ifdef CONFIG_CS752X_PROC
+@@ -481,7 +501,22 @@
+ 		rule_hash.fwd_result.act.drop = 1;
+ 	}
+ 	else {
+-		rule_hash.voq_pol.voq_base = (p_flow->egress_pkt.phy_port * 8) + p_flow->voq_offset; 
++		switch (p_flow->egress_pkt.phy_port) {
++		case CS_PORT_GMAC0:
++		case CS_PORT_GMAC1:
++		case CS_PORT_GMAC2:
++		case CS_PORT_OFLD0:
++		case CS_PORT_OFLD1:
++		case CS_PORT_CPU:
++			rule_hash.voq_pol.voq_base = (p_flow->egress_pkt.phy_port * 8) + p_flow->voq_offset;
++			break;
++		case CS_PORT_CUSTOM0:
++		case CS_PORT_CUSTOM1:
++		case CS_PORT_CUSTOM2:
++		case CS_PORT_CUSTOM3:
++			rule_hash.voq_pol.voq_base = p_flow->voq_offset; /* absolute voq */
++			break;
++		}
+ 	}
+ 
+ 	ret = cs_flow_hash_add(&rule_hash, p_flow);
+--- linux-3.4.104/drivers/net/ethernet/cs752x/src/kernel_adapt/hash/cs_flow_hash.c	2015-06-23 11:47:14.113449582 -0700
++++ linux-3.4.104/drivers/net/ethernet/cs752x/src/kernel_adapt/hash/cs_flow_hash.c	2015-06-23 20:40:43.729858777 -0700
+@@ -144,7 +144,36 @@
+ 	}
+ #endif
+ 
+-	curr_mcidx = 1 << (p_flow->egress_pkt.phy_port);
++	switch (p_flow->egress_pkt.phy_port) {
++	case CS_PORT_GMAC0:
++		if (p_flow->flow_type == CS_FLOW_TYPE_MC_MEMBER)
++			curr_mcidx = 1 << 4;
++		else
++			curr_mcidx = 1 << (p_flow->egress_pkt.phy_port);
++		break;
++	case CS_PORT_GMAC1:
++	case CS_PORT_GMAC2:
++	case CS_PORT_OFLD0:
++	case CS_PORT_OFLD1:
++		curr_mcidx = 1 << (p_flow->egress_pkt.phy_port);
++		break;
++	case CS_PORT_CUSTOM0:
++		curr_mcidx = 1 << 5;
++		break;
++	case CS_PORT_CUSTOM1:
++		curr_mcidx = 1 << 6;
++		break;
++	case CS_PORT_CUSTOM2:
++		curr_mcidx = 1 << 7;
++		break;
++	case CS_PORT_CUSTOM3:
++		curr_mcidx = 1 << 4;
++		break;
++	default:
++		printk("%s: ERROR! Multicast can't support egress phy_port %d.\n", __func__, p_flow->egress_pkt.phy_port);
++		return CS_E_ERROR;
++		break;
++	}
+ 
+ 	/* check if replication hash exist */
+ 	memcpy(&tmp_key, p_key, sizeof(fe_sw_hash_t));
+@@ -171,7 +200,22 @@
+ 		/* create new replication hash */
+ 		memcpy(&tmp_rule_hash, p_rule_hash, sizeof(cs_rule_hash_t));
+ 		memset(&tmp_rule_hash.fwd_result, 0, sizeof(cs_rule_hash_fwd_result_t));
+-		tmp_rule_hash.voq_pol.voq_base = ROOT_PORT_VOQ_BASE + p_flow->voq_offset;
++		switch (p_flow->egress_pkt.phy_port) {
++		case CS_PORT_GMAC0:
++		case CS_PORT_GMAC1:
++		case CS_PORT_GMAC2:
++		case CS_PORT_OFLD0:
++		case CS_PORT_OFLD1:
++		case CS_PORT_CPU:
++			tmp_rule_hash.voq_pol.voq_base = ROOT_PORT_VOQ_BASE + p_flow->voq_offset;
++			break;
++		case CS_PORT_CUSTOM0:
++		case CS_PORT_CUSTOM1:
++		case CS_PORT_CUSTOM2:
++		case CS_PORT_CUSTOM3:
++			tmp_rule_hash.voq_pol.voq_base = ROOT_PORT_VOQ_BASE + (p_flow->voq_offset % 8); // any better solution?
++			break;
++		}
+ 		tmp_rule_hash.fwd_result.l2.mcgid = curr_mcidx;
+ 		tmp_rule_hash.fwd_result.l2.mcgid_valid = CS_RESULT_ACTION_ENABLE;
+ 
+@@ -250,7 +294,36 @@
+ 
+ 	memcpy(&tmp_rule_hash, p_rule_hash, sizeof(cs_rule_hash_t));
+ 
+-	curr_mcidx = 1 << (p_flow->egress_pkt.phy_port);
++	switch (p_flow->egress_pkt.phy_port) {
++	case CS_PORT_GMAC0:
++		if (p_flow->flow_type == CS_FLOW_TYPE_MC_MEMBER)
++			curr_mcidx = 1 << 4;
++		else
++			curr_mcidx = 1 << (p_flow->egress_pkt.phy_port);
++		break;
++	case CS_PORT_GMAC1:
++	case CS_PORT_GMAC2:
++	case CS_PORT_OFLD0:
++	case CS_PORT_OFLD1:
++		curr_mcidx = 1 << (p_flow->egress_pkt.phy_port);
++		break;
++	case CS_PORT_CUSTOM0:
++		curr_mcidx = 1 << 5;
++		break;
++	case CS_PORT_CUSTOM1:
++		curr_mcidx = 1 << 6;
++		break;
++	case CS_PORT_CUSTOM2:
++		curr_mcidx = 1 << 7;
++		break;
++	case CS_PORT_CUSTOM3:
++		curr_mcidx = 1 << 4;
++		break;
++	default:
++		printk("%s: ERROR! Multicast can't support egress phy_port %d.\n", __func__, p_flow->egress_pkt.phy_port);
++		return CS_E_ERROR;
++		break;
++	}
+ 
+ 	cs_rule_hash_convert_to_fe(&tmp_rule_hash, &tmp_key, &tmp_fvlan_entry, &tmp_voq_pol, &tmp_fwd_rslt);
+ 
+@@ -350,11 +423,47 @@
+ 	cs_kernel_accel_cb_t  cb, *cs_cb = &cb;
+ 	cs_uint8_t tpid_encap_type;
+ 	cs_flow_hash_internal_t *p_flow_hash;
++	cs_uint8_t tmp_mc_idx;
+ 
+ 	int ret;
+ 
++	if ((p_flow->flow_type == CS_FLOW_TYPE_L3_MC) || (p_flow->flow_type == CS_FLOW_TYPE_MC_MEMBER)) {
++		switch (p_flow->egress_pkt.phy_port) {
++		case CS_PORT_GMAC0:
++			if (p_flow->flow_type == CS_FLOW_TYPE_MC_MEMBER)
++				p_rule_hash->key.mc_idx = 4;
++			else
++				p_rule_hash->key.mc_idx = p_flow->egress_pkt.phy_port;
++			break;
++		case CS_PORT_GMAC1:
++		case CS_PORT_GMAC2:
++		case CS_PORT_OFLD0:
++		case CS_PORT_OFLD1:
++			p_rule_hash->key.mc_idx = p_flow->egress_pkt.phy_port;
++			break;
++		case CS_PORT_CUSTOM0:
++			p_rule_hash->key.mc_idx = 5;
++			break;
++		case CS_PORT_CUSTOM1:
++			p_rule_hash->key.mc_idx = 6;
++			break;
++		case CS_PORT_CUSTOM2:
++			p_rule_hash->key.mc_idx = 7;
++			break;
++		case CS_PORT_CUSTOM3:
++			p_rule_hash->key.mc_idx = 4;
++			break;
++		case CS_PORT_CPU:
++		default:
++			printk("%s: ERROR! flow type %d of multicast does not support egress port ID %d.\n",
++				__func__, p_flow->flow_type, p_flow->egress_pkt.phy_port);
++			return CS_ERROR;
++			break;
++		}
++	}
++
+ 	if (p_flow->flow_type == CS_FLOW_TYPE_L3_MC) {
+-		p_rule_hash->key.mc_idx = p_flow->egress_pkt.phy_port;
++		/* the hash mask of CS_FLOW_TYPE_MC_MEMBER does not watch lspid */
+ 		p_rule_hash->key.lspid = MCAST_PORT;
+ 	}
+ 
+@@ -568,7 +677,7 @@
+ 	p_flow_hash->rule_hash = *p_rule_hash;
+ 
+ 	/* check whether this flow need to be watched or not */
+-	if ((p_flow->flag & 1) == 0) {
++	if ((p_flow->flag & FLOW_FLAG_SKIP_HMU) == 0) {
+ 		ret = cs_core_hmu_link_src_and_hash(cs_cb, p_rule_hash->hash_index, p_flow_hash);
+ 		if (ret != CS_OK) {
+ 			kfree(p_flow_hash);
+@@ -590,9 +699,18 @@
+ 	cs_core_hmu_callback_for_hash_creation_pass(cs_cb);
+ 
+ 	if (p_flow->flow_type == CS_FLOW_TYPE_L3_MC) {
++		/* the hash mask of CS_FLOW_TYPE_MC_MEMBER does not watch lspid */
+ 		p_rule_hash->key.lspid = p_flow->ingress_pkt.phy_port;
++	}
++
++	if ((p_flow->flow_type == CS_FLOW_TYPE_L3_MC) || (p_flow->flow_type == CS_FLOW_TYPE_MC_MEMBER)) {
++		tmp_mc_idx = p_rule_hash->key.mc_idx;
+ 		p_rule_hash->key.mc_idx = 0;
+ 		ret = cs_rep_hash_add(p_rule_hash, p_flow, &key, &fvlan_entry, &voq_pol, &fwd_rslt);
++
++		/* Write back original value for QoS hash */
++		p_rule_hash->key.mc_idx = tmp_mc_idx;
++
+ 		if (ret != CS_OK) {
+ 			kfree(p_flow_hash);
+ 			printk("%s: cs_rep_hash_add() failed!\n", __func__);
+@@ -647,6 +765,9 @@
+ 		else if (p_flow->flow_type == CS_FLOW_TYPE_L3_MC) {
+ 			p_qos_hash->qos_app_type = CORE_QOS_APP_TYPE_L3_QOS_MULTICAST;
+ 		}
++		else if (p_flow->flow_type == CS_FLOW_TYPE_MC_MEMBER) {
++			p_qos_hash->qos_app_type = CORE_QOS_APP_TYPE_MCAST_CTRL;
++		}
+ 		else if (p_flow->flow_type == CS_FLOW_TYPE_L4_NATT) {
+ 			p_qos_hash->qos_app_type = CORE_QOS_APP_TYPE_L7_QOS_GENERIC;
+ 		}
+@@ -764,6 +885,9 @@
+ 
+ 		if (p_flow->flow_type == CS_FLOW_TYPE_L3_MC) {
+ 			p_rule_hash->key.lspid = p_flow->ingress_pkt.phy_port;
++		}
++
++		if ((p_flow->flow_type == CS_FLOW_TYPE_L3_MC) || (p_flow->flow_type == CS_FLOW_TYPE_MC_MEMBER)) {
+ 			p_rule_hash->key.mc_idx = 0;
+ 			ret = cs_rep_hash_del(p_rule_hash, p_flow, &key, &fvlan_entry, &voq_pol, &fwd_rslt);
+ 			if (ret != CS_OK) {
+--- linux-3.4.104/drivers/net/ethernet/cs752x/src/kernel_adapt/hash/cs_rule_hash.c	2015-06-23 11:47:14.114449582 -0700
++++ linux-3.4.104/drivers/net/ethernet/cs752x/src/kernel_adapt/hash/cs_rule_hash.c	2015-06-23 20:40:43.730858745 -0700
+@@ -384,6 +384,7 @@
+ 
+ #ifdef CONFIG_CS752X_PROC
+         if (cs_adapt_debug & CS752X_ADAPT_RULE_HASH) {
++		printk("%s: p_rule_hash->key.mask_ptr_0_7=%d\n", __func__, p_rule_hash->key.mask_ptr_0_7);
+ 		printk("%s: *p_voq_pol_idx=%d\n", __func__, *p_voq_pol_idx);
+ 	}
+ #endif
+@@ -470,9 +471,9 @@
+ 		p_fwd_rslt->l3.ip_da_index = (cs_uint16_t)value;
+ 		p_rule_hash->fwd_result.l3.ip_da_index = (cs_uint16_t)value;
+ #ifdef CONFIG_CS752X_PROC
+-       		if (cs_adapt_debug & CS752X_ADAPT_RULE_HASH) {
+-                	printk("%s: =%d\n", __func__, p_fwd_rslt->l3.ip_da_index);
+-        	}
++		if (cs_adapt_debug & CS752X_ADAPT_RULE_HASH) {
++			printk("%s: ip_da_index=%d\n", __func__, p_fwd_rslt->l3.ip_da_index);
++		}
+ #endif
+ 	}
+ 
+--- linux-3.4.104/drivers/net/ethernet/cs752x/src/kernel_adapt/include/cs_hw_accel_wireless.h	2015-06-23 11:47:14.116449582 -0700
++++ linux-3.4.104/drivers/net/ethernet/cs752x/src/kernel_adapt/include/cs_hw_accel_wireless.h	2015-06-29 20:45:30.977526314 -0700
+@@ -1,11 +1,15 @@
+ #ifndef CS_KERNEL_WIRELESS_HW_ACC_SUPPORT
+ #define CS_KERNEL_WIRELESS_HW_ACC_SUPPORT 1
+ 
+-
++enum CS_WIRELESS_MODE_TYPE {
++	CS_WIRELESS_MODE_4_DEV		= 0,
++	CS_WIRELESS_MODE_2_DEV
++};
+ 
+ int cs_hw_accel_wireless_init(void);
+ int cs_hw_accel_wireless_exit(void);
+ int cs_hw_accel_wireless_handle(int voq, struct sk_buff *skb, unsigned int sw_action);
++void cs_hw_accel_wireless_set_mode(int mode);
+ 
+ #endif
+ 
+--- linux-3.4.104/drivers/net/ethernet/cs752x/src/kernel_adapt/wfo/cs_mc_flow_manager.c	1969-12-31 16:00:00.000000000 -0800
++++ linux-3.4.104/drivers/net/ethernet/cs752x/src/kernel_adapt/wfo/cs_mc_flow_manager.c	2015-07-15 05:13:58.189894383 -0700
+@@ -0,0 +1,133 @@
++/**
++  Copyright © 2014 GreenWave Systems Inc.
++  @file cs_mc_flow_manager.c
++  @brief Multicast flow manager for Cortina CS75xx
++  @author Stefan Hallas Mulvad
++  @author Bobby Bouche
++  */
++
++#include <mach/cs_flow_api.h>
++#include <mach/cs_network_types.h>
++#include <linux/inetdevice.h>
++#include <linux/types.h>
++#include <linux/mroute.h>
++#include <net/ip.h>
++
++static struct {
++	const char *name;
++	const cs_uint8_t phy_port;
++	const cs_uint8_t strip_8021p_tag;
++	const cs_uint16_t eth_type;
++	const cs_tpid_encap_type_t tpid_encap_type;
++	const cs_uint16_t vlan_id;
++	const cs_uint16_t voq_offset;
++} interface_port_map[] = {
++	{ "wl0", CS_PORT_OFLD0, 1, 0x0800, CS_VLAN_TPID_NONE, 0x0, 0 },
++	{ "wl0.1", CS_PORT_CUSTOM1, 1, 0x0800, CS_VLAN_TPID_8100, 0x0, 24 },
++	{ "wl1", CS_PORT_CUSTOM0, 1, 0x0800, CS_VLAN_TPID_NONE, 0x0, 72 },
++	{ "eth2.1", CS_PORT_GMAC2, 0, 0x8100, CS_VLAN_TPID_8100, 0x1, 0 },
++	{ "eth2.2", CS_PORT_CUSTOM2, 0, 0x8100, CS_VLAN_TPID_8100, 0x2, 16 }
++};
++
++static char *has_outer_tag[] = {
++	"eth2",
++};
++
++/* prototypes */
++void cs75xx_update_multicast_flow_entry(struct net_device *, struct net_device *, struct mfcctl *, struct mfc_cache *, int);
++
++void cs75xx_update_multicast_flow_entry(struct net_device *ingress_dev, struct net_device *egress_dev, struct mfcctl *mfc, struct mfc_cache *c, int vifi)
++{
++	unsigned int i, j, routed = 1;
++	struct in_device *ipv4_dev;
++	cs_flow_t flow_entry;
++
++	if ((c->mfc_un.res.flow_vifs[vifi >> 0x3] & (1 << (vifi & 0x7))) == 0) {
++		if (mfc != NULL && mfc->mfcc_ttls[vifi] > 0 && (c->mfc_un.res.ttls[vifi] == 0 || c->mfc_un.res.ttls[vifi] == 255)) {
++			for (
++				i = 0;
++				i < (sizeof(interface_port_map) / sizeof(interface_port_map[0])) &&
++				strcmp(egress_dev->name, interface_port_map[i].name) != 0;
++				++i
++			);
++
++			if (i < (sizeof(interface_port_map) / sizeof(interface_port_map[0]))) {
++				rcu_read_lock();
++				while (egress_dev->master != NULL)
++					egress_dev = egress_dev->master;
++				ipv4_dev = __in_dev_get_rcu(egress_dev);
++				if (ipv4_dev != NULL) {
++					for_primary_ifa(ipv4_dev)
++						if (inet_ifa_match(mfc->mfcc_origin.s_addr, ifa)) {
++							routed = 0;
++							break;
++						}
++					endfor_ifa(ipv4_dev);
++				}
++				rcu_read_unlock();
++
++				memset(&flow_entry, 0, sizeof(cs_flow_t));
++				flow_entry.flow_type = CS_FLOW_TYPE_MC_MEMBER;
++				flow_entry.ingress_pkt.phy_port = 0;
++				ip_eth_mc_map(mfc->mfcc_mcastgrp.s_addr, (char *)&flow_entry.ingress_pkt.da_mac);
++				flow_entry.ingress_pkt.eth_type = 0x8100;
++				if (interface_port_map[i].strip_8021p_tag) {
++					flow_entry.ingress_pkt.tag[0].tpid_encap_type = CS_VLAN_TPID_8100;
++					flow_entry.ingress_pkt.tag[1].tpid_encap_type = CS_VLAN_TPID_8100;
++				} else {
++					if (ingress_dev != NULL)
++						for (
++							j = 0;
++							j < (sizeof(has_outer_tag) / sizeof(has_outer_tag[0])) &&
++							strcmp(ingress_dev->name, has_outer_tag[j]) != 0;
++							++j
++						);
++					else
++						j = sizeof(has_outer_tag) / sizeof(has_outer_tag[0]);
++
++					if (j < (sizeof(has_outer_tag) / sizeof(has_outer_tag[0])))
++						/* Packets ingressing this interface have an outer 802.1p tag added by the switch */
++						flow_entry.ingress_pkt.tag[0].tpid_encap_type = CS_VLAN_TPID_8100;
++					else
++						flow_entry.ingress_pkt.tag[0].tpid_encap_type = CS_VLAN_TPID_NONE;
++					flow_entry.ingress_pkt.tag[1].tpid_encap_type = CS_VLAN_TPID_NONE;
++				}
++				flow_entry.ingress_pkt.tag[0].vlan_id = 0;
++				flow_entry.ingress_pkt.tag[1].vlan_id = 0;
++				flow_entry.ingress_pkt.da_ip.afi = CS_IPV4;
++				flow_entry.ingress_pkt.da_ip.ip_addr.ipv4_addr = mfc->mfcc_mcastgrp.s_addr;
++				flow_entry.ingress_pkt.da_ip.addr_len = 32;
++				flow_entry.ingress_pkt.sa_ip.afi = CS_IPV4;
++				flow_entry.ingress_pkt.sa_ip.ip_addr.ipv4_addr = mfc->mfcc_origin.s_addr;
++				flow_entry.ingress_pkt.sa_ip.addr_len = 32;
++				flow_entry.ingress_pkt.protocol = 0x11;
++				flow_entry.egress_pkt.phy_port = interface_port_map[i].phy_port;
++				ip_eth_mc_map(mfc->mfcc_mcastgrp.s_addr, (char *)&flow_entry.egress_pkt.da_mac);
++				if (routed)
++					memcpy(&flow_entry.egress_pkt.sa_mac, egress_dev->dev_addr, sizeof(flow_entry.egress_pkt.sa_mac));
++				flow_entry.egress_pkt.eth_type = interface_port_map[i].eth_type;
++				flow_entry.egress_pkt.tag[0].tpid_encap_type = interface_port_map[i].tpid_encap_type;
++				flow_entry.egress_pkt.tag[0].vlan_id = interface_port_map[i].vlan_id;
++				flow_entry.egress_pkt.tag[1].tpid_encap_type = CS_VLAN_TPID_NONE;
++				flow_entry.egress_pkt.tag[1].vlan_id = 0;
++				flow_entry.egress_pkt.da_ip.afi = CS_IPV4;
++				flow_entry.egress_pkt.da_ip.ip_addr.ipv4_addr = mfc->mfcc_mcastgrp.s_addr;
++				flow_entry.egress_pkt.da_ip.addr_len = 32;
++				flow_entry.egress_pkt.sa_ip.afi = CS_IPV4;
++				flow_entry.egress_pkt.sa_ip.ip_addr.ipv4_addr = mfc->mfcc_origin.s_addr;
++				flow_entry.egress_pkt.sa_ip.addr_len = 32;
++				flow_entry.egress_pkt.protocol = 0x11;
++				flow_entry.dec_ttl = routed;
++				flow_entry.voq_offset = interface_port_map[i].voq_offset;
++				flow_entry.flag = 3;
++				if (cs_flow_add(0, &flow_entry) == CS_OK) {
++					c->mfc_un.res.flow_ids[vifi] = flow_entry.flow_id;
++					c->mfc_un.res.flow_vifs[vifi >> 0x3] |= (1 << (vifi & 0x7));
++				}
++			}
++		}
++	} else if (mfc == NULL || mfc->mfcc_ttls[vifi] == 0) {
++		if (cs_flow_delete(0, c->mfc_un.res.flow_ids[vifi]) == CS_OK)
++			c->mfc_un.res.flow_vifs[vifi >> 0x3] &= ~(1 << (vifi & 0x7));
++	}
++}
+--- linux-3.4.104/drivers/net/ethernet/cs752x/src/kernel_adapt/wfo/Makefile	2015-06-23 11:47:14.129449583 -0700
++++ linux-3.4.104/drivers/net/ethernet/cs752x/src/kernel_adapt/wfo/Makefile	2015-06-23 13:29:24.736470512 -0700
+@@ -34,5 +34,5 @@
+ EXTRA_CFLAGS += -I$(srctree)/drivers/net/ethernet/cs752x/src/tm
+ EXTRA_CFLAGS += -I$(srctree)/drivers/net/ethernet/cs752x/src/sch
+ 
+-obj-$(CONFIG_CS75XX_WFO) += cs_g2_wfo.o cs_wfo_csme.o
++obj-$(CONFIG_CS75XX_WFO) += cs_g2_wfo.o cs_wfo_csme.o cs_mc_flow_manager.o
+ cs_g2_wfo-objs := cs_hw_accel_wfo.o
+--- linux-3.4.104/drivers/net/ethernet/cs752x/src/kernel_adapt/wireless/cs_hw_accel_wireless.c	2015-06-23 12:29:08.082103257 -0700
++++ linux-3.4.104/drivers/net/ethernet/cs752x/src/kernel_adapt/wireless/cs_hw_accel_wireless.c	2015-06-29 20:45:11.378755741 -0700
+@@ -13,6 +13,7 @@
+ #include "cs_wfo_csme.h"
+ #include <mach/cs75xx_pni.h>
+ #include <mach/cs75xx_ipc_wfo.h>
++#include "cs_hw_accel_wireless.h"
+ 
+ 
+ #ifdef CONFIG_CS752X_PROC
+@@ -73,6 +74,32 @@
+ 
+ static spinlock_t cs_wireless_lock;
+ 
++extern u32 cs_hw_accel_wireless_mode;
++
++void cs_hw_accel_wireless_set_mode(int mode)
++{
++	int i;
++
++	if (mode == cs_hw_accel_wireless_mode)
++		return;
++	
++	for (i = 0; i < CS_HW_ACCEL_WIRELESS_INTERFACE_MAX; i++) {
++		if (cs_wireless_list[i].status != CS_WIRELESS_FREE) {
++			printk("ERROR! cannot switch mode due to %d dev is used\n", i);
++			return;
++		}
++	}
++
++	if (mode == CS_WIRELESS_MODE_4_DEV) {
++		cs_wireless_list[1].tx_voq_base = CPU_PORT3_VOQ_BASE + 4;
++		cs_hw_accel_wireless_mode = CS_WIRELESS_MODE_4_DEV;
++	} else {
++		cs_wireless_list[1].tx_voq_base = CPU_PORT4_VOQ_BASE;
++		cs_hw_accel_wireless_mode = CS_WIRELESS_MODE_2_DEV;
++	}
++
++}
++
+ #ifdef CONFIG_CS75XX_OFFSET_BASED_QOS  
+ static int cs_hw_accel_create_rx_default_fwd_hash(int vap_idx)
+ {
+@@ -286,7 +313,10 @@
+ 		switch (i) {
+ 			case 0:	cs_wireless_list[i].tx_voq_base = CPU_PORT3_VOQ_BASE;
+ 					break;
+-			case 1:	cs_wireless_list[i].tx_voq_base = CPU_PORT3_VOQ_BASE + 4;
++			case 1:	if (cs_hw_accel_wireless_mode == CS_WIRELESS_MODE_4_DEV)
++						cs_wireless_list[i].tx_voq_base = CPU_PORT3_VOQ_BASE + 4;
++					else
++						cs_wireless_list[i].tx_voq_base = CPU_PORT4_VOQ_BASE;
+ 					break;
+ 			case 2:	cs_wireless_list[i].tx_voq_base = CPU_PORT4_VOQ_BASE;
+ 					break;
+@@ -303,6 +333,7 @@
+ #endif //CONFIG_CS75XX_OFFSET_BASED_QOS  
+ 	cs_hw_accel_mgr_register_proc_callback(CS752X_ADAPT_ENABLE_WIRELESS,
+ 					       cs_wireless_callback_hma);
++	return 0;
+ }
+ 
+ int cs_hw_accel_wireless_exit(void)
+@@ -353,8 +384,15 @@
+ 	int i;
+ 	int rc;
+ 	u8 egress_port_id;
++	int max_dev;
+ 	printk("%s %pM \n", __func__, dev->dev_addr);
+-	for (i = 0; i < CS_HW_ACCEL_WIRELESS_INTERFACE_MAX; i++) {
++
++	if (cs_hw_accel_wireless_mode == CS_WIRELESS_MODE_4_DEV)
++		max_dev = CS_HW_ACCEL_WIRELESS_INTERFACE_MAX;
++	else
++		max_dev = 2;
++
++	for (i = 0; i < max_dev; i++) {
+ 		if (cs_wireless_list[i].status == CS_WIRELESS_FREE) {
+ 			cs_wireless_list[i].status = CS_WIRELESS_ALLOCATED;
+ 			cs_wireless_list[i].cb_start_xmit = cb_start_xmit;
+@@ -483,7 +521,10 @@
+         dev_id = *(skb->data+10);
+         memcpy(skb->data+10, cs_wireless_voq_entry[*(skb->data+11)].mac_org, 2);
+ #else
+-		dev_id = (voq - CPU_PORT3_VOQ_BASE) / 4;
++		if (cs_hw_accel_wireless_mode == CS_WIRELESS_MODE_4_DEV)
++			dev_id = (voq - CPU_PORT3_VOQ_BASE) / 4;
++		else
++			dev_id = (voq - CPU_PORT3_VOQ_BASE) / 8;
+ #endif //CONFIG_CS75XX_OFFSET_BASED_QOS
+ 		direction = 0;
+ 	} 		
+@@ -502,6 +543,10 @@
+ 			cs_cb->common.sw_only = CS_SWONLY_STATE;
+ 		}		
+ 		skb->dev = cs_wireless_list[dev_id].dev;
++		if (cs_hw_accel_wireless_mode == CS_WIRELESS_MODE_4_DEV)
++			skb->priority = cs_wireless_list[dev_id].cb_ac_2_prio(3 - (voq - cs_wireless_list[dev_id].tx_voq_base));
++		else
++			skb->priority = 7 - (voq - cs_wireless_list[dev_id].tx_voq_base);
+ 		cs_wireless_list[dev_id].cb_start_xmit(skb, cs_wireless_list[dev_id].dev);
+ 		
+ 	} else {
+@@ -598,8 +643,13 @@
+     cs_cb->action.voq_pol.voq_policy = 1;
+ 	cs_cb->action.voq_pol.d_voq_id = cs_wireless_list[dev_id].tx_voq_base;
+ #else
+-	cs_cb->action.voq_pol.d_voq_id = cs_wireless_list[dev_id].tx_voq_base + 
+-			cs_wireless_list[dev_id].cb_prio_2_ac(skb->priority);
++	if (cs_hw_accel_wireless_mode == CS_WIRELESS_MODE_4_DEV)
++		cs_cb->action.voq_pol.d_voq_id = cs_wireless_list[dev_id].tx_voq_base +
++			3 - cs_wireless_list[dev_id].cb_prio_2_ac(skb->priority);
++	else
++		cs_cb->action.voq_pol.d_voq_id = cs_wireless_list[dev_id].tx_voq_base +
++			7 - skb->priority;
++
+ #endif //CONFIG_CS75XX_OFFSET_BASED_QOS
+     }
+ 	cs_cb->action.voq_pol.cos_nop = 1;
+--- linux-3.4.104/include/linux/mroute.h	2015-06-23 11:47:14.182449587 -0700
++++ linux-3.4.104/include/linux/mroute.h	2015-07-15 02:27:06.062081262 -0700
+@@ -220,8 +220,15 @@
+ 			unsigned long pkt;
+ 			unsigned long wrong_if;
+ 			unsigned char ttls[MAXVIFS];	/* TTL thresholds		*/
++#ifdef CONFIG_CS75XX_WFO
++			cs_uint16_t flow_ids[MAXVIFS];
++			cs_uint8_t flow_vifs[MAXVIFS / 8];
++#endif
+ 		} res;
+ 	} mfc_un;
++#ifdef CONFIG_CS75XX_WFO
++	int mfc_parent_real;
++#endif
+ 	struct rcu_head	rcu;
+ };
+ 
+--- linux-3.4.104/net/ipv4/ipmr.c	2015-06-23 11:47:14.196449588 -0700
++++ linux-3.4.104/net/ipv4/ipmr.c	2015-07-15 05:09:31.095986078 -0700
+@@ -77,6 +77,9 @@
+ extern void k_jt_cs_mc_ipmr_set_opt_del_mfc(struct mr_table *mrt, struct mfcctl *mfc);
+ 
+ #endif
++#ifdef CONFIG_CS75XX_WFO
++void cs75xx_update_multicast_flow_entry(struct net_device *, struct net_device *, struct mfcctl *, struct mfc_cache *, int);
++#endif /* CONFIG_CS75XX_WFO */
+ #endif /* CONFIG_ARCH_GOLDENGATE */
+ #if defined(CONFIG_IP_PIMSM_V1) || defined(CONFIG_IP_PIMSM_V2)
+ #define CONFIG_IP_PIMSM	1
+@@ -560,6 +563,11 @@
+ 	struct vif_device *v;
+ 	struct net_device *dev;
+ 	struct in_device *in_dev;
++#ifdef CONFIG_CS75XX_WFO
++	int i;
++	LIST_HEAD(list);
++	struct mfc_cache *c, *next;
++#endif
+ 
+ 	if (vifi < 0 || vifi >= mrt->maxvif)
+ 		return -EADDRNOTAVAIL;
+@@ -579,6 +587,16 @@
+ 	if (vifi == mrt->mroute_reg_vif_num)
+ 		mrt->mroute_reg_vif_num = -1;
+ #endif
++#ifdef CONFIG_CS75XX_WFO
++	for (i = 0; i < MFC_LINES; ++i) {
++		list_for_each_entry_safe(c, next, &mrt->mfc_cache_array[i], list) {
++			if (c->mfc_un.res.ttls[vifi] > 0) {
++				cs75xx_update_multicast_flow_entry(NULL, NULL, NULL, c, vifi);
++				c->mfc_un.res.ttls[vifi] = 0;
++			}
++		}
++	}
++#endif
+ 
+ 	if (vifi + 1 == mrt->maxvif) {
+ 		int tmp;
+@@ -1019,6 +1037,9 @@
+ 		c->mfc_parent	= -1;
+ 		c->mfc_origin	= iph->saddr;
+ 		c->mfc_mcastgrp	= iph->daddr;
++#ifdef CONFIG_CS75XX_WFO
++		c->mfc_parent_real = skb->skb_iif;
++#endif
+ 
+ 		/* Reflect first query at mrouted. */
+ 
+@@ -1063,6 +1084,9 @@
+ {
+ 	int line;
+ 	struct mfc_cache *c, *next;
++#ifdef CONFIG_CS75XX_WFO
++	int vifi;
++#endif
+ 
+ 	line = MFC_HASH(mfc->mfcc_mcastgrp.s_addr, mfc->mfcc_origin.s_addr);
+ 
+@@ -1071,6 +1095,11 @@
+ 		    c->mfc_mcastgrp == mfc->mfcc_mcastgrp.s_addr) {
+ 			list_del_rcu(&c->list);
+ 
++#ifdef CONFIG_CS75XX_WFO
++			for (vifi = 0; vifi < mrt->maxvif; ++vifi)
++				if (VIF_EXISTS(mrt, vifi))
++					cs75xx_update_multicast_flow_entry(NULL, NULL, NULL, c, vifi);
++#endif
+ #ifdef CONFIG_CS752X_ACCEL_KERNEL
+ 			k_jt_cs_mc_ipmr_set_opt_del_mfc(mrt, mfc);
+ #endif
+@@ -1087,6 +1116,10 @@
+ 	bool found = false;
+ 	int line;
+ 	struct mfc_cache *uc, *c;
++#ifdef CONFIG_CS75XX_WFO
++	int vifi;
++	struct net_device *ingress_dev = NULL;
++#endif
+ 
+ 	if (mfc->mfcc_parent >= MAXVIFS)
+ 		return -ENFILE;
+@@ -1108,6 +1141,17 @@
+ 		int cs_min = c->mfc_un.res.minvif;
+ 		int cs_max = c->mfc_un.res.maxvif;
+ #endif
++#ifdef CONFIG_CS75XX_WFO
++		if (VIF_EXISTS(mrt, mfc->mfcc_parent)) {
++			ingress_dev = dev_get_by_index(net, c->mfc_parent_real);
++			for (vifi = 0; vifi < mrt->maxvif; ++vifi)
++				if (VIF_EXISTS(mrt, vifi))
++					cs75xx_update_multicast_flow_entry(ingress_dev, mrt->vif_table[vifi].dev, mfc, c, vifi);
++			if (ingress_dev != NULL)
++				dev_put(ingress_dev);
++		}
++#endif /* CONFIG_CS75XX_WFO */
++
+ 		ipmr_update_thresholds(mrt, c, mfc->mfcc_ttls);
+ #ifdef CONFIG_CS752X_ACCEL_KERNEL
+ 		if ((cs_min != c->mfc_un.res.minvif) ||
+@@ -1131,6 +1175,24 @@
+ 	c->mfc_origin = mfc->mfcc_origin.s_addr;
+ 	c->mfc_mcastgrp = mfc->mfcc_mcastgrp.s_addr;
+ 	c->mfc_parent = mfc->mfcc_parent;
++#ifdef CONFIG_CS75XX_WFO
++	if (VIF_EXISTS(mrt, mfc->mfcc_parent)) {
++		spin_lock_bh(&mfc_unres_lock);
++		list_for_each_entry(uc, &mrt->mfc_unres_queue, list) {
++			if (uc->mfc_origin == c->mfc_origin && uc->mfc_mcastgrp == c->mfc_mcastgrp) {
++				c->mfc_parent_real = uc->mfc_parent_real;
++				break;
++			}
++		}
++		spin_unlock_bh(&mfc_unres_lock);
++		ingress_dev = dev_get_by_index(net, c->mfc_parent_real);
++		for (vifi = 0; vifi < mrt->maxvif; ++vifi)
++			if (VIF_EXISTS(mrt, vifi))
++				cs75xx_update_multicast_flow_entry(ingress_dev, mrt->vif_table[vifi].dev, mfc, c, vifi);
++		if (ingress_dev != NULL)
++			dev_put(ingress_dev);
++	}
++#endif /* CONFIG_CS75XX_WFO */
+ 	ipmr_update_thresholds(mrt, c, mfc->mfcc_ttls);
+ 	if (!mrtsock)
+ 		c->mfc_flags |= MFC_STATIC;

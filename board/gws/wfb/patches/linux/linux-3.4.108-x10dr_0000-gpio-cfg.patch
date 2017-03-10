@@ -1,0 +1,252 @@
+From ad38700dfead244eef98145f4c55eabdc965bcc8 Mon Sep 17 00:00:00 2001
+From: Hoang Tran <hoang.tran@greenwavereality.com>
+Date: Thu, 1 Sep 2016 01:03:49 -0700
+Subject: [PATCH] x10dr gpio configuration
+
+---
+ arch/arm/mach-goldengate/cortina-g2.c              | 109 ++++++++++-----------
+ .../custom_board/template/gpio/cfg_gpio_alloc.h    |  15 +--
+ arch/arm/mach-goldengate/include/mach/gpio_alloc.h |   1 -
+ 3 files changed, 62 insertions(+), 63 deletions(-)
+
+diff --git a/arch/arm/mach-goldengate/cortina-g2.c b/arch/arm/mach-goldengate/cortina-g2.c
+index 62f9608..c084dbf 100644
+--- a/arch/arm/mach-goldengate/cortina-g2.c
++++ b/arch/arm/mach-goldengate/cortina-g2.c
+@@ -594,6 +594,7 @@ static struct platform_device cs75xx_gpio_device = {
+ 	.resource = cs75xx_gpio_resources,
+ };
+ 
++#if 0
+ static struct resource cs75xx_pwm_resources[] = {
+ 	{
+ 		.name = "pwm_base",
+@@ -613,32 +614,33 @@ static struct platform_device cs75xx_pwm_device = {
+ 	.num_resources = ARRAY_SIZE(cs75xx_pwm_resources),
+ 	.resource = cs75xx_pwm_resources,
+ };
++#endif
+ 
+ static struct gpio_keys_button cs75xx_gpio_keys[] = {
+-#ifdef GPIO_WPS_SW
++#ifdef GPIO_SW_RST_N
+ 	{
+ 		/* Configuration parameters */
+-		.code = KEY_WPS_BUTTON,
+-		.gpio = GPIO_WPS_SW,
++		.code = KEY_RESTART,
++		.gpio = GPIO_SW_RST_N,
+ 		.active_low = 1,
+-		.desc = "GPIO_WPS_SW",
++		.desc = "GPIO_SW_RST_N",
+ 		.type = EV_KEY,		/* input event type (EV_KEY, EV_SW) */
+ 		.wakeup = 1,		/* configure the button as a wake-up source */
+ 		.debounce_interval = 0,	/* debounce ticks interval in msecs */
+ 		.can_disable = 1	/* dedicated pin */
+ 	},
+ #endif
+-#ifdef GPIO_WIFI_SW
+-	[1] = {
++#ifdef GPIO_WPS_SWITCH
++	{
+ 		/* Configuration parameters */
+-		.code = KEY_WLAN,
+-		.gpio = GPIO_WIFI_SW,
++		.code = KEY_WPS_BUTTON,
++		.gpio = GPIO_WPS_SWITCH,
+ 		.active_low = 1,
+-		.desc = "GPIO_WIFI_SW",
+-		.type = EV_KEY, 	/* input event type (EV_KEY, EV_SW) */
+-		.wakeup = 1,		/* configure the button as a wake-up source */
+-		.debounce_interval = 0,	/* debounce ticks interval in msecs */
+-		.can_disable = 1
++		.desc = "GPIO_WPS_SWITCH",
++		.type = EV_KEY,         /* input event type (EV_KEY, EV_SW) */
++		.wakeup = 1,            /* configure the button as a wake-up source */
++		.debounce_interval = 50, /* debounce ticks interval in msecs */
++		.can_disable = 1        /* dedicated pin */
+ 	},
+ #endif
+ };
+@@ -696,48 +698,36 @@ static struct platform_device cs75xx_gpio_btns_device = {
+ #endif /* Disable OpenWRT gpio_button patch */
+ 
+ static struct gpio_led cs75xx_leds[] = {
+-#ifdef GPIO_VOIP_LED
+-	{
+-		.name = "voip:green",
+-		.gpio = GPIO_VOIP_LED,
+-		.active_low = 0,
+-		.default_state = LEDS_GPIO_DEFSTATE_OFF,
+-	},
+-#endif
+-#ifdef GPIO_SYS_RDY_LED
+-	{
+-		.name = "sys",
+-		.gpio = GPIO_SYS_RDY_LED,
+-		.active_low = 0,
+-		.default_state = LEDS_GPIO_DEFSTATE_OFF,
+-	},
+-#endif
+-#ifdef GPIO_USB_LED
++#ifdef GPIO_WIFI_RC
+ 	{
+-		.name = "usb",
+-		.gpio = GPIO_USB_LED,
+-		.active_low = 0,
++		.name = "wifi:red_close",
++		.gpio = GPIO_WIFI_RC,
++		.active_low = 1,
+ 		.default_state = LEDS_GPIO_DEFSTATE_OFF,
++		.default_trigger = "none",
+ 	},
+ #endif
+-#ifdef GPIO_USB_LED0
++#ifdef GPIO_WIFI_RF
+ 	{
+-		.name = "usb0",
+-		.gpio = GPIO_USB_LED0,
+-		.active_low = 0,
++		.name = "wifi:red_far",
++		.gpio = GPIO_WIFI_RF,
++		.active_low = 1,
+ 		.default_state = LEDS_GPIO_DEFSTATE_OFF,
++		.default_trigger = "none",
+ 	},
+ #endif
+-#ifdef GPIO_USB_LED1
++#ifdef GPIO_WIFI_G
+ 	{
+-		.name = "usb1",
+-		.gpio = GPIO_USB_LED1,
+-		.active_low = 0,
++		.name = "wifi:green",
++		.gpio = GPIO_WIFI_G,
++		.active_low = 1,
+ 		.default_state = LEDS_GPIO_DEFSTATE_OFF,
++		.default_trigger = "none",
+ 	},
+ #endif
+ };
+ 
++#if 0
+ static struct led_pwm cs75xx_pwm_leds[] = {
+ 	{
+ 		.name		= "pwm_led",
+@@ -759,6 +749,7 @@ static struct platform_device cs75xx_leds_pwm = {
+ 		.platform_data = &cs75xx_pwm_data,
+ 	},
+ };
++#endif
+ 
+ static struct gpio_led_platform_data cs75xx_led_platform_data = {
+ 	.leds		= cs75xx_leds,
+@@ -1645,13 +1636,17 @@ static struct platform_device *platform_devices[] __initdata = {
+ 	&goldengate_sd_device,
+ #endif				/* CS752X_SD */
+ 	&cs75xx_gpio_device,	/* CS75XX GPIO */
++#if 0
+ 	&cs75xx_pwm_device,
++#endif
+ 	&cs75xx_gpio_keys_device,
+ #if 0 /* Disable OpenWRT gpio button patch */
+ 	&cs75xx_gpio_btns_device,
+ #endif /* Disable OpenWRT gpio button patch */
+ 	&cs75xx_led_device,
++#if 0
+ 	&cs75xx_leds_pwm,
++#endif
+ 	&cs75xx_i2c_device,	/* CS75XX I2C */
+ 	&cs75xx_spi_device,	/* CS75XX SPI */
+ 	&goldengate_flash_device,	/* G2 NAND */
+@@ -2206,25 +2201,12 @@ static void __init goldengate_init(void)
+ 	cs75xx_spi_cfg.tclk = clk.apb_clk;
+ #endif
+ 
+-	cs75xx_serial_init();
+-
+-	platform_add_devices(platform_devices, ARRAY_SIZE(platform_devices));
+-	//Ryan Add for LCD
+-	cs75xx_add_device_lcd();
+-
+-#if defined(CONFIG_I2C_CS75XX) && defined(CONFIG_I2C_BOARDINFO)
+-	i2c_register_board_info(0, i2c_board_infos, ARRAY_SIZE(i2c_board_infos));
+-#endif
+-#ifdef CONFIG_SPI_CS75XX
+-	spi_register_board_info(spi_board_infos, ARRAY_SIZE(spi_board_infos));
+-#endif
+- 
+ 	/* Initialize GPIO pin muxing
+ 	 * GPIO_0 is shared with Pflash/nflash/sflash */
+ 	writel(0xff80ff00, IO_ADDRESS(GLOBAL_GPIO_MUX_0));
+ 
+ 	/* GPIO_1 is shared with TS/I2C/SPI/SSP/UART0 */
+-	writel(0xfffffc88, IO_ADDRESS(GLOBAL_GPIO_MUX_1));
++	writel(0xfffffcff, IO_ADDRESS(GLOBAL_GPIO_MUX_1));
+ 
+ 	/* GPIO_2 is shared with TS/UART1/UART2/UART3/SD */
+ 	writel(0xffffffff, IO_ADDRESS(GLOBAL_GPIO_MUX_2));
+@@ -2234,6 +2216,23 @@ static void __init goldengate_init(void)
+ 
+ 	/* GPIO_4 is shared with LCD */
+ 	writel(0xffffffff, IO_ADDRESS(GLOBAL_GPIO_MUX_4));
++
++	cs75xx_serial_init();
++
++	platform_add_devices(platform_devices, ARRAY_SIZE(platform_devices));
++
++#if (defined(CONFIG_FB_CS752X_CLCD) | defined(CONFIG_FB_CS752X_CLCD_MODULE))
++	//Ryan Add for LCD
++	cs75xx_add_device_lcd();
++#endif
++
++#if defined(CONFIG_I2C_CS75XX) && defined(CONFIG_I2C_BOARDINFO)
++	i2c_register_board_info(0, i2c_board_infos, ARRAY_SIZE(i2c_board_infos));
++#endif
++#ifdef CONFIG_SPI_CS75XX
++	spi_register_board_info(spi_board_infos, ARRAY_SIZE(spi_board_infos));
++#endif
++ 
+ }
+ 
+ #define CONFIG_CS752X_NR_QMBANK 1
+diff --git a/arch/arm/mach-goldengate/include/mach/custom_board/template/gpio/cfg_gpio_alloc.h b/arch/arm/mach-goldengate/include/mach/custom_board/template/gpio/cfg_gpio_alloc.h
+index 4fb6d8b..b8ff19f 100644
+--- a/arch/arm/mach-goldengate/include/mach/custom_board/template/gpio/cfg_gpio_alloc.h
++++ b/arch/arm/mach-goldengate/include/mach/custom_board/template/gpio/cfg_gpio_alloc.h
+@@ -22,12 +22,13 @@
+ 
+ #if 1 /* template start */
+ 
+-#define GPIO_FLASH_WP_CNTRL     GPIO2_BIT19
+-#define GPIO_VOIP_LED           GPIO2_BIT20
+-#define GPIO_SLIC0_RESET        GPIO2_BIT22
+-#define GPIO_SLIC_INT           GPIO2_BIT26
+-#define GPIO_PCIE_RESET         GPIO2_BIT28     /* #define GPIO2_BIT28  32*2+28 */
+-#define GPIO_USB_VBUS_POWER_0   GPIO2_BIT24
+-#define GPIO_USB_VBUS_POWER_1   GPIO2_BIT25
++#define GPIO_SW_RST_N		GPIO1_BIT2
++#define GPIO_WPS_SWITCH		GPIO1_BIT5
++#define GPIO_PCIE_RESET         GPIO2_BIT11
++
++/* LEDs */
++#define GPIO_WIFI_RC		GPIO1_BIT0
++#define GPIO_WIFI_RF		GPIO1_BIT12
++#define GPIO_WIFI_G		GPIO1_BIT13
+ 
+ #endif /* template end */
+diff --git a/arch/arm/mach-goldengate/include/mach/gpio_alloc.h b/arch/arm/mach-goldengate/include/mach/gpio_alloc.h
+index 83d9558..d351ee5 100644
+--- a/arch/arm/mach-goldengate/include/mach/gpio_alloc.h
++++ b/arch/arm/mach-goldengate/include/mach/gpio_alloc.h
+@@ -20,7 +20,6 @@
+  * Cortina will only support custom board builds which use the CONFIG_CORTINA_CUSTOM_BOARD definition.
+  */
+ 
+-#warning CUSTOM_BOARD_REVIEW_ME
+ #include <mach/custom_board/template/gpio/cfg_gpio_alloc.h>
+ 
+ /* custom board patch end HERE: */
+-- 
+2.9.2
+

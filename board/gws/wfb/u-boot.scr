@@ -1,0 +1,2 @@
+setenv verify no
+setenv ramargs 'setenv bootargs ubi.mtd=3 root=ubi0:${current_part} rootfstype=ubifs ro'

@@ -1,0 +1,15 @@
+diff -Nur --exclude '*.orig' linux-3.4.108/mm/slub.c linux-3.4.108-new/mm/slub.c
+--- linux-3.4.108/mm/slub.c	2015-06-18 20:40:35.000000000 -0700
++++ linux-3.4.108-new/mm/slub.c	2017-01-31 11:55:45.095548623 -0800
+@@ -2690,7 +2690,10 @@
+ 	min_objects = slub_min_objects;
+ 	if (!min_objects)
+ 		min_objects = 4 * (fls(nr_cpu_ids) + 1);
+-	max_objects = order_objects(slub_max_order, size, reserved);
++	if (size >= PAGE_SIZE)
++		max_objects = 1;
++	else
++		max_objects = order_objects(slub_max_order, size, reserved);
+ 	min_objects = min(min_objects, max_objects);
+ 
+ 	while (min_objects > 1) {

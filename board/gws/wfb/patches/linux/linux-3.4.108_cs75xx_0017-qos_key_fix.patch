@@ -1,0 +1,33 @@
+From fdd044eef5dad0085551fc22aea8dddd1722cb5c Mon Sep 17 00:00:00 2001
+From: Jacob Pedersen <jacob.pedersen@greenwavereality.com>
+Date: Mon, 9 Nov 2015 11:04:13 +0100
+Subject: [PATCH] FOO
+
+---
+ drivers/net/ethernet/cs752x/src/core/cs_core_hmu.c | 9 +--------
+ 1 file changed, 1 insertion(+), 8 deletions(-)
+
+diff --git a/drivers/net/ethernet/cs752x/src/core/cs_core_hmu.c b/drivers/net/ethernet/cs752x/src/core/cs_core_hmu.c
+index 73c8da5..51d4d7b 100644
+--- a/drivers/net/ethernet/cs752x/src/core/cs_core_hmu.c
++++ b/drivers/net/ethernet/cs752x/src/core/cs_core_hmu.c
+@@ -1914,15 +1914,8 @@ int cs_core_hmu_link_fwd_and_qos_hash(u32 fwd_hash_idx, u32 qos_hash_idx, bool n
+ 	if (curr == NULL)
+ 		return -1;
+ 
+-	/* create the key based on the qos_hash_idx */
+-	key = (u8 *)kzalloc(QOSHASH_KEY_SIZE, GFP_ATOMIC);
+-	if (key == NULL)
+-		return -1;
+-	p32 = (u32 *)key;
+-	*p32 = qos_hash_idx;
+-
+ 	/* link the key and fwd_hash_idx */
+-	ret = cs_hmu_create_link_src_and_hash(curr->hmu_table, key,
++	ret = cs_hmu_create_link_src_and_hash(curr->hmu_table, (u8 *) &qos_hash_idx,
+ 			fwd_hash_idx, (void *) 0xffffffff);
+ 	if (ret != 0)
+ 		DBG(PRINT("Fail to link QoS hash idx %x and FWD hash idx %x\n",
+-- 
+1.9.1
+

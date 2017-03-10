@@ -1,0 +1,25 @@
+From dbba4c0e0c781a2571b4653ce8a4efd362409844 Mon Sep 17 00:00:00 2001
+From: Hoang Tran <hoang.tran@greenwavereality.com>
+Date: Tue, 18 Oct 2016 13:43:26 -0700
+Subject: [PATCH] enlarge NE buffer size
+
+---
+ drivers/net/ethernet/cs752x/src/ni/cs752x_eth.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/cs752x/src/ni/cs752x_eth.c b/drivers/net/ethernet/cs752x/src/ni/cs752x_eth.c
+index a4fb587..413c137 100644
+--- a/drivers/net/ethernet/cs752x/src/ni/cs752x_eth.c
++++ b/drivers/net/ethernet/cs752x/src/ni/cs752x_eth.c
+@@ -243,7 +243,7 @@ u16 linux_free_buf_size_tbl[XRAM_RX_INSTANCE]
+ #define XRAM_CFG_PROF	CPU_XRAM_CFG_PROFILE_SEPARATE_LSPID
+ #else
+ u16 linux_free_buf_size_tbl[XRAM_RX_INSTANCE]
+-	= {256, 256, 256, 256, 256, 256, 256, 256};
++	= {256, 256, 256, 256, 480, 256, 256, 32};
+ 
+ #define XRAM_CFG_PROF	CPU_XRAM_CFG_PROFILE_PNI_WFO
+ #endif
+-- 
+2.10.0
+

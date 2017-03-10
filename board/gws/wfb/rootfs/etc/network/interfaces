@@ -1,0 +1,53 @@
+auto lo
+iface lo inet loopback
+
+auto br0
+iface br0 inet static
+	pre-up [ -e "/sys/class/net/${IFACE}" ] || /usr/sbin/brctl addbr ${IFACE}
+	address 192.168.1.100
+	netmask 255.255.255.0
+
+auto br133
+iface br133 inet static
+	pre-up [ -e "/sys/class/net/${IFACE}" ] || /usr/sbin/brctl addbr ${IFACE}
+	address 204.152.64.1
+	netmask 255.255.255.248
+
+auto eth0
+iface eth0 inet manual
+	pre-up /usr/sbin/brctl addif br0 ${IFACE}
+	up /sbin/ifconfig ${IFACE} up
+	down /sbin/ifconfig ${IFACE} down
+	post-down /usr/sbin/brctl delif br0 ${IFACE}
+
+auto eth1
+iface eth1 inet manual
+	pre-up /usr/sbin/brctl addif br0 ${IFACE}
+	up /sbin/ifconfig ${IFACE} up
+	down /sbin/ifconfig ${IFACE} down
+	post-down /usr/sbin/brctl delif br0 ${IFACE}
+
+auto eth2
+iface eth2 inet manual
+	pre-up /usr/sbin/brctl addif br0 ${IFACE}
+	up /sbin/ifconfig ${IFACE} up
+	down /sbin/ifconfig ${IFACE} down
+	post-down /usr/sbin/brctl delif br0 ${IFACE}
+
+auto eth0.133
+iface eth0.133 inet manual
+	pre-up /sbin/vconfig add ${IFACE%.*} ${IFACE##*.}
+	pre-up /usr/sbin/brctl addif br133 ${IFACE}
+	up /sbin/ifconfig ${IFACE} up
+	down /sbin/ifconfig ${IFACE} down
+	post-down /usr/sbin/brctl delif br133 ${IFACE}
+	post-down /sbin/vconfig rem ${IFACE}
+
+auto eth1.133
+iface eth1.133 inet manual
+	pre-up /sbin/vconfig add ${IFACE%.*} ${IFACE##*.}
+	pre-up /usr/sbin/brctl addif br133 ${IFACE}
+	up /sbin/ifconfig ${IFACE} up
+	down /sbin/ifconfig ${IFACE} down
+	post-down /usr/sbin/brctl delif br133 ${IFACE}
+	post-down /sbin/vconfig rem ${IFACE}

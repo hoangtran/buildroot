@@ -1,0 +1,90 @@
+diff --git a/drivers/net/ethernet/cs752x/Kconfig b/drivers/net/ethernet/cs752x/Kconfig
+index d3fedbe..dea6495 100644
+--- a/drivers/net/ethernet/cs752x/Kconfig
++++ b/drivers/net/ethernet/cs752x/Kconfig
+@@ -556,4 +556,11 @@ config CS75XX_SMALL_SLAB
+ 	  This only occurs when the memory allocation is equal or smaller than 16 bytes.
+ 	  Enable this to reduce memory usage in Cortina NE.
+ 
++config CS75XX_NO_JUMBO_FRAMES
++	bool "Dont support jumbo frames, saving 50% of network buffer memory"
++	default n
++	depends on CS752X
++	---help---
++	  This will allocate network buffers from the 2k slab instead of the 4k slab.
++	  Enable this to reduce memory usage in Cortina NE.
+ endif
+diff --git a/drivers/net/ethernet/cs752x/src/ni/cs752x_eth.c b/drivers/net/ethernet/cs752x/src/ni/cs752x_eth.c
+index 0b2521c..a7055a5 100644
+--- a/drivers/net/ethernet/cs752x/src/ni/cs752x_eth.c
++++ b/drivers/net/ethernet/cs752x/src/ni/cs752x_eth.c
+@@ -1175,8 +1175,12 @@ static int ni_complete_rx_instance(struct net_device *orig_dev, u32 instance,
+ 			break;
+ 		}
+ 		next_link = hdr_x->bits.next_link;
+-
+-		tmp_data = ((*(xram_ptr + 10)) & 0xfffff000) + 0x100 - 4;
++		/*
++		 * When sw pushes a buffer to qm,
++		 * qm will write data at next 256 byte aligned address
++		 * so if say skb->head is 0xc000a010, HW will write to 0xc000a100
++		 */
++		tmp_data = ((*(xram_ptr + 10)) & 0xffffff00) + 0x100 - 4;
+ 		tmp_ptr = (u32 *)(phys_to_virt(tmp_data + GOLDENGATE_DRAM_BASE));
+ 		skb = (struct sk_buff *)(*tmp_ptr);
+ 		if (unlikely(skb == NULL)) {
+@@ -1321,7 +1325,8 @@ static int ni_complete_rx_instance(struct net_device *orig_dev, u32 instance,
+ 		/* decrease pkt len by CRC length */
+ 		pkt_len -= 4;
+ 
+-		seg_len = SKB_PKT_LEN - ((u32)skb->data & 0xff);
++		seg_len = MAX_QM_SEG_LEN - ((u32)skb->data & 0xff);
++
+ 		DBG(printk("%s::seg len %d\n", __func__,
+ 			min_t(u16, pkt_len, seg_len)));
+ #ifdef CONFIG_CS75XX_NI_EXPERIMENTAL_SW_CACHE_MANAGEMENT
+@@ -1342,7 +1347,7 @@ static int ni_complete_rx_instance(struct net_device *orig_dev, u32 instance,
+ 		refill_cnt++;
+ 		while (pkt_len > 0) {
+ 			tmp_data = ((*(xram_ptr + 11 + jumbo_pkt_index)) &
+-					0xfffff000) + 0x100 - 4;
++					0xffffff00) + 0x100 - 4;
+ 			tmp_ptr = (u32 *)(phys_to_virt(tmp_data
+ 						+ GOLDENGATE_DRAM_BASE));
+ 			tmp_skb = (struct sk_buff *)(*tmp_ptr);
+diff --git a/drivers/net/ethernet/cs752x/src/ni/cs752x_eth.h b/drivers/net/ethernet/cs752x/src/ni/cs752x_eth.h
+index 9082d81..d70a305 100755
+--- a/drivers/net/ethernet/cs752x/src/ni/cs752x_eth.h
++++ b/drivers/net/ethernet/cs752x/src/ni/cs752x_eth.h
+@@ -236,7 +236,12 @@ extern u32 cs_ni_fastbridge;
+ 
+ #define RW_PTR_MASK			0x07FF
+ 
++#define MAX_QM_SEG_LEN 3584
++#ifdef CONFIG_CS75XX_NO_JUMBO_FRAMES
++#define SKB_PKT_LEN			(SKB_WITH_OVERHEAD(2048) - 0x100 - NET_SKB_PAD)
++#else
+ #define SKB_PKT_LEN			3584 /* 3.5 * 1024 */
++#endif
+ #define REG32(addr)			(*(volatile unsigned long  * const)(addr))
+ 
+ #define CHECKSUM_ERROR			1
+diff --git a/drivers/net/ethernet/cs752x/src/qm/cs75xx_qm.h b/drivers/net/ethernet/cs752x/src/qm/cs75xx_qm.h
+index b850758..452b2f5 100644
+--- a/drivers/net/ethernet/cs752x/src/qm/cs75xx_qm.h
++++ b/drivers/net/ethernet/cs752x/src/qm/cs75xx_qm.h
+@@ -20,9 +20,14 @@
+ #define __CS_QM_API_H__
+ 
+ #include <mach/platform.h>
++#include <linux/skbuff.h>
+ 
+ //#define ACP_QM	1
++#ifdef CONFIG_CS75XX_NO_JUMBO_FRAMES
++#define MAX_PKT_LEN (SKB_WITH_OVERHEAD(2048) - 0x100 - 26)	/* 3 * 8 (CPU_HEADER) + 2 linux align */
++#else
+ #define MAX_PKT_LEN 9022	/* 64 ~ 9200 */
++#endif
+ #define MAX_CPU_PKT_LEN (MAX_PKT_LEN + 16)	/* MAX_PKT_LEN + CPU_HDR_SIZE */
+ //#define MAX_PKT_LEN 3800	/* 64 ~ 9200 */
+ #define MAX_CPU_BUFFERS	4096	/* 32 ~ 4096 , HW buffer poll */

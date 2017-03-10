@@ -1,0 +1,36 @@
+From 4ad40cc568c5537de11092d3362f9cb287f915d9 Mon Sep 17 00:00:00 2001
+From: Guenter Roeck <linux@roeck-us.net>
+Date: Thu, 4 Dec 2014 09:58:15 -0800
+Subject: [PATCH] hwmon: (lm75) Strengthen detect function
+
+A chip returning 0x00 in all registers is erroneously detected
+as LM75. Check hysteresis and temperature limit registers and
+abort if both are 0 to reduce the likelyhood for this to happen.
+
+Reviewed-by: Rob Coulson <rob.coulson@gmail.com>
+Reviewed-by: Jean Delvare <jdelvare@suse.de>
+Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+---
+ drivers/hwmon/lm75.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/drivers/hwmon/lm75.c b/drivers/hwmon/lm75.c
+index f58439b817b5..6753fd940c76 100644
+--- a/drivers/hwmon/lm75.c
++++ b/drivers/hwmon/lm75.c
+@@ -415,6 +415,12 @@ static int lm75_detect(struct i2c_client *new_client,
+ 		 || i2c_smbus_read_byte_data(new_client, 7) != os)
+ 			return -ENODEV;
+ 	}
++	/*
++	 * It is very unlikely that this is a LM75 if both
++	 * hysteresis and temperature limit registers are 0.
++	 */
++	if (hyst == 0 && os == 0)
++		return -ENODEV;
+ 
+ 	/* Addresses cycling */
+ 	for (i = 8; i <= 248; i += 40) {
+-- 
+2.11.0
+

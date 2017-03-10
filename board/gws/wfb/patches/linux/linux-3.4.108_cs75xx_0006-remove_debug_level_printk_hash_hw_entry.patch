@@ -1,0 +1,27 @@
+From 693e09e518d0736cb9a8a10907d1382944947c5e Mon Sep 17 00:00:00 2001
+From: Hoang Tran <hoang.tran@greenwavereality.com>
+Date: Mon, 29 Sep 2014 17:18:30 +0800
+Subject: [PATCH 06/13] cs75xx remove_debug_level_printk_hash_hw_entry
+
+Signed-off-by: Hoang Tran <hoang.tran@greenwavereality.com>
+Signed-off-by: Hoang Tran <hoang.tran@greenwavesystems.com>
+---
+ drivers/net/ethernet/cs752x/src/kernel_adapt/cs_hw_accel_manager.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/cs752x/src/kernel_adapt/cs_hw_accel_manager.c b/drivers/net/ethernet/cs752x/src/kernel_adapt/cs_hw_accel_manager.c
+index e61449e..37f88c1 100644
+--- a/drivers/net/ethernet/cs752x/src/kernel_adapt/cs_hw_accel_manager.c
++++ b/drivers/net/ethernet/cs752x/src/kernel_adapt/cs_hw_accel_manager.c
+@@ -1093,7 +1093,7 @@ static int cs_proc_node_hash_hw_entry_write(struct file *file,
+ 		goto NI_INVAL_EXIT;
+ 
+ 	buf[len] = '\0';
+-	printk(KERN_WARNING "get %s \n",buf);
++//	printk(KERN_DEBUG "get %s \n",buf);
+ 
+ 	if ((pch = strstr(buf, " ")) != NULL) {
+ 		value = -1;
+-- 
+2.5.0
+

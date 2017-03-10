@@ -1,0 +1,29 @@
+From 22a356a27700f58ba11cc0e4d1da6cae2a9eca47 Mon Sep 17 00:00:00 2001
+From: Hoang Tran <hoang.tran@greenwavesystems.com>
+Date: Thu, 20 Aug 2015 11:57:22 -0700
+Subject: [PATCH 11/13] fix a kernel panic when out-of-buffers and vlan needs
+ to allocate
+
+Signed-off-by: Hoang Tran <hoang.tran@greenwavesystems.com>
+---
+ net/8021q/vlan_dev.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/net/8021q/vlan_dev.c b/net/8021q/vlan_dev.c
+index cb9902d..ca42905 100644
+--- a/net/8021q/vlan_dev.c
++++ b/net/8021q/vlan_dev.c
+@@ -161,6 +161,10 @@ static netdev_tx_t vlan_dev_hard_start_xmit(struct sk_buff *skb,
+ 		skb = __vlan_hwaccel_put_tag(skb, vlan_tci);
+ #else /* CONFIG_ARCH_GOLDENGATE */
+ 		skb = /*__vlan_hwaccel_put_tag*/ vlan_put_tag(skb, vlan_tci);
++		if (unlikely(!skb)) {
++			this_cpu_inc(vlan_dev_priv(dev)->vlan_pcpu_stats->tx_dropped);
++			return NET_XMIT_CN; /* congention notification */
++		}
+ #endif /* CONFIG_ARCH_GOLDENGATE */
+ 	}
+ 
+-- 
+2.5.0
+

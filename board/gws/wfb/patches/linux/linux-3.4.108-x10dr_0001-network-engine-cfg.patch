@@ -1,0 +1,107 @@
+From 70dc29ee44aca8d15e952f8f162ec01421831ac1 Mon Sep 17 00:00:00 2001
+From: Hoang Tran <hoang.tran@greenwavereality.com>
+Date: Fri, 23 Oct 2015 17:23:41 -0700
+Subject: [PATCH] x10dr network engine cfg
+
+Signed-off-by: Hoang Tran <hoang.tran@greenwavereality.com>
+---
+ .../mach/custom_board/template/ni/cfg_ge_ports.h   |  6 +++---
+ drivers/net/ethernet/cs752x/src/ni/cs752x_eth.c    | 23 +++++++---------------
+ 2 files changed, 10 insertions(+), 19 deletions(-)
+
+diff --git a/arch/arm/mach-goldengate/include/mach/custom_board/template/ni/cfg_ge_ports.h b/arch/arm/mach-goldengate/include/mach/custom_board/template/ni/cfg_ge_ports.h
+index c61223f..7f293c6 100644
+--- a/arch/arm/mach-goldengate/include/mach/custom_board/template/ni/cfg_ge_ports.h
++++ b/arch/arm/mach-goldengate/include/mach/custom_board/template/ni/cfg_ge_ports.h
+@@ -22,7 +22,7 @@
+ #if 1 /* template start */
+ 
+ [GE_PORT0_CFG] = {
+-                .auto_nego = AUTONEG_ENABLE,   	/* AUTONEG_ENABLE or AUTONEG_DISABLE */
++                .auto_nego = AUTONEG_DISABLE,  	/* AUTONEG_ENABLE or AUTONEG_DISABLE */
+ #if (GMAC0_PHY_MODE == NI_MAC_PHY_RGMII_1000)
+                 .speed = SPEED_1000,
+ #else
+@@ -43,7 +43,7 @@
+ #endif
+         },
+ [GE_PORT1_CFG] = {
+-                .auto_nego = AUTONEG_ENABLE,    /* AUTONEG_ENABLE or AUTONEG_DISABLE */
++                .auto_nego = AUTONEG_DISABLE,    /* AUTONEG_ENABLE or AUTONEG_DISABLE */
+ #if (GMAC1_PHY_MODE == NI_MAC_PHY_RGMII_1000)
+                 .speed = SPEED_1000,
+ #else
+@@ -64,7 +64,7 @@
+ #endif
+         },
+ [GE_PORT2_CFG] = {
+-               .auto_nego = AUTONEG_ENABLE,    /* AUTONEG_ENABLE or AUTONEG_DISABLE */
++               .auto_nego = AUTONEG_DISABLE,    /* AUTONEG_ENABLE or AUTONEG_DISABLE */
+ #if (GMAC2_PHY_MODE == NI_MAC_PHY_RGMII_1000)
+                 .speed = SPEED_1000,
+ #else
+diff --git a/drivers/net/ethernet/cs752x/src/ni/cs752x_eth.c b/drivers/net/ethernet/cs752x/src/ni/cs752x_eth.c
+index b9a3fae..1e36b88 100644
+--- a/drivers/net/ethernet/cs752x/src/ni/cs752x_eth.c
++++ b/drivers/net/ethernet/cs752x/src/ni/cs752x_eth.c
+@@ -318,7 +318,6 @@ static const struct port_cfg_info {
+  * Cortina will only support custom board builds which use the CONFIG_CORTINA_CUSTOM_BOARD definition.
+  */
+ 
+-#warning CUSTOM_BOARD_REVIEW_ME
+ #include <mach/custom_board/template/ni/cfg_ge_ports.h>
+ 
+ /* custom board patch end HERE: */
+@@ -4771,12 +4770,6 @@ int cs_ni_open(struct net_device *dev)
+ 
+ #if defined(CONFIG_CORTINA_CUSTOM_BOARD)
+ 
+-#warning CUSTOM_BOARD_FIX_ME
+-		printk("%s::FPGA board, GMAC#%d does not have working "
+-				"phy\n", __func__, tp->port_id);
+-		netif_err(tp, drv, dev, "Open dev failure\n");
+-		return -EINVAL;
+-
+ #elif defined(CONFIG_CORTINA_FPGA)
+ 		printk("%s::FPGA board, GMAC#%d does not have working "
+ 				"phy\n", __func__, tp->port_id);
+@@ -4939,10 +4932,8 @@ int cs_ni_open(struct net_device *dev)
+ 	netif_tx_wake_all_queues(dev);
+ 
+ #if defined(CONFIG_CORTINA_CUSTOM_BOARD)
+-#warning CUSTOM_BOARD_REVIEW_ME
+-#endif
+-
+-#if defined(CONFIG_CORTINA_PON)
++	netif_carrier_on(dev);
++#elif defined(CONFIG_CORTINA_PON)
+ 	/* We turn on the carrier for switch port and PON port after all the
+ 	 * related SW entities have been set up properly */
+ 	if ((tp->port_id == GE_PORT1) || (tp->port_id == GE_PORT0))
+@@ -4975,7 +4966,9 @@ int cs_ni_open(struct net_device *dev)
+ 
+     cs_ni_set_flowctrl(dev);
+ 
+-#if defined(CONFIG_CORTINA_PON)
++#if defined(CONFIG_CORTINA_CUSTOM_BOARD)
++	tp->ni_driver_state = 1;
++#elif defined(CONFIG_CORTINA_PON)
+ 	if ((tp->port_id == GE_PORT1 || tp->port_id == GE_PORT0) &&
+ 			tp->ni_driver_state == 0)
+ 		tp->ni_driver_state = 1;
+@@ -6646,10 +6639,8 @@ static int __devinit cs_ni_init_module_probe(struct platform_device *pdev)
+ 		cs_ni_set_ethtool_ops(dev);
+ 
+ #if defined(CONFIG_CORTINA_CUSTOM_BOARD)
+-#warning CUSTOM_BOARD_REVIEW_ME
+-#endif
+-
+-#if defined(CONFIG_CORTINA_FPGA)
++		dev_has_phy = false;
++#elif defined(CONFIG_CORTINA_FPGA)
+ 		dev_has_phy = true;
+ #elif defined(CONFIG_CORTINA_PON)
+ 		if (tp->phy_addr == GE_PORT2_PHY_ADDR)
+-- 
+2.6.1
+

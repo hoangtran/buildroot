@@ -1,0 +1,13 @@
+diff -Naur linux-3.4.104/net/bridge/br_fdb.c linux-3.4.104.vlan/net/bridge/br_fdb.c
+--- linux-3.4.104/net/bridge/br_fdb.c	2015-03-11 04:57:37.000000000 +0000
++++ linux-3.4.104.vlan/net/bridge/br_fdb.c	2015-06-22 06:12:06.095174001 +0000
+@@ -295,6 +295,9 @@
+ 	struct net_bridge_port *port;
+ 	int ret;
+ 
++	if( dev==NULL )
++		return 0;
++
+ 	rcu_read_lock();
+ 	port = br_port_get_rcu(dev);
+ 	if (!port)

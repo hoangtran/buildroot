@@ -1,0 +1,44 @@
+From 08a4f8a2210ba814cb7cab42dee1311fd1c6585f Mon Sep 17 00:00:00 2001
+From: Jason Li <jason.li@cortina-access.com>
+Date: Thu, 13 Oct 2016 08:51:33 +0800
+Subject: [PATCH] G2: Bug#48761: Fix RTC driver bug. Driver should use UTC
+ format to fill HW registers.
+
+---
+ drivers/rtc/rtc-cs75xx.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/rtc/rtc-cs75xx.c b/drivers/rtc/rtc-cs75xx.c
+index 90ac581..05fa420 100644
+--- a/drivers/rtc/rtc-cs75xx.c
++++ b/drivers/rtc/rtc-cs75xx.c
+@@ -171,7 +171,7 @@ retry_get_time:
+ 	rtc_tm->tm_hour = bcd2bin(rtc_tm->tm_hour);
+ 	rtc_tm->tm_mday = bcd2bin(rtc_tm->tm_mday);
+ 	rtc_tm->tm_mon = bcd2bin(rtc_tm->tm_mon);
+-	rtc_tm->tm_year = (rtc_tm->tm_year & 0xff) + ((rtc_tm->tm_year >> 8) * 100);
++	rtc_tm->tm_year = bcd2bin(rtc_tm->tm_year & 0xff) + (bcd2bin(rtc_tm->tm_year >> 8) * 100);
+ 
+ 	/* epoch == 1900 */
+ 	rtc_tm->tm_year += 100;
+@@ -202,7 +202,7 @@ static int g2_rtc_settime(struct device *dev, struct rtc_time *tm)
+ 	g2_rtc_writel(G2_RTC_RTCHOUR, bin2bcd(tm->tm_hour), 0xffffffff);
+ 	g2_rtc_writel(G2_RTC_RTCDATE, bin2bcd(tm->tm_mday), 0xffffffff);
+ 	g2_rtc_writel(G2_RTC_RTCMON, bin2bcd(tm->tm_mon + 1), 0xffffffff);
+-	g2_rtc_writel(G2_RTC_RTCYEAR, ((year/100)<<8) + (year%100), 0xffffffff);
++	g2_rtc_writel(G2_RTC_RTCYEAR, (bin2bcd(year/100)<<8) + bin2bcd(year%100), 0xffffffff);
+ 
+ 	g2_rtc_write_disable();
+ 
+@@ -269,7 +269,7 @@ static int g2_rtc_getalarm(struct device *dev, struct rtc_wkalrm *alrm)
+ 	}
+ 
+ 	if (alm_en & G2_RTC_RTCALM_YEAREN) {
+-		alm_tm->tm_year = (alm_tm->tm_year & 0xff) + ((alm_tm->tm_year >> 8) * 100);
++		alm_tm->tm_year = bcd2bin(alm_tm->tm_year & 0xff) + (bcd2bin(alm_tm->tm_year >> 8) * 100);
+ 	} else {
+ 		alm_tm->tm_year = 0xffff;
+ 	}
+-- 
+1.7.12.4
+

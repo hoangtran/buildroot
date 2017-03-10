@@ -1,0 +1,74 @@
+From 353bd18a20385ed5dae753f4beef70016b16bb22 Mon Sep 17 00:00:00 2001
+From: Jacob Pedersen <jacob.pedersen@greenwavereality.com>
+Date: Thu, 28 Jan 2016 09:25:45 +0100
+Subject: [PATCH] Support VLAN in MCAST_CTRL and MCAST_L7_FILTER hashmasks
+
+---
+ drivers/net/ethernet/cs752x/src/core/cs_core_vtable.c       | 2 ++
+ drivers/net/ethernet/cs752x/src/include/cs_core_vtable.h    | 4 ++--
+ drivers/net/ethernet/cs752x/src/kernel_adapt/flow/cs_flow.c | 8 ++------
+ 3 files changed, 6 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/net/ethernet/cs752x/src/core/cs_core_vtable.c b/drivers/net/ethernet/cs752x/src/core/cs_core_vtable.c
+index 6898d03..5e60d00 100644
+--- a/drivers/net/ethernet/cs752x/src/core/cs_core_vtable.c
++++ b/drivers/net/ethernet/cs752x/src/core/cs_core_vtable.c
+@@ -66,7 +66,9 @@ u64 apptype_hashmask_tbl[CORE_APP_TYPE_MAX] = {
+ 	CS_HASHMASK_MCAST_WITHOUT_SRC,	/* CORE_FWD_APP_TYPE_MCAST_WITHOUT_SRC */
+ 	CS_HASHMASK_MCAST_WITH_SRC,	/* CORE_FWD_APP_TYPE_MCAST_WITH_SRC */
+ 	CS_HASHMASK_TUNNEL,		/* CORE_FWD_APP_TYPE_TUNNEL */
++#ifdef CONFIG_CS75XX_HW_ACCEL_L2TP_IPSEC_NATT
+ 	CS_HASHMASK_TUNNEL_L4_L7,	/* CORE_FWD_APP_TYPE_TUNNEL_L4_L7 */
++#endif
+ 	CS_HASHMASK_L7_FLOW,		/* CORE_FWD_APP_TYPE_L7_GENERIC */
+ 	CS_HASHMASK_IPLIP_LAN,		/* CORE_FWD_APP_TYPE_IPLIP_LAN */
+ 	CS_HASHMASK_MCAST_CTRL_IPTV,		/* CORE_FWD_APP_TYPE_MCAST_CTRL_IPTV */
+diff --git a/drivers/net/ethernet/cs752x/src/include/cs_core_vtable.h b/drivers/net/ethernet/cs752x/src/include/cs_core_vtable.h
+index bbb8a93..b0c719b 100644
+--- a/drivers/net/ethernet/cs752x/src/include/cs_core_vtable.h
++++ b/drivers/net/ethernet/cs752x/src/include/cs_core_vtable.h
+@@ -369,13 +369,13 @@ typedef enum {
+ 		CS_HM_IP_FRAGMENT_MASK | CS_HM_LSPID_MASK)
+ #endif
+ 
+-#define CS_HASHMASK_MCAST_CTRL (CS_HM_MAC_DA_MASK | \
++#define CS_HASHMASK_MCAST_CTRL (CS_HASHMASK_VLAN | CS_HM_MAC_DA_MASK | \
+ 		CS_HM_IP_VLD_MASK | CS_HM_IP_FRAGMENT_MASK | \
+ 		CS_HM_L3_CHKSUM_ERR_MASK | CS_HM_IP_VER_MASK | \
+ 		CS_HM_IP_PROT_MASK | CS_HM_IP_DA_MASK | \
+ 		CS_HM_L4_VLD_MASK | CS_HM_MCIDX_MASK)
+ 
+-#define CS_HASHMASK_MCAST_L7_FILTER (CS_HM_MAC_DA_MASK | \
++#define CS_HASHMASK_MCAST_L7_FILTER (CS_HASHMASK_VLAN | CS_HM_MAC_DA_MASK | \
+ 		CS_HM_IP_VLD_MASK | CS_HM_IP_FRAGMENT_MASK | \
+ 		CS_HM_L3_CHKSUM_ERR_MASK | CS_HM_IP_VER_MASK | \
+ 		CS_HM_IP_PROT_MASK | CS_HM_IP_DA_MASK | CS_HM_L4_DP_MASK | \
+diff --git a/drivers/net/ethernet/cs752x/src/kernel_adapt/flow/cs_flow.c b/drivers/net/ethernet/cs752x/src/kernel_adapt/flow/cs_flow.c
+index 85e5252..9c9b40b 100644
+--- a/drivers/net/ethernet/cs752x/src/kernel_adapt/flow/cs_flow.c
++++ b/drivers/net/ethernet/cs752x/src/kernel_adapt/flow/cs_flow.c
+@@ -229,9 +229,7 @@ cs_status_t cs_flow_add(CS_IN cs_dev_id_t device_id, CS_IN_OUT cs_flow_t *p_flow
+ 			printk("%s: tpid_encap_type1=0x%x\n", __func__, tpid_encap_type);
+ 		}
+ #endif
+-		if ((p_flow->flow_type != CS_FLOW_TYPE_MC_MEMBER) &&
+-			(p_flow->flow_type != CS_FLOW_TYPE_MC_L7_FILTER) &&
+-			(p_flow->flow_type != CS_FLOW_TYPE_MC_HASH)) {
++		if (p_flow->flow_type != CS_FLOW_TYPE_MC_MEMBER) {
+ 			rule_hash.key.tpid_enc_1 = 0x4 | tpid_encap_type;   /* only need to turn on the MSB of TPID */
+ 			rule_hash.key._8021p_1 = p_flow->ingress_pkt.tag[0].priority & 0x7;
+ 			rule_hash.key.vid_1 = p_flow->ingress_pkt.tag[0].vlan_id;
+@@ -246,9 +244,7 @@ cs_status_t cs_flow_add(CS_IN cs_dev_id_t device_id, CS_IN_OUT cs_flow_t *p_flow
+ 			printk("%s: tpid_encap_type2=0x%x\n", __func__, tpid_encap_type);
+ 		}
+ #endif
+-		if ((p_flow->flow_type != CS_FLOW_TYPE_MC_MEMBER) &&
+-			(p_flow->flow_type != CS_FLOW_TYPE_MC_L7_FILTER) &&
+-			(p_flow->flow_type != CS_FLOW_TYPE_MC_HASH)) {
++		if (p_flow->flow_type != CS_FLOW_TYPE_MC_MEMBER) {
+ 			rule_hash.key.tpid_enc_2 = 0x4 | tpid_encap_type;   /* only need to turn on the MSB of TPID */
+ 			rule_hash.key._8021p_2 = p_flow->ingress_pkt.tag[1].priority & 0x7;
+ 			rule_hash.key.vid_2 = p_flow->ingress_pkt.tag[1].vlan_id;
+-- 
+1.9.1
+

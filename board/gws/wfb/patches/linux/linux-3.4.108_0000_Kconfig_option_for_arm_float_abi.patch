@@ -1,0 +1,58 @@
+From cfea8898d114f9bcc5f25e5c05aeaf07d30c3c02 Mon Sep 17 00:00:00 2001
+From: Hoang Tran <hoang.tran@greenwavereality.com>
+Date: Mon, 29 Sep 2014 16:41:34 +0800
+Subject: [PATCH 0/1] Kconfig_option_for_arm_float_abi
+
+Signed-off-by: Hoang Tran <hoang.tran@greenwavereality.com>
+---
+ arch/arm/Makefile |  9 +++++++--
+ fs/Kconfig.binfmt | 15 +++++++++++++++
+ 2 files changed, 22 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/Makefile b/arch/arm/Makefile
+index 1d6402c..2a332a2 100644
+--- a/arch/arm/Makefile
++++ b/arch/arm/Makefile
+@@ -112,9 +112,14 @@ CFLAGS_MODULE	+=-fno-optimize-sibling-calls
+ endif
+ endif
+ 
++# -msoft-float
++float_abi-$(CONFIG_BINFMT_FLOAT_ABI_SOFT)   :=-mfloat-abi=soft
++float_abi-$(CONFIG_BINFMT_FLOAT_ABI_SOFTFP) :=-mfloat-abi=softfp
++float_abi-$(CONFIG_BINFMT_FLOAT_ABI_HARD)   :=-mfloat-abi=hard
++
+ # Need -Uarm for gcc < 3.x
+-KBUILD_CFLAGS	+=$(CFLAGS_ABI) $(CFLAGS_THUMB2) $(arch-y) $(tune-y) $(call cc-option,-mshort-load-bytes,$(call cc-option,-malignment-traps,)) -msoft-float -Uarm
+-KBUILD_AFLAGS	+=$(CFLAGS_ABI) $(AFLAGS_THUMB2) $(arch-y) $(tune-y) -include asm/unified.h -msoft-float
++KBUILD_CFLAGS	+=$(CFLAGS_ABI) $(CFLAGS_THUMB2) $(arch-y) $(tune-y) $(call cc-option,-mshort-load-bytes,$(call cc-option,-malignment-traps,))$(float_abi-y) -Uarm
++KBUILD_AFLAGS	+=$(CFLAGS_ABI) $(AFLAGS_THUMB2) $(arch-y) $(tune-y) -include asm/unified.h $(float_abi-y)
+ 
+ CHECKFLAGS	+= -D__arm__
+ 
+diff --git a/fs/Kconfig.binfmt b/fs/Kconfig.binfmt
+index e95d1b6..2b3685a 100644
+--- a/fs/Kconfig.binfmt
++++ b/fs/Kconfig.binfmt
+@@ -1,3 +1,18 @@
++choice BINFMT_FLOAT_ABI
++	prompt "Float ABI"
++	depends on ARM
++	default BINFMT_FLOAT_SOFT
++
++config BINFMT_FLOAT_ABI_SOFT
++	bool "soft"
++
++config BINFMT_FLOAT_ABI_SOFTFP
++	bool "softfp"
++
++config BINFMT_FLOAT_ABI_HARD
++	bool "hard"
++endchoice
++
+ config BINFMT_ELF
+ 	bool "Kernel support for ELF binaries"
+ 	depends on MMU && (BROKEN || !FRV)
+-- 
+2.1.1
+

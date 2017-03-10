@@ -1,0 +1,40 @@
+From 6ea2900b8f66e82518f5a9448986e56d561025de Mon Sep 17 00:00:00 2001
+From: Hoang Tran <hoang.tran@greenwavesystems.com>
+Date: Tue, 6 Oct 2015 16:13:10 -0700
+Subject: [PATCH] cs75xx support clk framework
+
+Signed-off-by: Hoang Tran <hoang.tran@greenwavesystems.com>
+---
+ arch/arm/Kconfig                  | 2 +-
+ arch/arm/mach-goldengate/Makefile | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index 8816dcf..7aa59c6 100755
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -406,7 +406,7 @@ config ARCH_GOLDENGATE
+ 	select GENERIC_TIME
+ 	select CLKDEV_LOOKUP
+ 	select ARM_AMBA
+-	select COMMON_CLKDEV
++	select COMMON_CLK
+ 	select GENERIC_CLOCKEVENTS
+ 	select ARCH_WANT_OPTIONAL_GPIOLIB
+ 	select MULTI_IRQ_HANDLER
+diff --git a/arch/arm/mach-goldengate/Makefile b/arch/arm/mach-goldengate/Makefile
+index 296b3a8..69bc347 100644
+--- a/arch/arm/mach-goldengate/Makefile
++++ b/arch/arm/mach-goldengate/Makefile
+@@ -2,7 +2,7 @@
+ # Makefile for the linux kernel.
+ #
+ 
+-obj-y					:= core.o clock.o
++obj-y					:= core.o
+ obj-$(CONFIG_MACH_CORTINA_G2)		+= cortina-g2.o g2-acp.o
+ obj-$(CONFIG_SMP)			+= platsmp.o headsmp.o
+ obj-$(CONFIG_HOTPLUG_CPU)		+= hotplug.o
+-- 
+2.5.2
+

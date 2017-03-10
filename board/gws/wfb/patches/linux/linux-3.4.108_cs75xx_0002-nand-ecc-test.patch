@@ -1,0 +1,74 @@
+From 38e699f22050041921821d8b9cb92e1a3a730f75 Mon Sep 17 00:00:00 2001
+From: Stefan Hallas Mulvad <kongen@greenwavereality.com>
+Date: Wed, 13 Nov 2013 23:43:51 +0100
+Subject: [PATCH] cs75xx nand ecc test
+
+Signed-off-by: Hoang Tran <hoang.tran@greenwavereality.com>
+Signed-off-by: Hoang Tran <hoang.tran@greenwavesystems.com>
+---
+ drivers/mtd/nand/cs752x_nand.c | 18 ++++++++++++++----
+ 1 file changed, 14 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/mtd/nand/cs752x_nand.c b/drivers/mtd/nand/cs752x_nand.c
+index ebbda35..12ddf3b 100644
+--- a/drivers/mtd/nand/cs752x_nand.c
++++ b/drivers/mtd/nand/cs752x_nand.c
+@@ -2906,8 +2906,10 @@ static void fill_hamming_oob_data( struct nand_chip *chip, struct mtd_info *mtd
+ 	int eccbytes = chip->ecc.bytes;
+ 
+ 	for (i = 0, j = 0; eccsteps; eccsteps--, i++, j += eccbytes) {
+-#ifdef	NAND_ECC_TEST
++#ifdef NAND_ECC_TEST
++#ifndef CONFIG_PREEMPT_NONE
+ 		get_cpu();
++#endif//CONFIG_PREEMPT_NONE
+ 		if (chip->ecc.size == 256) {
+ 			memset(eccode, 0, 32);
+ 			/* printk("%s : ecc 256 addr %p ",__func__,&tw[i*256]); */
+@@ -2935,8 +2937,10 @@ static void fill_hamming_oob_data( struct nand_chip *chip, struct mtd_info *mtd
+ 				    (" i (%x)HWecc error ecc_gen0.wrd(%x)  eccdata (%x)!\n",
+ 				     i, ecc_gen0.wrd, eccdata);
+ 		}
++#ifndef CONFIG_PREEMPT_NONE
+ 		put_cpu();
+-#endif				/* NAND_ECC_TEST */
++#endif//CONFIG_PREEMPT_NONE
++#endif /* NAND_ECC_TEST */
+ 
+ 		ecc_gen0.wrd = read_flash_ctrl_reg(FLASH_NF_ECC_GEN0 + 4 * i);
+ 		chip->oob_poi[eccpos[j]] = ecc_gen0.wrd & 0xff;	/*  */
+@@ -3426,8 +3430,10 @@ static int cs752x_nand_read_page_hwecc(struct mtd_info *mtd, struct nand_chip *c
+ 	}
+ 
+ 	for (i = 0 ; eccsteps; eccsteps--, i += eccbytes, p += eccsize) {
+-#ifdef	NAND_ECC_TEST
+- 	        get_cpu();
++#ifdef NAND_ECC_TEST
++#ifndef CONFIG_PREEMPT_NONE
++		get_cpu();
++#endif//CONFIG_PREEMPT_NONE
+ 		if(chip->ecc.size == 256)
+ 		{
+ 			memset(eccode, 0 ,32);
+@@ -3458,7 +3464,9 @@ static int cs752x_nand_read_page_hwecc(struct mtd_info *mtd, struct nand_chip *c
+ 			if(ecc_oob.wrd != eccdata)
+ 				printk("512: (i/eccbytes) : %x HWecc error ecc_oob.wrd(%x)  eccdata (%x)!\n",(i/eccbytes) ,ecc_oob.wrd,eccdata);
+ 		}
++#ifndef CONFIG_PREEMPT_NONE
+ 		put_cpu();
++#endif//CONFIG_PREEMPT_NONE
+ #endif
+ 		/* for (i = 0 ; eccsteps; eccsteps--, i += eccbytes, p += eccsize) { */
+ 		ecc_oob.wrd =	ecc_code[i] | ecc_code[i+1]<<8 | ecc_code[i+2]<<16;
+@@ -5290,6 +5298,8 @@ static int __devinit cs752x_nand_probe(struct platform_device *pdev)
+ 	printk("Error Correction Method: bch 8\n");
+ 	this->ecc.size = 512;
+ 	this->ecc.bytes = 13;
++
++	this->options |= NAND_NO_SUBPAGE_WRITE;
+ #elif defined( CONFIG_CS752X_NAND_ECC_HW_BCH_12_512 )
+ 	printk("Error Correction Method: bch 12\n");
+ 	this->ecc.size = 512;
+-- 
+2.5.0
+

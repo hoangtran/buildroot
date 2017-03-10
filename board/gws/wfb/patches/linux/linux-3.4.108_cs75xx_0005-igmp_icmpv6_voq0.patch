@@ -1,0 +1,170 @@
+From fbab8c76a7d8fd981631b72026e2ee24e98b3d40 Mon Sep 17 00:00:00 2001
+From: Hoang Tran <hoang.tran@greenwavereality.com>
+Date: Mon, 29 Sep 2014 17:13:32 +0800
+Subject: [PATCH 05/13] cs75xx igmp_icmpv6_voq0
+
+Signed-off-by: Hoang Tran <hoang.tran@greenwavereality.com>
+Signed-off-by: Hoang Tran <hoang.tran@greenwavesystems.com>
+---
+ drivers/net/ethernet/cs752x/src/core/cs_core_mcu.c | 131 +++++++++++++++++++++
+ 1 file changed, 131 insertions(+)
+
+diff --git a/drivers/net/ethernet/cs752x/src/core/cs_core_mcu.c b/drivers/net/ethernet/cs752x/src/core/cs_core_mcu.c
+index 9dad0f0..1253d6e 100644
+--- a/drivers/net/ethernet/cs752x/src/core/cs_core_mcu.c
++++ b/drivers/net/ethernet/cs752x/src/core/cs_core_mcu.c
+@@ -62,6 +62,9 @@ u32 cs_fe_double_chk = 0;
+ #define DBG(x) { }
+ #endif
+ 
++#define PROTO_IGMP	0x02
++#define PROTO_ICMPV6	0x3A
++
+ extern u8 cs_ni_get_port_id(struct net_device *dev);
+ extern cs_vtable_t *vtable_list[CORE_VTABLE_TYPE_MAX];
+ extern u32 cs_hw_ipsec_offload_mode;
+@@ -3144,6 +3147,132 @@ void cs_core_set_sw_only(struct sk_buff *skb)
+ }
+ EXPORT_SYMBOL(cs_core_set_sw_only);
+ 
++void cs_igmp_init(void)
++{
++	fe_fwd_result_entry_t igmp_fwdrslt_entry[GE_PORT_NUM];
++	fe_voq_pol_entry_t igmp_voqpol_entry[GE_PORT_NUM];
++	unsigned int igmp_fwdrslt_idx[GE_PORT_NUM], igmp_voqpol_idx[GE_PORT_NUM];
++	__u8 igmp_hm_idx = ~(0x0);
++
++	fe_fwd_result_entry_t icmpv6_fwdrslt_entry[GE_PORT_NUM];
++	fe_voq_pol_entry_t icmpv6_voqpol_entry[GE_PORT_NUM];
++	unsigned int icmpv6_fwdrslt_idx[GE_PORT_NUM], icmpv6_voqpol_idx[GE_PORT_NUM];
++	__u8 icmpv6_hm_idx = ~(0x0);
++
++	fe_sw_hash_t key;
++	u16 hash_index;
++	u32 crc32;
++	u16 crc16;
++	int i;
++	int ret;
++
++	if (cs_core_vtable_get_hashmask_index_from_apptype(
++			CORE_FWD_APP_TYPE_IP_PROT, &igmp_hm_idx)) {
++		printk(KERN_INFO "%s: Can not get hash mask for CORE_FWD_APP_TYPE_IP_PROT\n", __func__);
++		return CS_E_INIT;
++	}
++
++	icmpv6_hm_idx = igmp_hm_idx;
++
++
++	/*** IGMP ***/
++
++	/* hash forward result for each GE port */
++	for (i = 0; i < GE_PORT_NUM; i++) {
++		memset(&igmp_voqpol_entry[i], 0x0, sizeof(fe_voq_pol_entry_t));
++		igmp_voqpol_entry[i].voq_base = CPU_PORT0_VOQ_BASE + 0 + i * 8; // CPU VoQ#0
++		if (cs_fe_table_add_entry(FE_TABLE_VOQ_POLICER, &igmp_voqpol_entry[i],
++				&igmp_voqpol_idx[i])) {
++			printk(KERN_INFO "%s: cs_fe_table_add_entry(FE_TABLE_VOQ_POLICER) error\n", __func__);
++		}
++
++		memset(&igmp_fwdrslt_entry[i], 0x0, sizeof(fe_fwd_result_entry_t));
++		igmp_fwdrslt_entry[i].dest.voq_policy = 0;
++		igmp_fwdrslt_entry[i].dest.voq_pol_table_index = igmp_voqpol_idx[i];
++		if (cs_fe_table_add_entry(FE_TABLE_FWDRSLT, &igmp_fwdrslt_entry[i],
++				&igmp_fwdrslt_idx[i])) {
++			printk(KERN_INFO "%s: cs_fe_table_add_entry(FE_TABLE_FWDRSLT) error\n", __func__);
++			cs_fe_table_del_entry_by_idx(FE_TABLE_VOQ_POLICER, igmp_voqpol_idx[i], false);
++		}
++	}
++
++	/* hash entry for IGMP packet */
++	for (i = 0; i < GE_PORT_NUM; i++) {
++		memset(&key, 0x0, sizeof(fe_sw_hash_t));
++		key.lspid = GE_PORT0 + i;
++		key.ip_prot = PROTO_IGMP;
++		key.ip_valid = 1;
++		key.mask_ptr_0_7 = igmp_hm_idx;
++
++		ret = cs_fe_hash_calc_crc(&key, &crc32, &crc16, CRC16_CCITT);
++		if (ret != 0) {
++			printk(KERN_INFO "%s: cs_fe_hash_calc_crc() fails!\n", __func__);
++			return CS_E_INIT;
++		}
++
++		ret = cs_fe_hash_add_hash(crc32, crc16, igmp_hm_idx,
++			igmp_fwdrslt_idx[i], &hash_index);
++		if (ret != 0) {
++			printk(KERN_INFO "%s: cs_fe_hash_add_hash() fails!\n", __func__);
++			return CS_E_INIT;
++		}
++
++		DBG(printk(KERN_INFO "%s: igmp_hm_idx=%u, igmp_fwdrslt_idx[%d]=%u, hash_index=%u\n",
++				__func__, igmp_hm_idx, i, igmp_fwdrslt_idx[i], hash_index));
++
++		cs_fe_table_inc_entry_refcnt(FE_TABLE_FWDRSLT, igmp_fwdrslt_idx[i]);
++	}
++
++	/*** ICMPv6 ***/
++
++	/* hash forward result for each GE port; same forward result as IGMP */
++	for (i = 0; i < GE_PORT_NUM; i++) {
++		memset(&icmpv6_voqpol_entry[i], 0x0, sizeof(fe_voq_pol_entry_t));
++		icmpv6_voqpol_entry[i].voq_base = CPU_PORT0_VOQ_BASE + 0 + i * 8; // CPU VoQ#0
++		if (cs_fe_table_add_entry(FE_TABLE_VOQ_POLICER, &icmpv6_voqpol_entry[i],
++				&icmpv6_voqpol_idx[i])) {
++			printk(KERN_INFO "%s: cs_fe_table_add_entry(FE_TABLE_VOQ_POLICER) error\n", __func__);
++		}
++
++		memset(&icmpv6_fwdrslt_entry[i], 0x0, sizeof(fe_fwd_result_entry_t));
++		icmpv6_fwdrslt_entry[i].dest.voq_policy = 0;
++		icmpv6_fwdrslt_entry[i].dest.voq_pol_table_index = icmpv6_voqpol_idx[i];
++		if (cs_fe_table_add_entry(FE_TABLE_FWDRSLT, &icmpv6_fwdrslt_entry[i],
++				&icmpv6_fwdrslt_idx[i])) {
++			printk(KERN_INFO "%s: cs_fe_table_add_entry(FE_TABLE_FWDRSLT) error\n", __func__);
++			cs_fe_table_del_entry_by_idx(FE_TABLE_VOQ_POLICER, icmpv6_voqpol_idx[i], false);
++		}
++	}
++
++	/* hash entry for ICMPv6 packet */
++	for (i = 0; i < GE_PORT_NUM; i++) {
++		memset(&key, 0x0, sizeof(fe_sw_hash_t));
++		key.lspid = GE_PORT0 + i;
++		key.ip_prot = PROTO_ICMPV6;
++		key.ip_valid = 1;
++		key.mask_ptr_0_7 = icmpv6_hm_idx;
++
++		ret = cs_fe_hash_calc_crc(&key, &crc32, &crc16, CRC16_CCITT);
++		if (ret != 0) {
++			printk(KERN_INFO "%s: cs_fe_hash_calc_crc() fails!\n", __func__);
++			return CS_E_INIT;
++		}
++
++		ret = cs_fe_hash_add_hash(crc32, crc16, icmpv6_hm_idx,
++			icmpv6_fwdrslt_idx[i], &hash_index);
++		if (ret != 0) {
++			printk(KERN_INFO "%s: cs_fe_hash_add_hash() fails!\n", __func__);
++			return CS_E_INIT;
++		}
++
++		DBG(printk(KERN_INFO "%s: icmpv6_hm_idx=%u, icmpv6_fwdrslt_idx[%d]=%u, hash_index=%u\n",
++				__func__, icmpv6_hm_idx, i, icmpv6_fwdrslt_idx[i], hash_index));
++
++		cs_fe_table_inc_entry_refcnt(FE_TABLE_FWDRSLT, icmpv6_fwdrslt_idx[i]);
++	}
++
++}
++
+ int cs_core_logic_init(void)
+ {
+ 	cs_ne_default_lifetime = CS_DEFAULT_LIFETIME;
+@@ -3169,6 +3298,8 @@ int cs_core_logic_init(void)
+ 
+ #ifdef CONFIG_CS75XX_DATA_PLANE_MULTICAST
+ 	cs_mcast_init();
++#else
++	cs_igmp_init();
+ #endif
+ 
+ #ifdef CONFIG_CS75XX_MTU_CHECK
+-- 
+2.5.0
+

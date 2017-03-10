@@ -1,0 +1,44 @@
+From 3090fb2a4644388066c753ba674a433700408165 Mon Sep 17 00:00:00 2001
+From: Hoang Tran <hoang.tran@greenwavereality.com>
+Date: Mon, 29 Sep 2014 19:11:08 +0800
+Subject: [PATCH 10/13] cs75xx remove_annoying_acp_test_output
+
+Signed-off-by: Hoang Tran <hoang.tran@greenwavereality.com>
+Signed-off-by: Hoang Tran <hoang.tran@greenwavesystems.com>
+---
+ fs/proc/base.c | 2 ++
+ init/main.c    | 2 --
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+index 754ac4d..02e4e72 100644
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -946,9 +946,11 @@ static ssize_t oom_adjust_write(struct file *file, const char __user *buf,
+ 	 * Warn that /proc/pid/oom_adj is deprecated, see
+ 	 * Documentation/feature-removal-schedule.txt.
+ 	 */
++	/*
+ 	printk_once(KERN_WARNING "%s (%d): /proc/%d/oom_adj is deprecated, please use /proc/%d/oom_score_adj instead.\n",
+ 		  current->comm, task_pid_nr(current), task_pid_nr(task),
+ 		  task_pid_nr(task));
++	*/
+ 	task->signal->oom_adj = oom_adjust;
+ 	/*
+ 	 * Scale /proc/pid/oom_score_adj appropriately ensuring that a maximum
+diff --git a/init/main.c b/init/main.c
+index ceb90a7..5574869 100755
+--- a/init/main.c
++++ b/init/main.c
+@@ -1011,8 +1011,6 @@ int verify_acp()
+ 		ret_v = memcmp(psrc_buf[i], pdst_buf[i], BUFF_SIZE_FOR_TEST);
+ 		if (ret_v != 0)
+ 			pr_err("ACP[%d] test fail!!!\n", i);
+-		else
+-			pr_info("ACP[%d] test OK\n", i);
+ 	}
+ 
+  out:
+-- 
+2.5.0
+

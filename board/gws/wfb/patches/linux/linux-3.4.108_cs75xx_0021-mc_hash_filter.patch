@@ -1,0 +1,296 @@
+--- b/drivers/net/ethernet/cs752x/src/core/cs_core_vtable.c
++++ b/drivers/net/ethernet/cs752x/src/core/cs_core_vtable.c
+@@ -69,8 +69,9 @@
+ 	CS_HASHMASK_TUNNEL_L4_L7,	/* CORE_FWD_APP_TYPE_TUNNEL_L4_L7 */
+ 	CS_HASHMASK_L7_FLOW,		/* CORE_FWD_APP_TYPE_L7_GENERIC */
+ 	CS_HASHMASK_IPLIP_LAN,		/* CORE_FWD_APP_TYPE_IPLIP_LAN */
+-	CS_HASHMASK_MCAST_CTRL,		/* CORE_FWD_APP_TYPE_MCAST_CTRL */
+-	CS_HASHMASK_MCAST_L7_FILTER,	/* CORE_FWD_APP_TYPE_MCAST_L7_FILTER */
++	CS_HASHMASK_MCAST_CTRL_IPTV,		/* CORE_FWD_APP_TYPE_MCAST_CTRL_IPTV */
++	CS_HASHMASK_MCAST_CTRL_IP_SA,		/* CORE_FWD_APP_TYPE_MCAST_CTRL_IP_SA */
++	CS_HASHMASK_MCAST_L7_FILTER_IPTV,	/* CORE_FWD_APP_TYPE_MCAST_L7_FILTER */
+ #if defined(CONFIG_CS75XX_HW_ACCEL_IPSEC_PASS) || defined(CONFIG_CS75XX_HW_ACCEL_L2TP_PASS)
+ 	CS_HASHMASK_L2_PASS,		/* CORE_FWD_APP_TYPE_L2_PASS */
+ #endif
+@@ -98,8 +99,9 @@
+ 	0,				/* CORE_QOS_APP_TYPE_L4_QOS_NAT*/
+ 	CS_HASHMASK_L7_FLOW,		/* CORE_QOS_APP_TYPE_L7_QOS_GENERIC*/
+ 	CS_HASHMASK_L3_FLOW_WITH_L4_CHKSUM, /*CORE_QOS_APP_TYPE_L3_QOS_GENERIC_WITH_CHKSUM*/
+-	CS_HASHMASK_MCAST_CTRL,		/* CORE_QOS_APP_TYPE_MCAST_CTRL */
+-	CS_HASHMASK_MCAST_L7_FILTER,	/*CORE_QOS_APP_TYPE_MCAST_L7_FILTER*/
++	CS_HASHMASK_MCAST_CTRL_IPTV,	/* CORE_QOS_APP_TYPE_MCAST_CTRL_IPTV */
++	CS_HASHMASK_1P_DSCP_MAP,	/* CORE_QOS_APP_TYPE_1P_DSCP_MAP */
++	CS_HASHMASK_MCAST_L7_FILTER_IPTV,	/*CORE_QOS_APP_TYPE_MCAST_L7_FILTER_IPTV*/
+ #endif //CONFIG_CS75XX_OFFSET_BASED_QOS
+ };
+ 
+@@ -108,6 +110,7 @@
+ 	"CORE_VTABLE_TYPE_BCAST",
+ 	"CORE_VTABLE_TYPE_L2_MCAST",
+ 	"CORE_VTABLE_TYPE_L3_MCAST_V4",
++	"CORE_VTABLE_TYPE_L3_MCAST_V4_MCGID128",
+ 	"CORE_VTABLE_TYPE_L3_MCAST_V6",
+ 	"CORE_VTABLE_TYPE_L2_FLOW",
+ #ifdef CS75XX_HW_ACCEL_TUNNEL
+@@ -194,7 +197,8 @@
+ #endif
+ 	"CORE_FWD_APP_TYPE_L7_GENERIC",
+ 	"CORE_FWD_APP_TYPE_IPLIP_LAN",
+-	"CORE_FWD_APP_TYPE_MCAST_CTRL",
++	"CORE_FWD_APP_TYPE_MCAST_CTRL_IPTV",
++	"CORE_FWD_APP_TYPE_MCAST_CTRL_IP_SA",
+ 	"CORE_FWD_APP_TYPE_MCAST_L7_FILTER",
+ #if defined(CONFIG_CS75XX_HW_ACCEL_IPSEC_PASS) || defined(CONFIG_CS75XX_HW_ACCEL_L2TP_PASS)
+ 	"CORE_FWD_APP_TYPE_L2_PASS",
+@@ -214,8 +218,9 @@
+ 	"CORE_QOS_APP_TYPE_L4_QOS_NAT",
+ 	"CORE_QOS_APP_TYPE_L7_QOS_GENERIC",
+ 	"CORE_QOS_APP_TYPE_L3_QOS_GENERIC_WITH_CHKSUM",
+-	"CORE_QOS_APP_TYPE_MCAST_CTRL",
+-	"CORE_QOS_APP_TYPE_MCAST_L7_FILTER",
++	"CORE_QOS_APP_TYPE_MCAST_CTRL_IPTV",
++	"CORE_QOS_APP_TYPE_1P_DSCP_MAP",
++	"CORE_QOS_APP_TYPE_MCAST_L7_FILTER_IPTV",
+ 	"CORE_QOS_APP_TYPE_MAX",
+ } ;
+ 
+@@ -248,11 +253,11 @@
+ 			CORE_FWD_APP_TYPE_NONE, CORE_FWD_APP_TYPE_NONE,
+ 			CORE_QOS_APP_TYPE_NONE, CORE_QOS_APP_TYPE_NONE}},
+ #else
+-	{1, 3, 1,
++	{1, 2, 0,
+ 		{CORE_FWD_APP_TYPE_SEPARATE_LOGICAL_PORT, CORE_FWD_APP_TYPE_L2_MCAST,
+-			CORE_FWD_APP_TYPE_MCAST_CTRL, CORE_FWD_APP_TYPE_NONE,
+ 			CORE_FWD_APP_TYPE_NONE, CORE_FWD_APP_TYPE_NONE,
+-			CORE_QOS_APP_TYPE_MCAST_CTRL, CORE_QOS_APP_TYPE_NONE}},
++			CORE_FWD_APP_TYPE_NONE, CORE_FWD_APP_TYPE_NONE,
++			CORE_QOS_APP_TYPE_NONE, CORE_QOS_APP_TYPE_NONE}},
+ #endif
+ 	/* CORE_VTABLE_TYPE_L3_MCAST_V4 */
+ #ifdef SA_CHECK_ENABLE
+@@ -269,12 +274,18 @@
+ 			CORE_FWD_APP_TYPE_NONE,
+ 			CORE_QOS_APP_TYPE_L3_QOS_MULTICAST, CORE_QOS_APP_TYPE_NONE}},
+ #else
+-	{1, 4, 2,
++	{1, 5, 2,
+ 		{CORE_FWD_APP_TYPE_SEPARATE_LOGICAL_PORT, CORE_FWD_APP_TYPE_L3_MCAST,
+-			CORE_FWD_APP_TYPE_MCAST_CTRL, CORE_FWD_APP_TYPE_MCAST_L7_FILTER,
+-			CORE_FWD_APP_TYPE_NONE, CORE_FWD_APP_TYPE_NONE,
+-			CORE_QOS_APP_TYPE_MCAST_CTRL, CORE_QOS_APP_TYPE_MCAST_L7_FILTER}},
++			CORE_FWD_APP_TYPE_MCAST_CTRL_IPTV, CORE_FWD_APP_TYPE_MCAST_L7_FILTER,
++			CORE_FWD_APP_TYPE_MCAST_CTRL_IP_SA, CORE_FWD_APP_TYPE_NONE,
++			CORE_QOS_APP_TYPE_1P_DSCP_MAP, CORE_QOS_APP_TYPE_MCAST_CTRL_IPTV}},
+ #endif
++	/* CORE_VTABLE_TYPE_L3_MCAST_V4_MCGID128 */
++	{1, 5, 2,
++		{CORE_FWD_APP_TYPE_SEPARATE_LOGICAL_PORT, CORE_FWD_APP_TYPE_L3_MCAST,
++			CORE_FWD_APP_TYPE_MCAST_CTRL_IPTV, CORE_FWD_APP_TYPE_MCAST_L7_FILTER,
++			CORE_FWD_APP_TYPE_MCAST_CTRL_IP_SA, CORE_FWD_APP_TYPE_NONE,
++			CORE_QOS_APP_TYPE_MCAST_CTRL_IPTV, CORE_QOS_APP_TYPE_MCAST_L7_FILTER_IPTV}},
+ 	/* CORE_VTABLE_TYPE_L3_MCAST_V6 */
+ #ifdef SA_CHECK_ENABLE
+ 	{1, 5, 0,
+@@ -291,11 +302,11 @@
+ 			CORE_FWD_APP_TYPE_NONE, CORE_FWD_APP_TYPE_NONE,
+ 			CORE_QOS_APP_TYPE_L3_QOS_MULTICAST, CORE_QOS_APP_TYPE_NONE}},
+ #else
+-	{1, 4, 2,
++	{1, 5, 2,
+ 		{CORE_FWD_APP_TYPE_SEPARATE_LOGICAL_PORT, CORE_FWD_APP_TYPE_L3_MCAST,
+-			CORE_FWD_APP_TYPE_MCAST_CTRL, CORE_FWD_APP_TYPE_MCAST_L7_FILTER,
+-			CORE_FWD_APP_TYPE_NONE, CORE_FWD_APP_TYPE_NONE,
+-			CORE_QOS_APP_TYPE_MCAST_CTRL, CORE_QOS_APP_TYPE_MCAST_L7_FILTER}},
++			CORE_FWD_APP_TYPE_MCAST_CTRL_IPTV, CORE_FWD_APP_TYPE_MCAST_L7_FILTER,
++			CORE_FWD_APP_TYPE_MCAST_CTRL_IP_SA, CORE_FWD_APP_TYPE_NONE,
++			CORE_QOS_APP_TYPE_MCAST_CTRL_IPTV, CORE_QOS_APP_TYPE_MCAST_L7_FILTER_IPTV}},
+ #endif
+ 
+ 	/* CORE_VTABLE_TYPE_L2_FLOW */
+@@ -1265,6 +1276,20 @@
+ 		p_class->l3.ip_ver_mask = 0;
+ 		p_class->port.mcgid_mask = 0x1ff;
+ 		break;
++	case CORE_VTABLE_TYPE_L3_MCAST_V4_MCGID128:
++		p_class->rule_priority = L3_MCAST_DEF_VTABLE_PRIORITY + 1;
++		p_class->l3.da[0] = 0xe0000000;
++		p_class->l3.da[1] = 0;
++		p_class->l3.da[2] = 0;
++		p_class->l3.da[3] = 0;
++		p_class->l3.ip_da_mask = 0x04;
++		p_class->l3.ip_valid = 1;
++		p_class->l3.ip_valid_mask = 0;
++		p_class->l3.ip_ver = 0;
++		p_class->l3.ip_ver_mask = 0;
++		p_class->port.mcgid = 0x80;
++		p_class->port.mcgid_mask = 0x07f;		
++		break;
+ 	case CORE_VTABLE_TYPE_L3_MCAST_V6:
+ 		p_class->rule_priority = L3_MCAST_DEF_VTABLE_PRIORITY;
+ 		p_class->l3.da[0] = 0;
+@@ -1598,6 +1623,7 @@
+ 	case CORE_VTABLE_TYPE_BCAST:
+ 	case CORE_VTABLE_TYPE_L2_MCAST:
+ 	case CORE_VTABLE_TYPE_L3_MCAST_V4:
++	case CORE_VTABLE_TYPE_L3_MCAST_V4_MCGID128:
+ 	case CORE_VTABLE_TYPE_L3_MCAST_V6:
+ 	case CORE_VTABLE_TYPE_L2_FLOW:
+ #ifdef CS75XX_HW_ACCEL_TUNNEL
+@@ -2072,6 +2098,32 @@
+ 	return 0;
+ }
+ 
++int cs_core_vtable_set_tuple_enable(unsigned int vtbl_type, u8 tuple_idx, u8 enable)
++{
++	fe_sdb_entry_t entry;
++	cs_vtable_t *table;
++	int ret;
++
++	/* find the table!! */
++	table = cs_core_vtable_get(vtbl_type);
++	while (table != NULL) {
++		ret = cs_fe_table_get_entry(FE_TABLE_SDB, table->sdb_index, &entry);
++		if (ret != 0)
++			return ret;
++		entry.sdb_tuple[tuple_idx].enable = enable;
++		ret = cs_fe_table_set_entry(FE_TABLE_SDB, table->sdb_index, &entry);
++		if (ret != 0)
++			return ret;
++		if ((table->next != NULL) &&
++				(table->next->vtable_type == vtbl_type))
++			table = table->next;
++		else
++			table = NULL;
++	}
++	return 0;
++}
++EXPORT_SYMBOL(cs_core_vtable_set_tuple_enable);
++
+ void cs_core_vtable_dump(void)
+ {
+ 	int i, count;
+--- b/drivers/net/ethernet/cs752x/src/include/cs_core_vtable.h
++++ b/drivers/net/ethernet/cs752x/src/include/cs_core_vtable.h
+@@ -34,6 +34,7 @@
+ 	CORE_VTABLE_TYPE_BCAST,
+ 	CORE_VTABLE_TYPE_L2_MCAST,
+ 	CORE_VTABLE_TYPE_L3_MCAST_V4,
++	CORE_VTABLE_TYPE_L3_MCAST_V4_MCGID128,
+ 	CORE_VTABLE_TYPE_L3_MCAST_V6,
+ 	CORE_VTABLE_TYPE_L2_FLOW,
+ #ifdef CS75XX_HW_ACCEL_TUNNEL
+@@ -155,7 +156,8 @@
+ #endif
+ 	CORE_FWD_APP_TYPE_L7_GENERIC,
+ 	CORE_FWD_APP_TYPE_IPLIP_LAN,
+-	CORE_FWD_APP_TYPE_MCAST_CTRL,
++	CORE_FWD_APP_TYPE_MCAST_CTRL_IPTV,
++	CORE_FWD_APP_TYPE_MCAST_CTRL_IP_SA,
+ 	CORE_FWD_APP_TYPE_MCAST_L7_FILTER,
+ #if defined(CONFIG_CS75XX_HW_ACCEL_IPSEC_PASS) || defined(CONFIG_CS75XX_HW_ACCEL_L2TP_PASS)
+ 	CORE_FWD_APP_TYPE_L2_PASS,
+@@ -179,8 +181,9 @@
+ 	CORE_QOS_APP_TYPE_L4_QOS_NAT,
+ 	CORE_QOS_APP_TYPE_L7_QOS_GENERIC,
+ 	CORE_QOS_APP_TYPE_L3_QOS_GENERIC_WITH_CHKSUM,
+-	CORE_QOS_APP_TYPE_MCAST_CTRL,
+-	CORE_QOS_APP_TYPE_MCAST_L7_FILTER,
++	CORE_QOS_APP_TYPE_MCAST_CTRL_IPTV,
++	CORE_QOS_APP_TYPE_1P_DSCP_MAP,
++	CORE_QOS_APP_TYPE_MCAST_L7_FILTER_IPTV,
+ 	CORE_QOS_APP_TYPE_MAX,
+ } cs_core_qos_app_type_e;
+ 
+@@ -367,11 +370,11 @@
+ #endif
+ 
+ #define CS_HASHMASK_MCAST_CTRL (CS_HM_MAC_DA_MASK | \
+ 		CS_HM_IP_VLD_MASK | CS_HM_IP_FRAGMENT_MASK | \
+ 		CS_HM_L3_CHKSUM_ERR_MASK | CS_HM_IP_VER_MASK | \
+-		CS_HM_IP_PROT_MASK | CS_HM_IP_SA_MASK | CS_HM_IP_DA_MASK | \
++		CS_HM_IP_PROT_MASK | CS_HM_IP_DA_MASK | \
+ 		CS_HM_L4_VLD_MASK | CS_HM_MCIDX_MASK)
+ 
+ #define CS_HASHMASK_MCAST_L7_FILTER (CS_HM_MAC_DA_MASK | \
+ 		CS_HM_IP_VLD_MASK | CS_HM_IP_FRAGMENT_MASK | \
+ 		CS_HM_L3_CHKSUM_ERR_MASK | CS_HM_IP_VER_MASK | \
+@@ -379,6 +379,12 @@
+ 		CS_HM_L4_VLD_MASK | CS_HM_MCIDX_MASK | \
+ 		CS_HM_L7_FIELD_MASK | CS_HM_L7_FIELD_VLD_MASK | CS_HM_L7_FIELD_SEL_TCP_UDP)
+ 
++#define CS_HASHMASK_MCAST_CTRL_IP_SA (CS_HASHMASK_MCAST_CTRL | CS_HM_IP_SA_MASK)
++#define CS_HASHMASK_MCAST_CTRL_IPTV (CS_HASHMASK_MCAST_CTRL	| CS_HM_L4_DP_MASK)
++#define CS_HASHMASK_MCAST_L7_FILTER_IPTV (CS_HASHMASK_MCAST_L7_FILTER | CS_HM_L4_DP_MASK)
++#define CS_HASHMASK_1P_DSCP_MAP (CS_HM_LSPID_MASK| CS_HM_TPID_ENC_1_MSB_MASK|\
++		CS_HM_8021P_1_MASK)
++	
+ #ifdef CONFIG_CS75XX_MTU_CHECK
+ #define CS_HASHMASK_L3_MTU_IPOE (CS_HASHMASK_L3_FLOW | CS_HM_PKTLEN_RNG_MATCH_VECTOR_B0_MASK)
+ #define CS_HASHMASK_L3_MTU_PPPOE (CS_HASHMASK_L3_FLOW | CS_HM_PKTLEN_RNG_MATCH_VECTOR_B1_MASK)
+--- b/drivers/net/ethernet/cs752x/src/kernel_adapt/flow/cs_flow.c
++++ a/drivers/net/ethernet/cs752x/src/kernel_adapt/flow/cs_flow.c	2015-12-03 07:50:11.862240046 -0800
+@@ -189,17 +189,17 @@
+ 			break;
+ #endif
+ 		case CS_FLOW_TYPE_MC_MEMBER:
+-			rule_hash.apptype = CORE_FWD_APP_TYPE_MCAST_CTRL;
++			rule_hash.apptype = CORE_FWD_APP_TYPE_MCAST_CTRL_IP_SA;
+ 			break;
+ 		case CS_FLOW_TYPE_MC_L7_FILTER:
+ 			if (p_flow->ingress_pkt.natt_4_bytes == 0)
+-				rule_hash.apptype = CORE_FWD_APP_TYPE_MCAST_CTRL;
++				rule_hash.apptype = CORE_FWD_APP_TYPE_MCAST_CTRL_IPTV;
+ 			else
+ 				rule_hash.apptype = CORE_FWD_APP_TYPE_MCAST_L7_FILTER;
+ 			break;
+ 		case CS_FLOW_TYPE_MC_HASH:
+ 			if (p_flow->ingress_pkt.natt_4_bytes == 0)
+-				rule_hash.apptype = CORE_FWD_APP_TYPE_MCAST_CTRL;
++				rule_hash.apptype = CORE_FWD_APP_TYPE_MCAST_CTRL_IPTV;
+ 			else
+ 				rule_hash.apptype = CORE_FWD_APP_TYPE_MCAST_L7_FILTER;
+ 			break;
+@@ -394,7 +394,7 @@
+                         if (tpid_encap_type1 != CS_VLAN_TPID_NONE) {
+                                 /* insert vlan tag */
+                         	rule_hash.fwd_result.l2.flow_vlan_op_en = 1;
+-                                rule_hash.fvlan.first_vlan_cmd = CS_FE_VLAN_CMD_PUSH_C;
++                                rule_hash.fvlan.first_vlan_cmd = 7 /*CS_FE_VLAN_CMD_PUSH_C*/;
+                                 rule_hash.fvlan.first_vid = vlan_id1;
+                                 rule_hash.fvlan.first_tpid_enc = tpid_encap_type1;
+                         }
+@@ -417,10 +417,13 @@
+                         rule_hash.fwd_result.l2.flow_vlan_op_en = 1;
+                         if (tpid_encap_type1 == CS_VLAN_TPID_NONE) {
+                                 /* remove vlan tag */
++				rule_hash.fvlan.second_vlan_cmd = CS_FE_VLAN_CMD_POP_B;
++#if 0
+ 				if (rule_hash.fvlan.first_vlan_cmd == CS_FE_VLAN_CMD_POP_B)
+ 					rule_hash.fvlan.second_vlan_cmd = CS_FE_VLAN_CMD_POP_B; /*POP ALL*/
+ 				else
+ 					rule_hash.fvlan.second_vlan_cmd = CS_FE_VLAN_CMD_POP_D; /*POP INNER*/
++#endif
+ 				rule_hash.fvlan.second_vid = vlan_id;
+ 				rule_hash.fvlan.second_tpid_enc = tpid_encap_type;
+                         }
+--- a/drivers/net/ethernet/cs752x/src/kernel_adapt/hash/cs_flow_hash.c
++++ b/drivers/net/ethernet/cs752x/src/kernel_adapt/hash/cs_flow_hash.c
+@@ -820,11 +820,14 @@ cs_status_t cs_flow_qos_hash_add(cs_rule_hash_t *p_rule_hash, cs_flow_t *p_flow)
+ 		else if (p_flow->flow_type == CS_FLOW_TYPE_L3_MC) {
+ 			p_qos_hash->qos_app_type = CORE_QOS_APP_TYPE_L3_QOS_MULTICAST;
+ 		}
+-		else if (p_rule_hash->apptype == CORE_FWD_APP_TYPE_MCAST_CTRL) {
+-			p_qos_hash->qos_app_type = CORE_QOS_APP_TYPE_MCAST_CTRL;
++		else if (p_rule_hash->apptype == CORE_FWD_APP_TYPE_MCAST_CTRL_IPTV) {
++			p_qos_hash->qos_app_type = CORE_QOS_APP_TYPE_MCAST_CTRL_IPTV;
++		}
++		else if (p_rule_hash->apptype == CORE_FWD_APP_TYPE_MCAST_CTRL_IP_SA) {
++			p_qos_hash->qos_app_type = CORE_QOS_APP_TYPE_1P_DSCP_MAP;
+ 		}
+ 		else if (p_rule_hash->apptype == CORE_FWD_APP_TYPE_MCAST_L7_FILTER) {
+-			p_qos_hash->qos_app_type = CORE_QOS_APP_TYPE_MCAST_L7_FILTER;
++			p_qos_hash->qos_app_type = CORE_QOS_APP_TYPE_MCAST_L7_FILTER_IPTV;
+ 		}
+ 		else if (p_flow->flow_type == CS_FLOW_TYPE_L4_NATT) {
+ 			p_qos_hash->qos_app_type = CORE_QOS_APP_TYPE_L7_QOS_GENERIC;

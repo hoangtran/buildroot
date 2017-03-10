@@ -1,0 +1,22 @@
+diff --git a/drivers/net/ethernet/cs752x/src/ni/cs752x_eth.c b/drivers/net/ethernet/cs752x/src/ni/cs752x_eth.c
+index 48f6f71..c07a2c4 100644
+--- a/drivers/net/ethernet/cs752x/src/ni/cs752x_eth.c
++++ b/drivers/net/ethernet/cs752x/src/ni/cs752x_eth.c
+@@ -1655,14 +1655,14 @@ static int ni_complete_rx_instance(struct net_device *dev, u32 instance,
+ 			__func__, __LINE__, packet_type));
+ #ifdef CONFIG_CS75XX_NI_EXPERIMENTAL_SW_CACHE_MANAGEMENT
+                 /* ...invalidate remainder of packet */
+-                if (skb->tail > skb->map_end &&
+-                                !br_fdb_test_forward(skb->dev, skb->data)) {
++//                if (skb->tail > skb->map_end &&
++//                                !br_fdb_test_forward(skb->dev, skb->data)) {
+                         dma_map_single(NULL, skb->map_end,
+                                         SKB_DATA_ALIGN(skb->tail - skb->map_end),
+                                         DMA_FROM_DEVICE);
+                         skb->dirty_buffer = 1;
+                         skb->map_end = NULL;
+-                }
++ //               }
+ #endif /* CONFIG_CS75XX_NI_EXPERIMENTAL_SW_CACHE_MANAGEMENT */
+ 
+ #ifdef CONFIG_CS75XX_WFO

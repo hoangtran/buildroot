@@ -1,0 +1,560 @@
+From c0f34c1af048ddb8272290322bef88bd7f70f4f4 Mon Sep 17 00:00:00 2001
+From: Hoang Tran <hoang.tran@greenwavereality.com>
+Date: Wed, 8 Feb 2017 13:44:49 -0800
+Subject: [PATCH] magic (lp5521) rgb led
+
+---
+ arch/arm/mach-goldengate/cortina-g2.c | 262 +++++++++++++++++++++++++---------
+ drivers/leds/leds-lp5521.c            |  61 ++++----
+ include/linux/leds-lp5521.h           |   3 -
+ 3 files changed, 215 insertions(+), 111 deletions(-)
+
+diff --git a/arch/arm/mach-goldengate/cortina-g2.c b/arch/arm/mach-goldengate/cortina-g2.c
+index b9f90cf..bcdf503 100644
+--- a/arch/arm/mach-goldengate/cortina-g2.c
++++ b/arch/arm/mach-goldengate/cortina-g2.c
+@@ -35,6 +35,7 @@
+ #include <linux/input.h>
+ #include <linux/gpio_keys.h>
+ #include <linux/leds_pwm.h>
++#include <linux/leds-lp5521.h>
+ 
+ #if 0 /* Disable OpenWRT gpio_button patch */
+ #include <linux/gpio_buttons.h>
+@@ -798,73 +799,192 @@ static struct platform_device cs75xx_i2c_device = {
+ 	.resource = cs75xx_i2c_resources,
+ };
+ 
+-static struct i2c_board_info i2c_board_infos[] __initdata = {
+-#if defined(CONFIG_CORTINA_FPGA)
+-	{
+-	 I2C_BOARD_INFO("cs4341", 0x10),
+-	 .flags = 0,
+-	 .irq = 0,
+-	 .platform_data = NULL,
++static struct lp5521_led_config lp5521_magic_led[] = {
++       [0] = {
++	       .name = "red",
++	       .chan_nr = 0,
++	       .led_current = 0xaf,
++	       .max_current = 0xff,
++       },
++       [1] = {
++	       .name = "green",
++	       .chan_nr = 1,
++	       .led_current = 0xaf,
++	       .max_current = 0xff,
++       },
++       [2] = {
++	       .name = "blue",
++	       .chan_nr = 2,
++	       .led_current = 0xaf,
++	       .max_current = 0xff,
++       },
++};
++
++static u8 solid_red[] = { 0x40, 0x96, };
++static u8 solid_green[] = { 0x40, 0xd0, };
++static u8 solid_blue[] = { 0x40, 0xa0, };
++static u8 solid_grey_red[] = { 0x40, 0x4b, };
++static u8 solid_grey_green[] = { 0x40, 0x68, };
++static u8 solid_grey_blue[] = { 0x40, 0x50, };
++static u8 fast_blink_red[] = { 0x40, 0x96, 0x50, 0x00, 0x40, 0x00, 0x50, 0x00, };
++static u8 fast_blink_green[] = { 0x40, 0xd0, 0x50, 0x00, 0x40, 0x00, 0x50, 0x00, };
++static u8 fast_blink_blue[] = { 0x40, 0xa0, 0x50, 0x00, 0x40, 0x00, 0x50, 0x00, };
++static u8 slow_blink_red[] = { 0x40, 0x96, 0x60, 0x00, 0x40, 0x00, 0x60, 0x00, };
++static u8 slow_blink_green[] = { 0x40, 0xd0, 0x60, 0x00, 0x40, 0x00, 0x60, 0x00, };
++static u8 slow_blink_blue[] = { 0x40, 0xa0, 0x60, 0x00, 0x40, 0x00, 0x60, 0x00, };
++
++static u8 solid_red_yellow[] = { 0x40, 0xf0, };
++static u8 solid_green_yellow[] = { 0x40, 0xec, };
++static u8 fast_blink_red_yellow[] = { 0x40, 0xf0, 0x50, 0x00, 0x40, 0x00, 0x50, 0x00, };
++static u8 fast_blink_green_yellow[] = { 0x40, 0xec, 0x50, 0x00, 0x40, 0x00, 0x50, 0x00, };
++static u8 slow_blink_red_yellow[] = { 0x40, 0xf0, 0x60, 0x00, 0x40, 0x00, 0x60, 0x00, };
++static u8 slow_blink_green_yellow[] = { 0x40, 0xec, 0x60, 0x00, 0x40, 0x00, 0x60, 0x00, };
++
++static struct lp5521_led_pattern lp5521_magic_patterns[] = {
++	[0] = {
++		.r = solid_red,
++		.size_r = ARRAY_SIZE(solid_red),
+ 	},
+-#endif
+-#if defined(CONFIG_CORTINA_ENGINEERING) || defined(CONFIG_CORTINA_ENGINEERING_S)
+-#if defined(CONFIG_SND_SOC_DAE4P)
+-	{
+-	 I2C_BOARD_INFO("dae4p", 0x59),
+-	 .flags = 0,
+-	 .irq = 0,
+-#if defined(CONFIG_CORTINA_ENGINEERING)
+-	 .platform_data = GPIO_SLIC1_RESET,
+-#elif defined(CONFIG_CORTINA_ENGINEERING_S)
+-	 .platform_data = GPIO_SLIC0_RESET,
+-#endif
++	[1] = {
++		.r = fast_blink_red,
++		.size_r = ARRAY_SIZE(fast_blink_red),
+ 	},
+-#endif
+-#endif
+-#if defined(CONFIG_CORTINA_ENGINEERING) || defined(CONFIG_CORTINA_ENGINEERING_S)\
+-	|| defined(CONFIG_CORTINA_REFERENCE_Q) || defined(CONFIG_CORTINA_REFERENCE_QD)
+-	{
+-	 I2C_BOARD_INFO("si5338_70", 0x70),
+-	 .flags = 0,
+-	 .irq = 0,
+-	 .platform_data = NULL,
++	[2] = {
++		.r = slow_blink_red,
++		.size_r = ARRAY_SIZE(slow_blink_red),
+ 	},
+-	{
+-	 I2C_BOARD_INFO("pcap7200", 0x0a),
+-	 .flags = 0,
+-	 .irq = GPIO_HDMI_INT,
+-	 .platform_data = NULL,
++	[3] = {
++		.g = solid_green,
++		.size_g = ARRAY_SIZE(solid_green),
+ 	},
+-#if !defined(CONFIG_CORTINA_ENGINEERING_S)
+-	{
+-	 I2C_BOARD_INFO("si5338_71", 0x71),
+-	 .flags = 0,
+-	 .irq = 0,
+-	 .platform_data = NULL,
++	[4] = {
++		.g = fast_blink_green,
++		.size_g = ARRAY_SIZE(fast_blink_green),
+ 	},
+-#endif
+-#endif
+-#if defined(CONFIG_CORTINA_ENGINEERING) || defined(CONFIG_CORTINA_PON) \
+-	|| defined(CONFIG_CORTINA_WAN)
+-	{
+-		I2C_BOARD_INFO("anx9805-sys", 0x39),
+-		.flags = 0,
+-		.irq = 0,
+-		.platform_data = NULL,
++	[5] = {
++		.g = slow_blink_green,
++		.size_g = ARRAY_SIZE(slow_blink_green),
+ 	},
+-	{
+-		I2C_BOARD_INFO("anx9805-dp", 0x38),
+-		.flags = 0,
+-		.irq = 0,
+-		.platform_data = NULL,
++	[6] = {
++		.r = solid_red_yellow,
++		.g = solid_green_yellow,
++		.size_r = ARRAY_SIZE(solid_red_yellow),
++		.size_g = ARRAY_SIZE(solid_green_yellow),
++	},
++	[7] = {
++		.r = fast_blink_red_yellow,
++		.g = fast_blink_green_yellow,
++		.size_r = ARRAY_SIZE(fast_blink_red_yellow),
++		.size_g = ARRAY_SIZE(fast_blink_green_yellow),
++	},
++	[8] = {
++		.r = slow_blink_red_yellow,
++		.g = slow_blink_green_yellow,
++		.size_r = ARRAY_SIZE(slow_blink_red_yellow),
++		.size_g = ARRAY_SIZE(slow_blink_green_yellow),
++	},
++	[9] = {
++		.b = solid_blue,
++		.size_b = ARRAY_SIZE(solid_blue),
++	},
++	[10] = {
++		.b = fast_blink_blue,
++		.size_b = ARRAY_SIZE(fast_blink_blue),
++	},
++	[11] = {
++		.b = slow_blink_blue,
++		.size_b = ARRAY_SIZE(slow_blink_blue),
++	},
++	[12] = {
++		.r = solid_red,
++		.b = solid_blue,
++		.size_r = ARRAY_SIZE(solid_red),
++		.size_b = ARRAY_SIZE(solid_blue),
++	},
++	[13] = {
++		.r = fast_blink_red,
++		.b = fast_blink_blue,
++		.size_r = ARRAY_SIZE(fast_blink_red),
++		.size_b = ARRAY_SIZE(fast_blink_blue),
++	},
++	[14] = {
++		.r = slow_blink_red,
++		.b = slow_blink_blue,
++		.size_r = ARRAY_SIZE(slow_blink_red),
++		.size_b = ARRAY_SIZE(slow_blink_blue),
++	},
++	[15] = {
++		.g = solid_green,
++		.b = solid_blue,
++		.size_g = ARRAY_SIZE(solid_green),
++		.size_b = ARRAY_SIZE(solid_blue),
++	},
++	[16] = {
++		.g = fast_blink_green,
++		.b = fast_blink_blue,
++		.size_g = ARRAY_SIZE(fast_blink_green),
++		.size_b = ARRAY_SIZE(fast_blink_blue),
+ 	},
++	[17] = {
++		.g = slow_blink_green,
++		.b = slow_blink_blue,
++		.size_g = ARRAY_SIZE(slow_blink_green),
++		.size_b = ARRAY_SIZE(slow_blink_blue),
++	},
++	[18] = {
++		/* solid white */
++		.r = solid_red,
++		.g = solid_green,
++		.b = solid_blue,
++		.size_r = ARRAY_SIZE(solid_red),
++		.size_g = ARRAY_SIZE(solid_green),
++		.size_b = ARRAY_SIZE(solid_blue),
++	},
++	[19] = {
++		/* white - fast blink */
++		.r = fast_blink_red,
++		.g = fast_blink_green,
++		.b = fast_blink_blue,
++		.size_r = ARRAY_SIZE(fast_blink_red),
++		.size_g = ARRAY_SIZE(fast_blink_green),
++		.size_b = ARRAY_SIZE(fast_blink_blue),
++	},
++	[20] = {
++		/* white - slow blink */
++		.r = slow_blink_red,
++		.g = slow_blink_green,
++		.b = slow_blink_blue,
++		.size_r = ARRAY_SIZE(slow_blink_red),
++		.size_g = ARRAY_SIZE(slow_blink_green),
++		.size_b = ARRAY_SIZE(slow_blink_blue),
++	},
++	[21] = {
++		.r = solid_grey_red,
++		.g = solid_grey_green,
++		.b = solid_grey_blue,
++		.size_r = ARRAY_SIZE(solid_grey_red),
++		.size_g = ARRAY_SIZE(solid_grey_green),
++		.size_b = ARRAY_SIZE(solid_grey_blue),
++	},
++};
++
++#define LP5521_CONFIGS	(LP5521_PWM_HF | LP5521_CP_MODE_AUTO | LP5521_CLK_INT)
++
++static struct lp5521_platform_data __initdata lp5521_magic_data = {
++       .label = "lp5521_magic",
++       .led_config     = &lp5521_magic_led[0],
++       .num_channels   = 3,
++       .clock_mode     = LP5521_CLOCK_INT,
++       .update_config  = LP5521_CONFIGS,
++       .patterns       = lp5521_magic_patterns,
++       .num_patterns   = ARRAY_SIZE(lp5521_magic_patterns),
++};
++static struct i2c_board_info i2c_board_infos[] __initdata = {
+ 	{
+-		I2C_BOARD_INFO("anx9805-hdmi", 0x3d),
+-		.flags = 0,
+-		.irq = 0,
+-		.platform_data = NULL,
++		/* lp5521 LED driver */
++		I2C_BOARD_INFO("lp5521", 0x32),
++		.platform_data = &lp5521_magic_data,
+ 	},
+-#endif
+ };
+ 
+ static struct cs75xx_spi_info cs75xx_spi_cfg = {
+@@ -907,13 +1027,13 @@ static struct spi_board_info spi_board_infos[] __initdata = {
+ 
+ /* custom board patch start HERE: */
+ 
+-/* Review contents of included template below. After review, apply patch to replace 
++/* Review contents of included template below. After review, apply patch to replace
+  * everything between the start HERE: comment above to the and end HERE: comment below
+- * including the start HERE: and end HERE: lines themselves. 
++ * including the start HERE: and end HERE: lines themselves.
+  *
+- * This patch should also remove the warning below and also change inclusion path to be a location 
++ * This patch should also remove the warning below and also change inclusion path to be a location
+  * within YOUR own custom_board/my_board_name tree which will not be overwritten by
+- * future Cortina releases.   
++ * future Cortina releases.
+  *
+  * WARNING: Do NOT remove or change the CONFIG_CORTINA_CUSTOM_BOARD pre-processor definition name above.
+  * Cortina will only support custom board builds which use the CONFIG_CORTINA_CUSTOM_BOARD definition.
+@@ -940,7 +1060,7 @@ static struct spi_board_info spi_board_infos[] __initdata = {
+ 	 .bus_num = 0,
+ #if defined(CONFIG_CORTINA_FPGA) || defined(CONFIG_CORTINA_REFERENCE) \
+ 	 || defined(CONFIG_CORTINA_REFERENCE_B) || defined(CONFIG_CORTINA_PON) \
+-	 || defined(CONFIG_CORTINA_WAN) || defined(CONFIG_CORTINA_REFERENCE_Q) 
++	 || defined(CONFIG_CORTINA_WAN) || defined(CONFIG_CORTINA_REFERENCE_Q)
+ 	 .chip_select = 0,
+ #elif defined(CONFIG_CORTINA_ENGINEERING) || defined(CONFIG_CORTINA_ENGINEERING_S) || defined(CONFIG_CORTINA_REFERENCE_S)
+ 	 .chip_select = 1,
+@@ -961,7 +1081,7 @@ static struct spi_board_info spi_board_infos[] __initdata = {
+ 	 },
+ #endif
+ 
+-#if defined(CONFIG_SLIC_SI3226X_SLOT0)	 
++#if defined(CONFIG_SLIC_SI3226X_SLOT0)
+ 	// For silicon lab si3226x SLIC IC.
+ 	{
+ 	 .modalias = "si3226x_slot0",
+@@ -974,7 +1094,7 @@ static struct spi_board_info spi_board_infos[] __initdata = {
+ 	 },
+ #endif
+ 
+-#if defined(CONFIG_SLIC_SI3226X_SLOT1)	
++#if defined(CONFIG_SLIC_SI3226X_SLOT1)
+ 	{
+ 	 .modalias = "si3226x_slot1",
+ 	 .platform_data = GPIO_SLIC1_RESET,
+@@ -1461,13 +1581,13 @@ static struct resource cs75xx_phone_resources[] = {
+ 
+ /* custom board patch start HERE: */
+ 
+-/* Review contents of included template below. After review, apply patch to replace 
++/* Review contents of included template below. After review, apply patch to replace
+  * everything between the start HERE: comment above to the and end HERE: comment below
+- * including the start HERE: and end HERE: lines themselves. 
++ * including the start HERE: and end HERE: lines themselves.
+  *
+- * This patch should also remove the warning below and also change inclusion path to be a location 
++ * This patch should also remove the warning below and also change inclusion path to be a location
+  * within YOUR own custom_board/my_board_name tree which will not be overwritten by
+- * future Cortina releases.   
++ * future Cortina releases.
+  *
+  * WARNING: Do NOT remove or change the CONFIG_CORTINA_CUSTOM_BOARD pre-processor definition name above.
+  * Cortina will only support custom board builds which use the CONFIG_CORTINA_CUSTOM_BOARD definition.
+@@ -1699,7 +1819,7 @@ void goldengate_acp_update(void)
+ 		{ CS75XX_ACP_ENABLE_NI, &goldengate_ne_device },
+ 		{ CS75XX_ACP_ENABLE_PCI_TX, &goldengate_pcie_device },
+ 		{ CS75XX_ACP_ENABLE_PCI_RX, &goldengate_pcie_device },
+-		/*FIXME: If you want PCI ACP only for RX, 
++		/*FIXME: If you want PCI ACP only for RX,
+ 			  please ask Jason Li*/
+ 	};
+ 	unsigned i;
+@@ -2232,7 +2352,7 @@ static void __init goldengate_init(void)
+ #ifdef CONFIG_SPI_CS75XX
+ 	spi_register_board_info(spi_board_infos, ARRAY_SIZE(spi_board_infos));
+ #endif
+- 
++
+ }
+ 
+ #define CONFIG_CS752X_NR_QMBANK 1
+diff --git a/drivers/leds/leds-lp5521.c b/drivers/leds/leds-lp5521.c
+index 2381562..5c51976 100644
+--- a/drivers/leds/leds-lp5521.c
++++ b/drivers/leds/leds-lp5521.c
+@@ -94,6 +94,7 @@
+ 
+ /* Pattern Mode */
+ #define PATTERN_OFF	0
++#define PATTERN_DEF	20
+ 
+ struct lp5521_engine {
+ 	int		id;
+@@ -113,13 +114,15 @@ struct lp5521_led {
+ };
+ 
+ struct lp5521_chip {
+-	struct lp5521_platform_data *pdata;
+ 	struct mutex		lock; /* Serialize control */
+ 	struct i2c_client	*client;
+ 	struct lp5521_engine	engines[LP5521_MAX_ENGINES];
+ 	struct lp5521_led	leds[LP5521_MAX_LEDS];
+ 	u8			num_channels;
+ 	u8			num_leds;
++	u8			clock_mode;
++	int			num_patterns;
++	struct lp5521_led_pattern *patterns;
+ };
+ 
+ static inline struct lp5521_led *cdev_to_led(struct led_classdev *cdev)
+@@ -239,6 +242,7 @@ static void lp5521_init_engine(struct lp5521_chip *chip)
+ static int lp5521_configure(struct i2c_client *client)
+ {
+ 	struct lp5521_chip *chip = i2c_get_clientdata(client);
++	struct lp5521_platform_data *pdata = client->dev.platform_data;
+ 	int ret;
+ 	u8 cfg;
+ 
+@@ -247,7 +251,7 @@ static int lp5521_configure(struct i2c_client *client)
+ 	/* Set all PWMs to direct control mode */
+ 	ret = lp5521_write(client, LP5521_REG_OP_MODE, LP5521_CMD_DIRECT);
+ 
+-	cfg = chip->pdata->update_config ?
++	cfg = pdata->update_config ?
+ 		: (LP5521_PWRSAVE_EN | LP5521_CP_MODE_AUTO | LP5521_R_TO_BATT);
+ 	ret |= lp5521_write(client, LP5521_REG_CONFIG, cfg);
+ 
+@@ -275,7 +279,7 @@ static int lp5521_run_selftest(struct lp5521_chip *chip, char *buf)
+ 		return ret;
+ 
+ 	/* Check that ext clock is really in use if requested */
+-	if (chip->pdata && chip->pdata->clock_mode == LP5521_CLOCK_EXT)
++	if (chip->clock_mode == LP5521_CLOCK_EXT)
+ 		if  ((status & LP5521_EXT_CLK_USED) == 0)
+ 			return -EIO;
+ 	return 0;
+@@ -359,7 +363,7 @@ static int lp5521_do_store_load(struct lp5521_engine *engine,
+ 	while ((offset < len - 1) && (i < LP5521_PROGRAM_LENGTH)) {
+ 		/* separate sscanfs because length is working only for %s */
+ 		ret = sscanf(buf + offset, "%2s%n ", c, &nrchars);
+-		if (ret != 2)
++		if (ret != 1)
+ 			goto fail;
+ 		ret = sscanf(c, "%2x", &cmd);
+ 		if (ret != 1)
+@@ -568,7 +572,7 @@ static inline struct lp5521_led_pattern *lp5521_get_pattern
+ 					(struct lp5521_chip *chip, u8 offset)
+ {
+ 	struct lp5521_led_pattern *ptn;
+-	ptn = chip->pdata->patterns + (offset - 1);
++	ptn = chip->patterns + (offset - 1);
+ 	return ptn;
+ }
+ 
+@@ -576,9 +580,9 @@ static void lp5521_run_led_pattern(int mode, struct lp5521_chip *chip)
+ {
+ 	struct lp5521_led_pattern *ptn;
+ 	struct i2c_client *cl = chip->client;
+-	int num_patterns = chip->pdata->num_patterns;
++	int num_patterns = chip->num_patterns;
+ 
+-	if (mode > num_patterns || !(chip->pdata->patterns))
++	if (mode > num_patterns || !(chip->patterns))
+ 		return;
+ 
+ 	if (mode == PATTERN_OFF) {
+@@ -761,21 +765,6 @@ static int __devinit lp5521_probe(struct i2c_client *client,
+ 
+ 	mutex_init(&chip->lock);
+ 
+-	chip->pdata   = pdata;
+-
+-	if (pdata->setup_resources) {
+-		ret = pdata->setup_resources();
+-		if (ret < 0)
+-			goto fail1;
+-	}
+-
+-	if (pdata->enable) {
+-		pdata->enable(0);
+-		usleep_range(1000, 2000); /* Keep enable down at least 1ms */
+-		pdata->enable(1);
+-		usleep_range(1000, 2000); /* 500us abs min. */
+-	}
+-
+ 	lp5521_write(client, LP5521_REG_RESET, 0xff);
+ 	usleep_range(10000, 20000); /*
+ 				     * Exact value is not available. 10 - 20ms
+@@ -791,7 +780,7 @@ static int __devinit lp5521_probe(struct i2c_client *client,
+ 	ret = lp5521_read(client, LP5521_REG_R_CURRENT, &buf);
+ 	if (ret || buf != LP5521_REG_R_CURR_DEFAULT) {
+ 		dev_err(&client->dev, "error in resetting chip\n");
+-		goto fail2;
++		goto fail1;
+ 	}
+ 	usleep_range(10000, 20000);
+ 
+@@ -799,7 +788,7 @@ static int __devinit lp5521_probe(struct i2c_client *client,
+ 
+ 	if (ret) {
+ 		dev_err(&client->dev, "Chip not found\n");
+-		goto fail2;
++		goto fail1;
+ 	}
+ 
+ 	dev_info(&client->dev, "%s programmable led chip found\n", id->name);
+@@ -807,9 +796,11 @@ static int __devinit lp5521_probe(struct i2c_client *client,
+ 	ret = lp5521_configure(client);
+ 	if (ret < 0) {
+ 		dev_err(&client->dev, "error configuring chip\n");
+-		goto fail2;
++		goto fail1;
+ 	}
+ 
++	chip->clock_mode = pdata->clock_mode;
++
+ 	/* Initialize leds */
+ 	chip->num_channels = pdata->num_channels;
+ 	chip->num_leds = 0;
+@@ -822,7 +813,7 @@ static int __devinit lp5521_probe(struct i2c_client *client,
+ 		ret = lp5521_init_led(&chip->leds[led], client, i, pdata);
+ 		if (ret) {
+ 			dev_err(&client->dev, "error initializing leds\n");
+-			goto fail3;
++			goto fail2;
+ 		}
+ 		chip->num_leds++;
+ 
+@@ -837,22 +828,22 @@ static int __devinit lp5521_probe(struct i2c_client *client,
+ 		led++;
+ 	}
+ 
++	chip->num_patterns = pdata->num_patterns;
++	chip->patterns = kzalloc(chip->num_patterns * sizeof(struct lp5521_led_pattern), GFP_KERNEL);
++	memcpy(chip->patterns, pdata->patterns, chip->num_patterns * sizeof(struct lp5521_led_pattern));
++
+ 	ret = lp5521_register_sysfs(client);
+ 	if (ret) {
+ 		dev_err(&client->dev, "registering sysfs failed\n");
+-		goto fail3;
++		goto fail2;
+ 	}
++	lp5521_run_led_pattern(PATTERN_DEF, chip);
+ 	return ret;
+-fail3:
++fail2:
+ 	for (i = 0; i < chip->num_leds; i++) {
+ 		led_classdev_unregister(&chip->leds[i].cdev);
+ 		cancel_work_sync(&chip->leds[i].brightness_work);
+ 	}
+-fail2:
+-	if (pdata->enable)
+-		pdata->enable(0);
+-	if (pdata->release_resources)
+-		pdata->release_resources();
+ fail1:
+ 	kfree(chip);
+ 	return ret;
+@@ -871,10 +862,6 @@ static int __devexit lp5521_remove(struct i2c_client *client)
+ 		cancel_work_sync(&chip->leds[i].brightness_work);
+ 	}
+ 
+-	if (chip->pdata->enable)
+-		chip->pdata->enable(0);
+-	if (chip->pdata->release_resources)
+-		chip->pdata->release_resources();
+ 	kfree(chip);
+ 	return 0;
+ }
+diff --git a/include/linux/leds-lp5521.h b/include/linux/leds-lp5521.h
+index 3f071ec..039a2b3 100644
+--- a/include/linux/leds-lp5521.h
++++ b/include/linux/leds-lp5521.h
+@@ -61,9 +61,6 @@ struct lp5521_platform_data {
+ 	struct lp5521_led_config *led_config;
+ 	u8	num_channels;
+ 	u8	clock_mode;
+-	int	(*setup_resources)(void);
+-	void	(*release_resources)(void);
+-	void	(*enable)(bool state);
+ 	const char *label;
+ 	u8	update_config;
+ 	struct lp5521_led_pattern *patterns;
+-- 
+2.11.0
+

@@ -1,0 +1,240 @@
+From cc614fbb5750cf8ca8583c3fe0fc89bb0436f83e Mon Sep 17 00:00:00 2001
+From: Hoang Tran <hoang.tran@greenwavereality.com>
+Date: Mon, 1 Dec 2014 13:03:33 +0800
+Subject: [PATCH 5/8] add cs75xx gpio configuration
+
+Signed-off-by: Hoang Tran <hoang.tran@greenwavereality.com>
+---
+ arch/arm/cpu/armv7/g2/Makefile      |   1 +
+ arch/arm/cpu/armv7/g2/gpio.c        | 117 ++++++++++++++++++++++++++++++++++++
+ arch/arm/include/asm/arch-g2/gpio.h |  84 ++++++++++++++++++++++++++
+ 3 files changed, 202 insertions(+)
+ create mode 100644 arch/arm/cpu/armv7/g2/gpio.c
+ create mode 100644 arch/arm/include/asm/arch-g2/gpio.h
+
+diff --git a/arch/arm/cpu/armv7/g2/Makefile b/arch/arm/cpu/armv7/g2/Makefile
+index e638e47..58acae9 100644
+--- a/arch/arm/cpu/armv7/g2/Makefile
++++ b/arch/arm/cpu/armv7/g2/Makefile
+@@ -5,4 +5,5 @@
+ #
+ 
+ obj-y := timer.o reset.o clock.o
++obj-y += gpio.o
+ obj-y += lowlevel_init.o
+diff --git a/arch/arm/cpu/armv7/g2/gpio.c b/arch/arm/cpu/armv7/g2/gpio.c
+new file mode 100644
+index 0000000..545076a
+--- /dev/null
++++ b/arch/arm/cpu/armv7/g2/gpio.c
+@@ -0,0 +1,117 @@
++/*
++ * (C) Copyright 2014
++ * Hoang Tran <hoang.tran@greenwavereality.com>
++ *
++ * See file CREDITS for list of people who contributed to this
++ * project.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
++ * MA 02111-1307 USA
++ */
++
++#include <common.h>
++#include <asm/io.h>
++#include <asm/arch/register.h>
++#include <asm/arch/gpio.h>
++
++/* Only compile this file for boards with GPIO support */
++#if defined(GLOBAL_GPIO_MUX_BASE)
++
++#if defined(CONFIG_SYS_G2_GPIO_TABLE)
++gpio_param_s const gpio_tab[GPIO_GROUP_MAX][GPIO_MAX] = CONFIG_SYS_G2_GPIO_TABLE;
++#endif
++
++void gpio_config(int pin, int in_out, int gpio_alt, int val)
++{
++	u32 reg;
++	unsigned char gpio_core = pin / GPIO_MAX;
++	pin %= GPIO_MAX;
++
++	reg = __raw_readl(GPIO_MUX(gpio_core));
++	if (gpio_alt == GPIO_SEL) {
++		reg |= GPIO_VAL(pin);
++	} else {
++		reg &= (~GPIO_VAL(pin));
++	}
++	__raw_writel(reg, GPIO_MUX(gpio_core));
++
++	reg = __raw_readl(GPIO_CFG(gpio_core));
++	if (in_out == GPIO_OUT) {
++		reg &= (~GPIO_VAL(pin));
++		__raw_writel(reg, GPIO_CFG(gpio_core));
++		reg = __raw_readl(GPIO_IN(gpio_core));
++		if (val == GPIO_OUT_0)
++			reg &= (~GPIO_VAL(pin));
++		else if (val == GPIO_OUT_1)
++			reg |= GPIO_VAL(pin);
++		__raw_writel(reg, GPIO_OUT(gpio_core));
++	} else {
++		reg |= (GPIO_VAL(pin));
++		__raw_writel(reg, GPIO_CFG(gpio_core));
++	}
++}
++
++void gpio_write_bit(int pin, int val)
++{
++	u32 reg;
++	unsigned char gpio_core = pin / GPIO_MAX;
++	pin %= GPIO_MAX;
++
++	reg = __raw_readl(GPIO_MUX(gpio_core));
++	if ((reg & GPIO_VAL(pin)) == 0)
++		return;
++	reg = __raw_readl(GPIO_CFG(gpio_core));
++	if (reg & GPIO_VAL(pin))
++		return;
++
++	reg = __raw_readl(GPIO_IN(gpio_core));
++	if (val == GPIO_OUT_0) 
++		reg &= (~GPIO_VAL(pin));
++	else
++		reg |= GPIO_VAL(pin);
++	__raw_writel(reg, GPIO_OUT(gpio_core));
++}
++
++#if defined(CONFIG_SYS_G2_GPIO_TABLE)
++void gpio_set_chip_configuration(void)
++{
++	unsigned char gpio_core, i;
++	u32	mux, cfg, reg;
++	for (gpio_core = 0; gpio_core < GPIO_GROUP_MAX; gpio_core++) {
++		mux = 0xffffffff;  
++		cfg = 0xffffffff;
++		reg = 0x00000000;
++		for (i = 0; i < GPIO_MAX; i++) {
++			if (gpio_tab[gpio_core][i].alt == GPIO_SEL) {
++				mux |= GPIO_VAL(i);
++				if (gpio_tab[gpio_core][i].in_out == GPIO_OUT) {
++					cfg &= (~GPIO_VAL(i));
++					if (gpio_tab[gpio_core][i].out_val == GPIO_OUT_0)
++						reg &= (~(GPIO_VAL(i)));
++					else if (gpio_tab[gpio_core][i].out_val == GPIO_OUT_1)
++						reg |= (GPIO_VAL(i));
++				} else 
++					cfg |= GPIO_VAL(i);
++			} else 
++				mux &= (~GPIO_VAL(i));
++		}
++		__raw_writel(mux, GPIO_MUX(gpio_core));
++		__raw_writel(cfg, GPIO_CFG(gpio_core));
++		__raw_writel(reg, GPIO_OUT(gpio_core));
++	}
++}
++
++#endif /* CONFIG_SYS_G2_GPIO_TABLE */
++#endif /* GLOBAL_GPIO_MUX_BASE */
+diff --git a/arch/arm/include/asm/arch-g2/gpio.h b/arch/arm/include/asm/arch-g2/gpio.h
+new file mode 100644
+index 0000000..42321ac
+--- /dev/null
++++ b/arch/arm/include/asm/arch-g2/gpio.h
+@@ -0,0 +1,84 @@
++/*
++ * (C) Copyright 2014
++ * Hoang Tran <hoang.tran@greenwavereality.com>
++ *
++ * See file CREDITS for list of people who contributed to this
++ * project.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
++ * MA 02111-1307 USA
++ */
++
++#ifndef __ASM_G2_GPIO_H
++#define __ASM_G2_GPIO_H
++
++#include <asm/types.h>
++
++#define GPIO_GROUP_MAX	5
++#define GPIO_MAX	32
++
++/* GPIO controller */
++struct g2_gpio {
++	u32	cfg;
++	u32	out;
++	u32	in;
++	u32	lvl;
++	u32	edge;
++	u32	ie;
++	u32	intr;
++	u32	stat;
++};
++
++/* Offsets */
++#define GPIOx_CFG	0x00
++#define GPIOx_OUT	0x04
++#define GPIOx_IN	0x08
++#define GPIOx_LVL	0x0C
++#define GPIOx_EDGE	0x10
++#define GPIOx_IE	0x14
++#define GPIOx_INTR	0x18
++#define GPIOx_STAT	0x1C
++
++#define GPIO_BASE(x)	((0x20)*x + PER_GPIO0_CFG)
++#define GPIO_CFG(x)	(GPIO_BASE(x) + GPIOx_CFG)
++#define GPIO_OUT(x)	(GPIO_BASE(x) + GPIOx_OUT)
++#define GPIO_IN(x)	(GPIO_BASE(x) + GPIOx_IN)
++#define GPIO_LVL(x)	(GPIO_BASE(x) + GPIOx_LVL)
++#define GPIO_EDGE(x)	(GPIO_BASE(x) + GPIOx_EDGE)
++#define GPIO_INTR(x)	(GPIO_BASE(x) + GPIOx_INTR)
++#define GPIO_STAT(x)	(GPIO_BASE(x) + GPIOx_STAT)
++
++#define GPIO_MUX(x)	(4*x + GLOBAL_GPIO_MUX_BASE)
++
++#define GPIO_VAL(x)	(1 << x)
++
++#ifndef __ASSEMBLY__
++typedef enum gpio_select { GPIO_ALT, GPIO_SEL } gpio_select_t;
++typedef enum gpio_driver { GPIO_OUT, GPIO_IN } gpio_driver_t;
++typedef enum gpio_out	 { GPIO_OUT_0, GPIO_OUT_1, GPIO_NO_CHG } gpio_out_t;
++
++typedef struct {
++	unsigned long	add;	/* gpio core base address	*/
++	gpio_driver_t	in_out;	/* Driver Setting		*/
++	gpio_select_t	alt;	/* Selected Alternate		*/
++	gpio_out_t	out_val;/* Default Output Value		*/
++} gpio_param_s;
++#endif
++
++void gpio_config(int pin, int in_out, int gpio_alt, int val);
++void gpio_write_bit(int pin, int val);
++void gpio_set_chip_configuration(void);
++
++#endif /* __ASM_G2_GPIO_H */
+-- 
+2.5.0
+

@@ -1,0 +1,34 @@
+From 05b4e367251ea612fe3164b5e36bae97adc92a47 Mon Sep 17 00:00:00 2001
+From: Hoang Tran <hoang.tran@greenwavereality.com>
+Date: Tue, 14 Apr 2015 19:22:11 -0700
+Subject: [PATCH] bhr4: fix flood ping, missing replies
+
+Signed-off-by: Hoang Tran <hoang.tran@greenwavereality.com>
+---
+ net/ipv4/icmp.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/net/ipv4/icmp.c b/net/ipv4/icmp.c
+index 2cb2bf8..cf238ae 100644
+--- a/net/ipv4/icmp.c
++++ b/net/ipv4/icmp.c
+@@ -215,6 +215,8 @@ static inline struct sock *icmp_xmit_lock(struct net *net)
+ 
+ 	sk = icmp_sk(net);
+ 
++	spin_lock(&sk->sk_lock.slock);
++#if 0
+ 	if (unlikely(!spin_trylock(&sk->sk_lock.slock))) {
+ 		/* This can happen if the output path signals a
+ 		 * dst_link_failure() for an outgoing ICMP packet.
+@@ -222,6 +224,7 @@ static inline struct sock *icmp_xmit_lock(struct net *net)
+ 		local_bh_enable();
+ 		return NULL;
+ 	}
++#endif
+ 	return sk;
+ }
+ 
+-- 
+2.3.5
+

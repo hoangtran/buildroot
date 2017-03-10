@@ -1,0 +1,31 @@
+diff -Nur u-boot-2014.07/common/main.c u-boot-2014.07-new/common/main.c
+--- u-boot-2014.07/common/main.c	2014-07-14 19:16:45.000000000 +0200
++++ u-boot-2014.07-new/common/main.c	2014-10-10 08:53:14.533927437 +0200
+@@ -70,6 +70,15 @@
+ #ifdef CONFIG_VERSION_VARIABLE
+ 	setenv("ver", version_string);  /* set version variable */
+ #endif /* CONFIG_VERSION_VARIABLE */
++#ifdef GWR_RELEASE
++       setenv("gwr_release", GWR_RELEASE);
++       printf("GWR U-Boot Version: " GWR_RELEASE "\n");
++#else
++       setenv("gwr_release", "DEV");
++       printf("***********************************\n");
++       printf("WARNING - Running unreleased U-Boot\n");
++       printf("***********************************\n");
++#endif /* GWR_RELEASE */
+ 
+ 	cli_init();
+ 
+diff -Nur u-boot-2014.07/config.mk u-boot-2014.07-new/config.mk
+--- u-boot-2014.07/config.mk	2014-07-14 19:16:45.000000000 +0200
++++ u-boot-2014.07-new/config.mk	2014-10-10 08:54:02.930966114 +0200
+@@ -12,7 +12,7 @@
+ # (Tegra needs different flags for SPL.
+ #  That's the reason why this file must be included from spl/Makefile too.
+ #  If we did not have Tegra SoCs, build system would be much simpler...)
+-PLATFORM_RELFLAGS :=
++PLATFORM_RELFLAGS := ${EXTRA_PLATFORM_RELFLAGS}
+ PLATFORM_CPPFLAGS :=
+ PLATFORM_LDFLAGS :=
+ LDFLAGS :=

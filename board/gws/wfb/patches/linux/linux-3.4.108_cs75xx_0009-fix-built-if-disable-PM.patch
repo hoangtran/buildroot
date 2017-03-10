@@ -1,0 +1,172 @@
+From 031cb8ae1bf7ca357428390a7f55da1003dcd412 Mon Sep 17 00:00:00 2001
+From: Hoang Tran <hoang.tran@greenwavereality.com>
+Date: Mon, 29 Sep 2014 19:46:04 +0800
+Subject: [PATCH 09/13] cs75xx fix built if disable PM
+
+Signed-off-by: Hoang Tran <hoang.tran@greenwavereality.com>
+Signed-off-by: Hoang Tran <hoang.tran@greenwavesystems.com>
+---
+ drivers/mtd/nand/cs752x_nand.c                  |  6 ++++++
+ drivers/net/ethernet/cs752x/src/ni/cs752x_eth.c | 15 ++++++++-------
+ drivers/tty/serial/serial_cortina.c             |  6 ++++++
+ drivers/usb/host/ehci-cs752x.c                  |  6 ++++++
+ 4 files changed, 26 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/mtd/nand/cs752x_nand.c b/drivers/mtd/nand/cs752x_nand.c
+index a659d5e..7d777be 100644
+--- a/drivers/mtd/nand/cs752x_nand.c
++++ b/drivers/mtd/nand/cs752x_nand.c
+@@ -578,6 +578,7 @@ int nand_correct_512_data(struct mtd_info *mtd, unsigned char *pPagedata,
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_PM
+ static cs_status_t cs752x_nand_pwr_notifier(cs_pm_freq_notifier_data_t *data)
+ {
+ 	struct nand_chip *chip = cs752x_host->nand_chip;
+@@ -609,6 +610,7 @@ static cs_pm_freq_notifier_t n = {
+ 	.notifier = cs752x_nand_pwr_notifier,
+ 	.data = (void *)0x1,
+ };
++#endif
+ 
+ static void check_flash_ctrl_status()
+ {
+@@ -5327,7 +5329,9 @@ static int __devinit cs752x_nand_probe(struct platform_device *pdev)
+ 	if (err)
+ 		goto err_add;
+ 
++#ifdef CONFIG_PM
+ 	cs_pm_freq_register_notifier(&n, 1);
++#endif
+ 	/* Return happy */
+ 	printk("cx752x NAND init ok...\n");
+ 
+@@ -5435,7 +5439,9 @@ static int __devexit cs752x_nand_remove(struct platform_device *pdev)
+ 
+ 	mtd_device_unregister(cs752x_host->mtd);
+ 	
++#ifdef CONFIG_PM
+ 	cs_pm_freq_unregister_notifier(&n);
++#endif
+ 	/* Release resources, unregister device */
+ 	nand_release(cs752x_host->mtd);
+ 
+diff --git a/drivers/net/ethernet/cs752x/src/ni/cs752x_eth.c b/drivers/net/ethernet/cs752x/src/ni/cs752x_eth.c
+index f4cc512..2a16c2c 100644
+--- a/drivers/net/ethernet/cs752x/src/ni/cs752x_eth.c
++++ b/drivers/net/ethernet/cs752x/src/ni/cs752x_eth.c
+@@ -6956,13 +6956,6 @@ static const struct dev_pm_ops cs_ne_pm_ops = {
+ 
+ #define CS_DEV_NE_PM_OPS    (&cs_ne_pm_ops)
+ 
+-#else /* !CONFIG_PM */
+-
+-#define CS_DEV_NE_PM_OPS    NULL
+-
+-#endif /* !CONFIG_PM */
+-//Bug#42747--
+-
+ // Power management data plane APIs
+ cs_status_t cs_pm_ne_suspend ( void )
+ {
+@@ -6981,6 +6974,14 @@ cs_status_t cs_pm_ne_resume ( void )
+ } /* cs_pm_ne_resume() */
+ EXPORT_SYMBOL(cs_pm_ne_resume);
+ 
++#else /* !CONFIG_PM */
++
++#define CS_DEV_NE_PM_OPS    NULL
++
++#endif /* !CONFIG_PM */
++//Bug#42747--
++
++
+ 
+ /* 3.4.11 platform_driver register */
+ static struct platform_driver cs_ni_platform_driver = {
+diff --git a/drivers/tty/serial/serial_cortina.c b/drivers/tty/serial/serial_cortina.c
+index 9da926e..acfdf30 100644
+--- a/drivers/tty/serial/serial_cortina.c
++++ b/drivers/tty/serial/serial_cortina.c
+@@ -576,6 +576,7 @@ static struct uart_driver cortina_uart_driver = {
+ 	.cons = &cortina_console,
+ };
+ 
++#ifdef CONFIG_PM
+ static cs_status_t cortina_uart_freq_callback(cs_pm_freq_notifier_data_t *data)
+ {
+ 	struct cortina_uart_port *up = (struct cortina_uart_port *)data->data;
+@@ -636,6 +637,7 @@ static cs_status_t cortina_uart_freq_callback(cs_pm_freq_notifier_data_t *data)
+ static cs_pm_freq_notifier_t cortina_uart_freq_notifier = {
+ 	.notifier = cortina_uart_freq_callback,
+ };
++#endif
+ 
+ static int serial_cortina_probe(struct platform_device *pdev)
+ {
+@@ -680,8 +682,10 @@ static int serial_cortina_probe(struct platform_device *pdev)
+ 
+ 	cortina_uart_ports[port->uart.line] = port;
+ 
++#ifdef CONFIG_PM
+ 	cortina_uart_freq_notifier.data = (void *)port;
+ 	cs_pm_freq_register_notifier(&cortina_uart_freq_notifier, 0);
++#endif
+ 
+ 	platform_set_drvdata(pdev, port);
+ 
+@@ -693,7 +697,9 @@ static int serial_cortina_remove(struct platform_device *pdev)
+ 	struct uart_port *port = platform_get_drvdata(pdev);
+ 
+ 	if (port) {
++#ifdef CONFIG_PM
+ 		cs_pm_freq_unregister_notifier(&cortina_uart_freq_notifier);
++#endif
+ 		uart_remove_one_port(&cortina_uart_driver, port);
+ 	}
+ 
+diff --git a/drivers/usb/host/ehci-cs752x.c b/drivers/usb/host/ehci-cs752x.c
+index ce95dc1..42002ca 100644
+--- a/drivers/usb/host/ehci-cs752x.c
++++ b/drivers/usb/host/ehci-cs752x.c
+@@ -322,6 +322,7 @@ static const struct hc_driver cs752x_ehci_hc_driver = {
+ 	.clear_tt_buffer_complete	= ehci_clear_tt_buffer_complete,
+ };
+ 
++#if defined(CONFIG_PM)
+ static cs_status_t cs75xx_ehci_freq_callback(cs_pm_freq_notifier_data_t *data)
+ {
+ 	struct usb_hcd *hcd = (struct usb_hcd *)data->data;
+@@ -388,6 +389,7 @@ static cs_status_t cs75xx_ehci_freq_callback(cs_pm_freq_notifier_data_t *data)
+ static cs_pm_freq_notifier_t cs75xx_ehci_freq_notifier = {
+ 	.notifier = cs75xx_ehci_freq_callback,
+ };
++#endif
+ 
+ static int cs752x_ehci_probe(struct platform_device *pdev)
+ {
+@@ -522,8 +524,10 @@ static int cs752x_ehci_probe(struct platform_device *pdev)
+ 	glo_pdev = pdev;
+ #endif
+ 
++#if defined(CONFIG_PM)
+ 	cs75xx_ehci_freq_notifier.data = (void *)hcd;
+ 	cs_pm_freq_register_notifier(&cs75xx_ehci_freq_notifier, 0);
++#endif
+ 
+ 	return retval;
+ 
+@@ -549,7 +553,9 @@ static int cs752x_ehci_remove(struct platform_device *pdev)
+ 
+ 	/* ehci_shutdown(hcd); */
+ 
++#if defined(CONFIG_PM)
+ 	cs_pm_freq_unregister_notifier(&cs75xx_ehci_freq_notifier);
++#endif
+ 
+ 	usb_remove_hcd(hcd);
+ 	iounmap(hcd->regs);
+-- 
+2.5.0
+

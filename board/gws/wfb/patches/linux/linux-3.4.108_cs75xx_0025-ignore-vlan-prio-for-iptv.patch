@@ -1,0 +1,43 @@
+From 7bdc3896fed9d55bbebc36dbc2c0f24c5ef8f100 Mon Sep 17 00:00:00 2001
+From: Jacob Pedersen <jacob.pedersen@greenwavereality.com>
+Date: Mon, 18 Apr 2016 15:02:42 +0200
+Subject: [PATCH] Ignore VLAN tag priority in IPTV flows hashmasks.
+
+---
+ drivers/net/ethernet/cs752x/src/include/cs_core_vtable.h | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/cs752x/src/include/cs_core_vtable.h b/drivers/net/ethernet/cs752x/src/include/cs_core_vtable.h
+index b0c719b..0f42874 100644
+--- a/drivers/net/ethernet/cs752x/src/include/cs_core_vtable.h
++++ b/drivers/net/ethernet/cs752x/src/include/cs_core_vtable.h
+@@ -206,6 +206,10 @@ typedef enum {
+ 		CS_HM_TPID_ENC_2_MSB_MASK | CS_HM_TPID_ENC_2_LSB_MASK |\
+ 		CS_HM_8021P_1_MASK | CS_HM_8021P_2_MASK | CS_HM_DEI_1_MASK|\
+ 		CS_HM_DEI_2_MASK)
++#define CS_HASHMASK_VLAN_NO_PRIO (CS_HM_VID_1_MASK | CS_HM_VID_2_MASK |		\
++		CS_HM_TPID_ENC_1_MSB_MASK | CS_HM_TPID_ENC_1_LSB_MASK | \
++		CS_HM_TPID_ENC_2_MSB_MASK | CS_HM_TPID_ENC_2_LSB_MASK | \
++		CS_HM_DEI_1_MASK| CS_HM_DEI_2_MASK)
+ #endif //CONFIG_CS75XX_OFFSET_BASED_QOS
+ #ifdef SA_CHECK_ENABLE
+ #define CS_HASHMASK_MAC		(CS_HM_MAC_DA_MASK | CS_HM_ETHERTYPE_MASK)
+@@ -369,13 +373,13 @@ typedef enum {
+ 		CS_HM_IP_FRAGMENT_MASK | CS_HM_LSPID_MASK)
+ #endif
+ 
+-#define CS_HASHMASK_MCAST_CTRL (CS_HASHMASK_VLAN | CS_HM_MAC_DA_MASK | \
++#define CS_HASHMASK_MCAST_CTRL (CS_HASHMASK_VLAN_NO_PRIO | CS_HM_MAC_DA_MASK | \
+ 		CS_HM_IP_VLD_MASK | CS_HM_IP_FRAGMENT_MASK | \
+ 		CS_HM_L3_CHKSUM_ERR_MASK | CS_HM_IP_VER_MASK | \
+ 		CS_HM_IP_PROT_MASK | CS_HM_IP_DA_MASK | \
+ 		CS_HM_L4_VLD_MASK | CS_HM_MCIDX_MASK)
+ 
+-#define CS_HASHMASK_MCAST_L7_FILTER (CS_HASHMASK_VLAN | CS_HM_MAC_DA_MASK | \
++#define CS_HASHMASK_MCAST_L7_FILTER (CS_HASHMASK_VLAN_NO_PRIO | CS_HM_MAC_DA_MASK | \
+ 		CS_HM_IP_VLD_MASK | CS_HM_IP_FRAGMENT_MASK | \
+ 		CS_HM_L3_CHKSUM_ERR_MASK | CS_HM_IP_VER_MASK | \
+ 		CS_HM_IP_PROT_MASK | CS_HM_IP_DA_MASK | CS_HM_L4_DP_MASK | \
+-- 
+2.8.1.210.gb8b4d93
+

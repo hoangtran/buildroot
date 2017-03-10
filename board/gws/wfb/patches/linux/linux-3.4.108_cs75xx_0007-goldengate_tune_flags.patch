@@ -1,0 +1,27 @@
+From 71aec1f442b3e0405a16e7b89ed143ca7d3da9a4 Mon Sep 17 00:00:00 2001
+From: Hoang Tran <hoang.tran@greenwavereality.com>
+Date: Mon, 29 Sep 2014 17:19:33 +0800
+Subject: [PATCH 07/13] cs75xx goldengate_tune_flags
+
+Signed-off-by: Hoang Tran <hoang.tran@greenwavereality.com>
+Signed-off-by: Hoang Tran <hoang.tran@greenwavesystems.com>
+---
+ arch/arm/Makefile | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/arch/arm/Makefile b/arch/arm/Makefile
+index 9b251c4..f4cf539 100755
+--- a/arch/arm/Makefile
++++ b/arch/arm/Makefile
+@@ -91,6 +91,8 @@ tune-$(CONFIG_CPU_FEROCEON)	:=$(call cc-option,-mtune=marvell-f,-mtune=xscale)
+ tune-$(CONFIG_CPU_V6)		:=$(call cc-option,-mtune=arm1136j-s,-mtune=strongarm)
+ tune-$(CONFIG_CPU_V6K)		:=$(call cc-option,-mtune=arm1136j-s,-mtune=strongarm)
+ 
++tune-$(CONFIG_ARCH_GOLDENGATE) := -mcpu=cortex-a9 -mtune=cortex-a9 -mfpu=vfpv3-d16
++
+ ifeq ($(CONFIG_AEABI),y)
+ CFLAGS_ABI	:=-mabi=aapcs-linux -mno-thumb-interwork
+ else
+-- 
+2.5.0
+

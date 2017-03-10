@@ -1,0 +1,13 @@
+diff -Naur u-boot-2014.07.orig/tools/Makefile u-boot-2014.07.new/tools/Makefile
+--- u-boot-2014.07.orig/tools/Makefile	2016-01-30 08:01:23.026736325 +0000
++++ u-boot-2014.07.new/tools/Makefile	2016-01-30 08:06:30.570035106 +0000
+@@ -114,7 +114,8 @@
+ 
+ # MXSImage needs LibSSL
+ ifneq ($(CONFIG_MX23)$(CONFIG_MX28)$(CONFIG_FIT_SIGNATURE),)
+-HOSTLOADLIBES_mkimage += -lssl -lcrypto
++HOST_EXTRACFLAGS += ${HOST_OPENSSL_CFLAGS}
++HOSTLOADLIBES_mkimage += ${HOST_OPENSSL_LDFLAGS} -lssl -lcrypto
+ endif
+ 
+ HOSTLOADLIBES_dumpimage := $(HOSTLOADLIBES_mkimage)

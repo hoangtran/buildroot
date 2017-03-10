@@ -1,0 +1,12 @@
+diff --git a/drivers/net/ethernet/cs752x/src/kernel_adapt/qos/cs_hw_accel_qos_ingress.c b/drivers/net/ethernet/cs752x/src/kernel_adapt/qos/cs_hw_accel_qos_ingress.c
+index 8c147bc..8b1395a 100644
+--- a/drivers/net/ethernet/cs752x/src/kernel_adapt/qos/cs_hw_accel_qos_ingress.c
++++ b/drivers/net/ethernet/cs752x/src/kernel_adapt/qos/cs_hw_accel_qos_ingress.c
+@@ -407,6 +407,7 @@ int cs_qos_ingress_set_port_param(u8 port_id, u16 burst_size, u32 rate)
+ 	}
+ 	return -1;
+ }
++EXPORT_SYMBOL(cs_qos_ingress_set_port_param);
+ 
+ int cs_qos_ingress_get_port_param(u8 port_id, u16 *burst_size, u32 *rate)
+ {

@@ -1,0 +1,215 @@
+From 2c2e60fb81f5e88c90865484c8a38b16eb6149e6 Mon Sep 17 00:00:00 2001
+From: Hoang Tran <hoang.tran@greenwavesystems.com>
+Date: Thu, 20 Aug 2015 11:58:23 -0700
+Subject: [PATCH 12/13] fix cortina rx path running out-of-buffers and freezing
+
+Signed-off-by: Hoang Tran <hoang.tran@greenwavesystems.com>
+---
+ .../ethernet/cs752x/src/diagnostic/cs752x_proc.c   | 45 ++++++++++++++++++++++
+ drivers/net/ethernet/cs752x/src/ni/cs752x_eth.c    | 43 ++++++++++++++++++++-
+ 2 files changed, 86 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/cs752x/src/diagnostic/cs752x_proc.c b/drivers/net/ethernet/cs752x/src/diagnostic/cs752x_proc.c
+index 5cea783..127b26b 100644
+--- a/drivers/net/ethernet/cs752x/src/diagnostic/cs752x_proc.c
++++ b/drivers/net/ethernet/cs752x/src/diagnostic/cs752x_proc.c
+@@ -146,6 +146,7 @@ u32 cs_ni_debug = 0;
+ u32 cs_ni_use_sendfile = 1;
+ u32 cs_ni_fastbridge = 0;
+ u32 cs_ni_clear_stats_port_id = 0;
++u32 cs_ni_min_rsve_mem = 20480; /*20MB*/
+ u32 cs_qm_debug = 0;
+ u32 cs_tm_debug = 0;
+ u32 cs_sch_debug = 0;
+@@ -190,6 +191,7 @@ EXPORT_SYMBOL(cs_ni_debug);
+ EXPORT_SYMBOL(cs_ni_use_sendfile);
+ EXPORT_SYMBOL(cs_ni_fastbridge);
+ EXPORT_SYMBOL(cs_ni_clear_stats_port_id);
++EXPORT_SYMBOL(cs_ni_min_rsve_mem);
+ EXPORT_SYMBOL(cs_qm_debug);
+ EXPORT_SYMBOL(cs_tm_debug);
+ EXPORT_SYMBOL(cs_sch_debug);
+@@ -297,6 +299,7 @@ static int __init config_default_value(void)
+ #define NI_USE_SENDFILE		"ni_use_sendfile"
+ #define NI_FASTBRIDGE		"ni_fastbridge"
+ #define NI_CLEAR_STATS          "ni_clear_stats"
++#define NI_MIN_RSVE_MEM          "ni_min_rsve_mem"
+ #define QM_DEBUG		"qm_debug"
+ #define QM_INT_BUFF		"qm_int_buff"
+ #define TM_DEBUG		"tm_debug"
+@@ -1990,6 +1993,44 @@ NI_INVAL_EXIT:
+         return count;
+ }
+ 
++static int cs_ni_min_rsve_mem_read_proc(char *buf, char **start, off_t offset,
++				 int count, int *eof, void *data)
++{
++	u32 len = 0;
++
++	len += sprintf(buf + len, "\n%s = 0x%08x\n", NI_MIN_RSVE_MEM, cs_ni_min_rsve_mem);
++	*eof = 1;
++
++	return len;
++}
++
++static int cs_ni_min_rsve_mem_write_proc(struct file *file, const char *buffer,
++				  unsigned long count, void *data)
++{
++	char buf[32];
++	unsigned long mask;
++	ssize_t len;
++
++	len = min(count, (unsigned long)(sizeof(buf) - 1));
++	if (copy_from_user(buf, buffer, len))
++		goto NI_INVAL_EXIT;
++
++	buf[len] = '\0';
++	if (strict_strtoul(buf, 0, &mask))
++		goto NI_INVAL_EXIT;
++
++
++	cs_ni_min_rsve_mem = mask;
++	printk(KERN_WARNING "Set %s as 0x%08x\n", NI_MIN_RSVE_MEM, cs_ni_min_rsve_mem);
++
++	return count;
++
++NI_INVAL_EXIT:
++	printk(KERN_WARNING "Invalid argument\n");
++	return count;
++}
++
++
+ /* file handler for cs_cb_debug */
+ static int cs_ne_cs_cb_debug_read_proc(char *buf, char **start, off_t offset,
+ 				       int count, int *eof, void *data)
+@@ -2586,6 +2627,7 @@ void __exit cs752x_proc_cleanup_module(void)
+ 	remove_proc_entry(NI_DEBUG, proc_driver_cs752x_ne_ni);
+ 	remove_proc_entry(NI_USE_SENDFILE, proc_driver_cs752x_ne_ni);
+ 	remove_proc_entry(NI_FASTBRIDGE, proc_driver_cs752x_ne_ni);
++	remove_proc_entry(NI_MIN_RSVE_MEM, proc_driver_cs752x_ne_ni);
+ 	remove_proc_entry(QM_DEBUG, proc_driver_cs752x_ne_qm);
+ 	remove_proc_entry(QM_INT_BUFF, proc_driver_cs752x_ne_qm);
+ 	remove_proc_entry(TM_DEBUG, proc_driver_cs752x_ne_tm);
+@@ -2764,6 +2806,9 @@ int __init cs752x_proc_init_module(void)
+ 	cs752x_add_proc_handler(NI_CLEAR_STATS, cs_ni_clear_stats_read_proc,
+                                 cs_ni_clear_stats_write_proc,
+                                 proc_driver_cs752x_ne_ni);
++	cs752x_add_proc_handler(NI_MIN_RSVE_MEM, cs_ni_min_rsve_mem_read_proc,
++                                cs_ni_min_rsve_mem_write_proc,
++                                proc_driver_cs752x_ne_ni);
+ 	cs752x_add_proc_handler(QM_DEBUG, cs_qm_debug_read_proc,
+ 				cs_qm_debug_write_proc,
+ 				proc_driver_cs752x_ne_qm);
+diff --git a/drivers/net/ethernet/cs752x/src/ni/cs752x_eth.c b/drivers/net/ethernet/cs752x/src/ni/cs752x_eth.c
+index 2a16c2c..b9a3fae 100644
+--- a/drivers/net/ethernet/cs752x/src/ni/cs752x_eth.c
++++ b/drivers/net/ethernet/cs752x/src/ni/cs752x_eth.c
+@@ -52,6 +52,7 @@
+ #include <linux/phy.h>
+ #include <linux/workqueue.h>
+ #include <linux/ethtool.h>
++#include <linux/vmstat.h>
+ #include "cs752x_eth.h"
+ #include "cs75xx_ethtool.h"
+ #include "cs752x_ioctl.h"
+@@ -283,6 +284,8 @@ static int cs_ni_skb_recycle(struct sk_buff *skb);
+ static void cs_ni_prealloc_free_buffer(struct net_device *dev);
+ #endif /* ! CONFIG_CS75XX_NI_EXPERIMENTAL_SW_CACHE_MANAGEMENT */
+ 
++extern u32 cs_ni_min_rsve_mem;
++struct timer_list rx_fill_buffer_timer[XRAM_RX_INSTANCE];
+ 
+ 
+ static const struct port_cfg_info {
+@@ -676,6 +679,8 @@ static inline void cs_ni_alloc_linux_free_buffer(struct net_device *dev,
+ 	struct sk_buff *skb;
+ 	u32 phy_addr = 0;
+ 	u32 hw_cnt;
++	unsigned long free_page;
++
+ #ifndef CONFIG_CS75XX_NI_EXPERIMENTAL_SW_CACHE_MANAGEMENT
+ 	int is_skb_new_alloc = 0;
+ #endif /* ! CONFIG_CS75XX_NI_EXPERIMENTAL_SW_CACHE_MANAGEMENT */
+@@ -730,6 +735,14 @@ static inline void cs_ni_alloc_linux_free_buffer(struct net_device *dev,
+ #endif /* CONFIG_CS75XX_NI_EXPERIMENTAL_SW_CACHE_MANAGEMENT */
+ #endif /* NI_RECYCLE_SKB_PER_CPU */
+ 		if (skb == NULL) {
++
++#define K(x) ((x) << (PAGE_SHIFT - 10))
++			free_page = global_page_state(NR_FREE_PAGES);
++			if ( K(free_page) < cs_ni_min_rsve_mem){
++				//printk("Delay skb alloc due to low memory!\n");
++				break;
++			}
++
+ 			/* debug_Aaron 2012/12/11 implement non-cacheable for performace tuning */
+ 			if (ni_rx_noncache)
+ 		 		skb = dev_alloc_skb_uncachable(SKB_PKT_LEN + 0x100);
+@@ -1850,6 +1863,11 @@ SKB_HANDLED:
+ 
+ 		if (refill_cnt != 0)
+ 			cs_ni_alloc_linux_free_buffer(dev, instance, refill_cnt);
++
++		if (sw_qm_total_count[instance] == 0) {
++			//printk("%s start rx timer %d\n", __func__, instance);
++			mod_timer(&rx_fill_buffer_timer[instance], jiffies + msecs_to_jiffies(100));
++		}
+ 	}
+ 
+ 	return done;
+@@ -1961,7 +1979,8 @@ static int cs_ni_poll_dev(int instance, struct net_device *dev,
+ 		 */
+ 
+ 		napi_complete(napi);
+-		NI_WRITEL_MODE(1, NI_TOP_NI_CPUXRAM_RXPKT_0_INTENABLE_0 +
++		if (sw_qm_total_count[instance] != 0)
++			NI_WRITEL_MODE(1, NI_TOP_NI_CPUXRAM_RXPKT_0_INTENABLE_0 +
+ 				(instance << 3));
+ 
+ 	}
+@@ -1990,7 +2009,8 @@ static int cs_ni_poll_dev(int instance, struct net_device *dev,
+ 		 */
+ 
+ 		napi_complete(napi);
+-		NI_WRITEL_MODE(1, NI_TOP_NI_CPUXRAM_RXPKT_0_INTENABLE_0 +
++		if (sw_qm_total_count[instance] != 0)
++			NI_WRITEL_MODE(1, NI_TOP_NI_CPUXRAM_RXPKT_0_INTENABLE_0 +
+ 				(instance << 3));
+ 
+ 		return 0;
+@@ -2206,6 +2226,21 @@ static inline void cs_dma_tx_complete(int tx_qid, struct net_device *dev)
+ 	return;
+ }
+ 
++static void rx_fill_buffer_timer_cb(unsigned long data)
++{
++	int instance = (int)data;
++	if (sw_qm_total_count[instance] == 0) {
++		cs_ni_alloc_linux_free_buffer(ni_private_data.dev[0],
++			instance, linux_free_buf_size_tbl[instance]);
++		if (sw_qm_total_count[instance] == 0) {
++			mod_timer(&rx_fill_buffer_timer[instance], jiffies + msecs_to_jiffies(100));
++			//printk("\t reschedule timer[%d]\n", __func__, instance);
++		} else {
++			NI_WRITEL_MODE(1, NI_TOP_NI_CPUXRAM_RXPKT_0_INTENABLE_0 + (instance << 3));
++		}
++	}
++}
++
+ #ifdef CS752X_NI_TX_COMPLETION_TIMER
+ static void tx_completion_timer_cb(unsigned long data)
+ {
+@@ -6791,6 +6826,10 @@ static int __devinit cs_ni_init_module_probe(struct platform_device *pdev)
+ 
+ 	cs_init_lpb_an_bng_mac();
+ 
++	for (i = 0 ; i < XRAM_RX_INSTANCE; i++) {
++		setup_timer(&rx_fill_buffer_timer[i], rx_fill_buffer_timer_cb, i);
++	}
++
+ 	return 0;
+ }
+ /* 3.4.11 Change for register as platform device */
+-- 
+2.5.0
+

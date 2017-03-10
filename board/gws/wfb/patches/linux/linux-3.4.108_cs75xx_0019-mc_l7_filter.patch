@@ -1,0 +1,882 @@
+--- linux-3.4.104/drivers/net/ethernet/cs752x/src/core/cs_core_vtable.c	2015-08-06 09:23:12.000000000 +0800
++++ linux-3.4.104/drivers/net/ethernet/cs752x/src/core/cs_core_vtable.c	2015-08-26 14:58:17.876137000 +0800
+@@ -70,6 +70,7 @@
+ 	CS_HASHMASK_L7_FLOW,		/* CORE_FWD_APP_TYPE_L7_GENERIC */
+ 	CS_HASHMASK_IPLIP_LAN,		/* CORE_FWD_APP_TYPE_IPLIP_LAN */
+ 	CS_HASHMASK_MCAST_CTRL,		/* CORE_FWD_APP_TYPE_MCAST_CTRL */
++	CS_HASHMASK_MCAST_L7_FILTER,	/* CORE_FWD_APP_TYPE_MCAST_L7_FILTER */
+ #if defined(CONFIG_CS75XX_HW_ACCEL_IPSEC_PASS) || defined(CONFIG_CS75XX_HW_ACCEL_L2TP_PASS)
+ 	CS_HASHMASK_L2_PASS,		/* CORE_FWD_APP_TYPE_L2_PASS */
+ #endif
+@@ -98,6 +99,7 @@
+ 	CS_HASHMASK_L7_FLOW,		/* CORE_QOS_APP_TYPE_L7_QOS_GENERIC*/
+ 	CS_HASHMASK_L3_FLOW_WITH_L4_CHKSUM, /*CORE_QOS_APP_TYPE_L3_QOS_GENERIC_WITH_CHKSUM*/
+ 	CS_HASHMASK_MCAST_CTRL,		/* CORE_QOS_APP_TYPE_MCAST_CTRL */
++	CS_HASHMASK_MCAST_L7_FILTER,	/*CORE_QOS_APP_TYPE_MCAST_L7_FILTER*/
+ #endif //CONFIG_CS75XX_OFFSET_BASED_QOS
+ };
+ 
+@@ -193,6 +195,7 @@
+ 	"CORE_FWD_APP_TYPE_L7_GENERIC",
+ 	"CORE_FWD_APP_TYPE_IPLIP_LAN",
+ 	"CORE_FWD_APP_TYPE_MCAST_CTRL",
++	"CORE_FWD_APP_TYPE_MCAST_L7_FILTER",
+ #if defined(CONFIG_CS75XX_HW_ACCEL_IPSEC_PASS) || defined(CONFIG_CS75XX_HW_ACCEL_L2TP_PASS)
+ 	"CORE_FWD_APP_TYPE_L2_PASS",
+ #endif
+@@ -212,6 +215,7 @@
+ 	"CORE_QOS_APP_TYPE_L7_QOS_GENERIC",
+ 	"CORE_QOS_APP_TYPE_L3_QOS_GENERIC_WITH_CHKSUM",
+ 	"CORE_QOS_APP_TYPE_MCAST_CTRL",
++	"CORE_QOS_APP_TYPE_MCAST_L7_FILTER",
+ 	"CORE_QOS_APP_TYPE_MAX",
+ } ;
+ 
+@@ -265,11 +269,11 @@
+ 			CORE_FWD_APP_TYPE_NONE,
+ 			CORE_QOS_APP_TYPE_L3_QOS_MULTICAST, CORE_QOS_APP_TYPE_NONE}},
+ #else
+-	{1, 3, 1,
++	{1, 4, 2,
+ 		{CORE_FWD_APP_TYPE_SEPARATE_LOGICAL_PORT, CORE_FWD_APP_TYPE_L3_MCAST,
+-			CORE_FWD_APP_TYPE_MCAST_CTRL, CORE_FWD_APP_TYPE_NONE,
++			CORE_FWD_APP_TYPE_MCAST_CTRL, CORE_FWD_APP_TYPE_MCAST_L7_FILTER,
+ 			CORE_FWD_APP_TYPE_NONE, CORE_FWD_APP_TYPE_NONE,
+-			CORE_QOS_APP_TYPE_MCAST_CTRL, CORE_QOS_APP_TYPE_NONE}},
++			CORE_QOS_APP_TYPE_MCAST_CTRL, CORE_QOS_APP_TYPE_MCAST_L7_FILTER}},
+ #endif
+ 	/* CORE_VTABLE_TYPE_L3_MCAST_V6 */
+ #ifdef SA_CHECK_ENABLE
+@@ -287,11 +291,11 @@
+ 			CORE_FWD_APP_TYPE_NONE, CORE_FWD_APP_TYPE_NONE,
+ 			CORE_QOS_APP_TYPE_L3_QOS_MULTICAST, CORE_QOS_APP_TYPE_NONE}},
+ #else
+-	{1, 3, 1,
++	{1, 4, 2,
+ 		{CORE_FWD_APP_TYPE_SEPARATE_LOGICAL_PORT, CORE_FWD_APP_TYPE_L3_MCAST,
+-			CORE_FWD_APP_TYPE_MCAST_CTRL, CORE_FWD_APP_TYPE_NONE,
++			CORE_FWD_APP_TYPE_MCAST_CTRL, CORE_FWD_APP_TYPE_MCAST_L7_FILTER,
+ 			CORE_FWD_APP_TYPE_NONE, CORE_FWD_APP_TYPE_NONE,
+-			CORE_QOS_APP_TYPE_MCAST_CTRL, CORE_QOS_APP_TYPE_NONE}},
++			CORE_QOS_APP_TYPE_MCAST_CTRL, CORE_QOS_APP_TYPE_MCAST_L7_FILTER}},
+ #endif
+ 
+ 	/* CORE_VTABLE_TYPE_L2_FLOW */
+--- linux-3.4.104/drivers/net/ethernet/cs752x/src/core/cs_hmu.c	2015-03-11 12:57:36.000000000 +0800
++++ linux-3.4.104/drivers/net/ethernet/cs752x/src/core/cs_hmu.c	2015-08-14 18:03:02.961498000 +0800
+@@ -99,6 +99,7 @@
+ 			     bool del_hash);
+ static int __cs_hmu_del_hash_by_idx(u32 hash_idx, bool f_xcheck);
+ static void cs_hmu_callback_table_scan(void);
++extern cs_status_t cs_flow_hash_delete_data(void *data);
+ 
+ static u32 hash_idx_to_hash_list_idx(u32 hash_idx)
+ {
+@@ -128,6 +129,8 @@
+ 		if (hash_entry->rslt_type == 0) { /*fwd_rsult*/
+ 			/* del hash at first to avoid junk pkt */
+ 			ret = cs_fe_hash_del_hash(hash_idx);
++			cs_flow_hash_delete_data(hash_entry->data);
++			hash_entry->data = NULL;
+ 			
+ 			if (hash_entry->link_qoshash_idx != 0) {
+ 				/*delete QoS reulst and hash*/
+--- linux-3.4.104/drivers/net/ethernet/cs752x/src/include/cs_core_vtable.h	2015-07-09 22:07:00.000000000 +0800
++++ linux-3.4.104/drivers/net/ethernet/cs752x/src/include/cs_core_vtable.h	2015-08-26 14:54:33.394635000 +0800
+@@ -156,6 +156,7 @@
+ 	CORE_FWD_APP_TYPE_L7_GENERIC,
+ 	CORE_FWD_APP_TYPE_IPLIP_LAN,
+ 	CORE_FWD_APP_TYPE_MCAST_CTRL,
++	CORE_FWD_APP_TYPE_MCAST_L7_FILTER,
+ #if defined(CONFIG_CS75XX_HW_ACCEL_IPSEC_PASS) || defined(CONFIG_CS75XX_HW_ACCEL_L2TP_PASS)
+ 	CORE_FWD_APP_TYPE_L2_PASS,
+ #endif
+@@ -179,6 +180,7 @@
+ 	CORE_QOS_APP_TYPE_L7_QOS_GENERIC,
+ 	CORE_QOS_APP_TYPE_L3_QOS_GENERIC_WITH_CHKSUM,
+ 	CORE_QOS_APP_TYPE_MCAST_CTRL,
++	CORE_QOS_APP_TYPE_MCAST_L7_FILTER,
+ 	CORE_QOS_APP_TYPE_MAX,
+ } cs_core_qos_app_type_e;
+ 
+@@ -370,6 +372,13 @@
+ 		CS_HM_IP_PROT_MASK | CS_HM_IP_SA_MASK | CS_HM_IP_DA_MASK | \
+ 		CS_HM_L4_VLD_MASK | CS_HM_MCIDX_MASK)
+ 
++#define CS_HASHMASK_MCAST_L7_FILTER (CS_HM_MAC_DA_MASK | \
++		CS_HM_IP_VLD_MASK | CS_HM_IP_FRAGMENT_MASK | \
++		CS_HM_L3_CHKSUM_ERR_MASK | CS_HM_IP_VER_MASK | \
++		CS_HM_IP_PROT_MASK | CS_HM_IP_DA_MASK | CS_HM_L4_DP_MASK | \
++		CS_HM_L4_VLD_MASK | CS_HM_MCIDX_MASK | \
++		CS_HM_L7_FIELD_MASK | CS_HM_L7_FIELD_VLD_MASK | CS_HM_L7_FIELD_SEL_TCP_UDP)
++
+ #ifdef CONFIG_CS75XX_MTU_CHECK
+ #define CS_HASHMASK_L3_MTU_IPOE (CS_HASHMASK_L3_FLOW | CS_HM_PKTLEN_RNG_MATCH_VECTOR_B0_MASK)
+ #define CS_HASHMASK_L3_MTU_PPPOE (CS_HASHMASK_L3_FLOW | CS_HM_PKTLEN_RNG_MATCH_VECTOR_B1_MASK)
+--- linux-3.4.104/drivers/net/ethernet/cs752x/src/kernel_adapt/flow/cs_flow.c	2015-07-10 16:08:50.000000000 +0800
++++ linux-3.4.104/drivers/net/ethernet/cs752x/src/kernel_adapt/flow/cs_flow.c	2015-08-14 18:07:20.138286000 +0800
+@@ -191,6 +191,12 @@
+ 		case CS_FLOW_TYPE_MC_MEMBER:
+ 			rule_hash.apptype = CORE_FWD_APP_TYPE_MCAST_CTRL;
+ 			break;
++		case CS_FLOW_TYPE_MC_L7_FILTER:
++			if (p_flow->ingress_pkt.natt_4_bytes == 0)
++				rule_hash.apptype = CORE_FWD_APP_TYPE_MCAST_CTRL;
++			else
++				rule_hash.apptype = CORE_FWD_APP_TYPE_MCAST_L7_FILTER;
++			break;
+ 		default:
+ 			printk("%s: unknown flow type=%d!!\n", __func__, p_flow->flow_type);
+ 			return CS_ERROR;
+@@ -203,7 +209,8 @@
+ 
+ 	memcpy(&(rule_hash.key.mac_da[0]), &(p_flow->ingress_pkt.da_mac[0]), CS_ETH_ADDR_LEN);
+ 	memcpy(&(rule_hash.key.mac_sa[0]), &(p_flow->ingress_pkt.sa_mac[0]), CS_ETH_ADDR_LEN);
+-	if (p_flow->flow_type != CS_FLOW_TYPE_MC_MEMBER) {
++	if ((p_flow->flow_type != CS_FLOW_TYPE_MC_MEMBER) &&
++		(p_flow->flow_type != CS_FLOW_TYPE_MC_L7_FILTER)) {
+ 		rule_hash.key.eth_type = p_flow->ingress_pkt.eth_type;
+ 	}
+ 
+@@ -215,7 +222,8 @@
+ 			printk("%s: tpid_encap_type1=0x%x\n", __func__, tpid_encap_type);
+ 		}
+ #endif
+-		if (p_flow->flow_type != CS_FLOW_TYPE_MC_MEMBER) {
++		if ((p_flow->flow_type != CS_FLOW_TYPE_MC_MEMBER) &&
++			(p_flow->flow_type != CS_FLOW_TYPE_MC_L7_FILTER)) {
+ 			rule_hash.key.tpid_enc_1 = 0x4 | tpid_encap_type;   /* only need to turn on the MSB of TPID */
+ 			rule_hash.key._8021p_1 = p_flow->ingress_pkt.tag[0].priority & 0x7;
+ 			rule_hash.key.vid_1 = p_flow->ingress_pkt.tag[0].vlan_id;
+@@ -230,7 +238,8 @@
+ 			printk("%s: tpid_encap_type2=0x%x\n", __func__, tpid_encap_type);
+ 		}
+ #endif
+-		if (p_flow->flow_type != CS_FLOW_TYPE_MC_MEMBER) {
++		if ((p_flow->flow_type != CS_FLOW_TYPE_MC_MEMBER) &&
++			(p_flow->flow_type != CS_FLOW_TYPE_MC_L7_FILTER)) {
+ 			rule_hash.key.tpid_enc_2 = 0x4 | tpid_encap_type;   /* only need to turn on the MSB of TPID */
+ 			rule_hash.key._8021p_2 = p_flow->ingress_pkt.tag[1].priority & 0x7;
+ 			rule_hash.key.vid_2 = p_flow->ingress_pkt.tag[1].vlan_id;
+@@ -273,9 +282,12 @@
+ 		rule_hash.key.lspid = p_flow->ingress_pkt.phy_port;
+ #endif
+ 
++	if ((p_flow->flow_type != CS_FLOW_TYPE_MC_MEMBER) &&
++		(p_flow->flow_type != CS_FLOW_TYPE_MC_L7_FILTER)) {
+ 	rule_hash.key.dscp = (p_flow->ingress_pkt.tos >> 2) & 0x3f;
+ 	rule_hash.key.pppoe_session_id_valid = p_flow->ingress_pkt.pppoe_session_id_valid;
+ 	rule_hash.key.pppoe_session_id = p_flow->ingress_pkt.pppoe_session_id;
++	}
+ 
+ #ifdef CONFIG_CS75XX_HW_ACCEL_L2TP_IPSEC_NATT
+ 	if (rule_hash.apptype == CORE_FWD_APP_TYPE_L7_GENERIC) {
+@@ -283,6 +295,10 @@
+ 		rule_hash.key.l7_field = p_flow->ingress_pkt.natt_4_bytes;
+ 	}
+ #endif
++	if (rule_hash.apptype == CORE_FWD_APP_TYPE_MCAST_L7_FILTER) {
++		rule_hash.key.l7_field_valid = 1;
++		rule_hash.key.l7_field = p_flow->ingress_pkt.natt_4_bytes;
++	}
+ 
+ 	/* prepare the forward result */
+ 	if (memcmp(&(p_flow->ingress_pkt.da_mac[0]), &(p_flow->egress_pkt.da_mac[0]), CS_ETH_ADDR_LEN) != 0) {
+@@ -513,7 +529,6 @@
+ 		case CS_PORT_CUSTOM0:
+ 		case CS_PORT_CUSTOM1:
+ 		case CS_PORT_CUSTOM2:
+-		case CS_PORT_CUSTOM3:
+ 			rule_hash.voq_pol.voq_base = p_flow->voq_offset; /* absolute voq */
+ 			break;
+ 		}
+@@ -527,13 +542,14 @@
+ 
+ 	p_flow->flow_id = rule_hash.hash_index;
+ 
+-	ret = cs_flow_qos_hash_add(&rule_hash, p_flow);
+-	if (ret != CS_OK) {
+-		cs_flow_hash_delete(rule_hash.hash_index);
+-		printk("%s: cs_flow_qos_hash_add() failed, ret=%d\n", __func__, ret);
+-		return CS_ERROR;
++	if (rule_hash.fwd_result.act.drop == 0) {
++		ret = cs_flow_qos_hash_add(&rule_hash, p_flow);
++		if (ret != CS_OK) {
++			cs_flow_hash_delete(rule_hash.hash_index);
++			printk("%s: cs_flow_qos_hash_add() failed, ret=%d\n", __func__, ret);
++			return CS_ERROR;
++		}
+ 	}
+-
+ 	return CS_OK;
+ }
+ EXPORT_SYMBOL(cs_flow_add);
+--- linux-3.4.104/drivers/net/ethernet/cs752x/src/kernel_adapt/flow/cs_mc_ctrl_manager.c	1970-01-01 08:00:00.000000000 +0800
++++ linux-3.4.104/drivers/net/ethernet/cs752x/src/kernel_adapt/flow/cs_mc_ctrl_manager.c	2015-08-26 14:54:52.206894000 +0800
+@@ -0,0 +1,273 @@
++/*
++ * Copyright (c) Cortina-Systems Limited 2010.  All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ */
++
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/errno.h>
++//#include <linux/export.h>
++#include <mach/cs_types.h>
++#include <mach/cs75xx_fe_core_table.h>
++#include <cs_fe_table_api.h>
++#include <cs_fe_head_table.h>
++#include <cs_core_logic_data.h>
++#include <cs_core_vtable.h>
++#include <cs_fe_util_api.h>
++#include "cs_core_logic.h"
++#include "cs_core_vtable.h"
++#include "cs_hw_accel_manager.h"
++#include <mach/cs75xx_fe_core_table.h>
++#include <mach/cs_network_types.h>
++#include "cs_fe.h"
++#include "cs_core_rule_hmu.h"
++#include "cs_core_hmu.h"
++#include <mach/cs_rule_hash_api.h>
++
++#define CS_MAX_MC_CLIENT 15
++#define CS_MAX_MC_ENTRY 128
++
++int ni_special_start_xmit_none_bypass_ne(u16 recirc_idx, u32 buf0, int len0, u32 buf1, int len1, struct sk_buff *skb);
++
++typedef struct cs_mc_ctrl_entry_s {
++	cs_uint8_t	used;
++	cs_uint8_t	mc_ref;
++	cs_ip_address_t	mc_ip;
++	cs_uint32_t	l7_4_bytes;
++	void * data;
++} cs_mc_ctrl_entry_t;
++
++
++typedef struct cs_mc_sw_ip_entry_s {
++	cs_uint8_t	ref;
++	cs_ip_address_t	mc_ip;
++	cs_uint32_t hash_idx;
++} cs_mc_sw_ip_entry_t;
++
++typedef struct cs_mc_client_entry_s{
++	cs_uint8_t      client_used;
++	cs_uint8_t		client_ref;
++	cs_uint8_t		client_mac[CS_ETH_ADDR_LEN];
++} cs_mc_client_entry_t;
++
++cs_mc_ctrl_entry_t cs_mc_ctrl_entry[CS_MAX_MC_ENTRY];
++cs_mc_sw_ip_entry_t cs_mc_sw_ip_entry[CS_MAX_MC_ENTRY];
++cs_mc_client_entry_t cs_mc_client_entry[CS_MAX_MC_CLIENT];
++
++void cs_mc_ctrl_handle(struct sk_buff *skb) {
++	/* Parse UDP first bytes */
++	struct ethhdr *eth;
++	char *tmp;
++	eth = skb->data;
++	if (eth->h_proto == 0x0008) {
++		tmp = (char*)eth + 14 + 20 + 8;
++	} else {
++		tmp = (char*)eth + 18 + 20 + 8;
++	}
++	void * data_ptr = dma_map_single(NULL, (void *)skb->data,
++			SMP_CACHE_BYTES,
++			DMA_TO_DEVICE);
++	ni_special_start_xmit_none_bypass_ne(*tmp, data_ptr, skb->len, NULL, 0, skb);
++}
++
++void cs_mc_ctrl_manager_init(void)
++{
++	memset(0, cs_mc_ctrl_entry, sizeof(cs_mc_ctrl_entry_t) * CS_MAX_MC_ENTRY);
++}
++
++cs_int16_t cs_mc_ctrl_manager_get_sw_ip_idx(cs_ip_address_t group_ip)
++{
++	int i;
++	for (i = 0; i < CS_MAX_MC_ENTRY; i++) {
++		if (cs_mc_sw_ip_entry[i].ref != 0) {
++			if (memcmp(&cs_mc_sw_ip_entry[i].mc_ip, &group_ip, sizeof(cs_ip_address_t)) == 0) {
++				return i;
++			}
++		}
++	}
++	return -1;
++}
++
++cs_int16_t cs_mc_ctrl_manager_allocate_sw_ip_idx(cs_ip_address_t group_ip)
++{
++	int i;
++	/* allocate a new entry*/
++	for (i = 0; i < CS_MAX_MC_ENTRY; i++) {
++		if (cs_mc_sw_ip_entry[i].ref == 0) {
++			cs_mc_sw_ip_entry[i].mc_ip = group_ip;
++			cs_mc_sw_ip_entry[i].ref = 1;
++			return i;
++		}
++	}
++	return -1;
++}
++
++cs_int16_t cs_mc_ctrl_manager_set_hash_idx(cs_int8_t group_idx, cs_int16_t hash_idx)
++{
++	int i;
++	cs_mc_sw_ip_entry_t * entry;
++	if (group_idx >=CS_MAX_MC_ENTRY)
++		return -1;
++
++	entry = &cs_mc_sw_ip_entry[group_idx];
++	if (entry->ref == 0)
++		return -1;
++	entry->hash_idx = hash_idx;
++	return 0;
++}
++
++cs_uint16_t cs_mc_ctrl_manager_get_hash_idx(cs_int8_t group_idx)
++{
++	cs_mc_sw_ip_entry_t * entry;
++	if (group_idx >=CS_MAX_MC_ENTRY)
++		return 0;
++
++	entry = &cs_mc_sw_ip_entry[group_idx];
++	if (entry->ref == 0)
++		return 0;
++	return entry->hash_idx;
++}
++
++cs_int16_t cs_mc_ctrl_manager_remove_reference(cs_int8_t group_idx)
++{
++	int i;
++	cs_mc_sw_ip_entry_t * entry;
++	if (group_idx >=CS_MAX_MC_ENTRY)
++		return -1;
++
++	entry = &cs_mc_sw_ip_entry[group_idx];
++	if (entry->ref == 0)
++		return -1;
++	entry->ref--;
++	return 0;
++}
++
++cs_int16_t cs_mc_ctrl_manager_increase_reference(cs_int8_t group_idx)
++{
++	int i;
++	cs_mc_sw_ip_entry_t * entry;
++	if (group_idx >=CS_MAX_MC_ENTRY)
++		return -1;
++
++	entry = &cs_mc_sw_ip_entry[group_idx];
++	if (entry->ref == 0)
++		return -1;
++	entry->ref++;
++	return 0;
++}
++
++cs_int16_t cs_mc_ctrl_manager_get_reference(cs_ip_address_t group_ip)
++{
++	int i;
++	for (i = 0; i < CS_MAX_MC_ENTRY; i++) {
++		if (cs_mc_sw_ip_entry[i].ref != 0) {
++			if (memcmp(&cs_mc_sw_ip_entry[i].mc_ip, &group_ip, sizeof(cs_ip_address_t)) == 0) {
++				return cs_mc_sw_ip_entry[i].ref;
++			}
++		}
++	}
++	return -1;
++}
++
++cs_int16_t cs_mc_ctrl_manager_get_group_idx(cs_ip_address_t group_ip, cs_uint32_t l7_4_bytes)
++{
++	int i;
++	for (i = 0; i < CS_MAX_MC_ENTRY; i++) {
++		if (cs_mc_ctrl_entry[i].used == 1) {
++			if ((memcmp(&cs_mc_ctrl_entry[i].mc_ip, &group_ip, sizeof(cs_ip_address_t)) == 0) &&
++				(cs_mc_ctrl_entry[i].l7_4_bytes == l7_4_bytes)) {
++				cs_mc_ctrl_entry[i].mc_ref++;
++				return i;
++			}
++		}
++	}
++
++	/* allocate a new entry*/
++	for (i = 0; i < CS_MAX_MC_ENTRY; i++) {
++		if (cs_mc_ctrl_entry[i].used == 0) {
++			cs_mc_ctrl_entry[i].mc_ip = group_ip;
++			cs_mc_ctrl_entry[i].l7_4_bytes = l7_4_bytes;
++			cs_mc_ctrl_entry[i].used = 1;
++			cs_mc_ctrl_entry[i].mc_ref = 1;
++			return i;
++		}
++	}
++	return -1;
++}
++
++cs_int16_t cs_mc_ctrl_manager_get_client_idx(cs_uint8_t * client_mac)
++{
++	int i;
++
++	for (i = 0; i < CS_MAX_MC_CLIENT; i++) {
++		if (cs_mc_client_entry[i].client_used == 1) {
++			if (memcmp(&cs_mc_client_entry[i].client_mac,  client_mac, CS_ETH_ADDR_LEN) == 0) {
++				cs_mc_client_entry[i].client_ref++;
++				return i;
++			}
++		}
++	}
++
++	/* allocate a new entry*/
++	for (i = 0; i < CS_MAX_MC_CLIENT; i++) {
++		if (cs_mc_client_entry[i].client_used == 0) {
++			memcpy(&cs_mc_client_entry[i].client_mac[0], &client_mac[0], CS_ETH_ADDR_LEN);
++			cs_mc_client_entry[i].client_used = 1;
++			cs_mc_client_entry[i].client_ref = 1;
++			return i;
++		}
++	}
++	return -1;
++}
++
++cs_int16_t cs_mc_ctrl_manager_del_by_group_idx(cs_int8_t group_idx)
++{
++	int i;
++	cs_mc_ctrl_entry_t * mc_ctrl_entry;
++	if (group_idx >=CS_MAX_MC_ENTRY)
++		return -1;
++
++	mc_ctrl_entry = &cs_mc_ctrl_entry[group_idx];
++
++	if (mc_ctrl_entry->used == 0)
++		return -1;
++
++	if (mc_ctrl_entry->mc_ref == 0) {
++			printk("%s why mc ref count is 0??? \n", __func__);
++			return -1;
++	}
++
++	mc_ctrl_entry->mc_ref--;
++	if (mc_ctrl_entry->mc_ref == 0)
++		mc_ctrl_entry->used = 0;
++
++	return 0;
++}
++
++cs_int16_t cs_mc_ctrl_manager_del_client_by_idx(cs_int8_t client_idx)
++{
++	if (client_idx >= CS_MAX_MC_CLIENT)
++		return -1;
++	if (cs_mc_client_entry[client_idx].client_ref == 0) {
++		printk("%s why client ref count is 0??? \n", __func__);
++		return -1;
++	}
++	cs_mc_client_entry[client_idx].client_ref--;
++	if (cs_mc_client_entry[client_idx].client_ref == 0)
++		cs_mc_client_entry[client_idx].client_used = 0;
++	return 0;
++}
++
+--- linux-3.4.104/drivers/net/ethernet/cs752x/src/kernel_adapt/flow/Makefile	2015-03-11 12:57:36.000000000 +0800
++++ linux-3.4.104/drivers/net/ethernet/cs752x/src/kernel_adapt/flow/Makefile	2015-08-14 18:07:27.731258000 +0800
+@@ -31,4 +31,4 @@
+ EXTRA_CFLAGS += -I$(srctree)/drivers/net/ethernet/cs752x/src/ni
+ EXTRA_CFLAGS += -I$(srctree)/drivers/net/ethernet/cs752x/src/qm
+ 
+-obj-$(CONFIG_CS752X_ACCEL_KERNEL) += cs_flow.o
++obj-$(CONFIG_CS752X_ACCEL_KERNEL) += cs_flow.o cs_mc_ctrl_manager.o
+--- linux-3.4.104/drivers/net/ethernet/cs752x/src/kernel_adapt/hash/cs_flow_hash.c	2015-07-13 16:15:08.000000000 +0800
++++ linux-3.4.104/drivers/net/ethernet/cs752x/src/kernel_adapt/hash/cs_flow_hash.c	2015-08-26 14:57:06.361427000 +0800
+@@ -45,6 +45,16 @@
+ int cs_rule_hash_add_1(cs_rule_hash_t *p_rule_hash, fe_sw_hash_t *p_key, fe_flow_vlan_entry_t *p_fvlan_entry, fe_voq_pol_entry_t *p_voq_pol, fe_fwd_result_entry_t *p_fwd_rslt);
+ void cs_rule_hash_convert_to_fe(cs_rule_hash_t *p_rule_hash, fe_sw_hash_t *p_key, fe_flow_vlan_entry_t *p_fvlan_entry, fe_voq_pol_entry_t *p_voq_pol, fe_fwd_result_entry_t *p_fwd_rslt);
+ void cs_rule_hash_dump(fe_sw_hash_t *p_key, fe_flow_vlan_entry_t *p_fvlan_entry, fe_voq_pol_entry_t *p_voq_pol, fe_fwd_result_entry_t *p_fwd_rslt);
++cs_status_t cs_flow_hash_delete(cs_uint16_t hash_index);
++
++#define HW_MCGID_OFFSET 128
++#define HW_MCIDX_OFFSET 1
++extern cs_int16_t cs_mc_ctrl_manager_get_group_idx(cs_ip_address_t group_ip, cs_uint32_t l7_4_bytes);
++extern cs_int16_t cs_mc_ctrl_manager_get_client_idx(cs_uint8_t * client_mac);
++extern cs_int16_t cs_mc_ctrl_manager_del_by_group_idx(cs_int8_t group_idx);
++extern cs_int16_t cs_mc_ctrl_manager_del_client_by_idx(cs_int8_t client_idx);
++extern u16 cs_ni_get_mc_table(u8 mc_index);
++extern void cs_ni_set_mc_table(u8 mc_index, u16 mc_vec);
+ 
+ static void cs_flow_hash_dump_cs_cb(cs_kernel_accel_cb_t *cs_cb)
+ {
+@@ -164,9 +174,6 @@
+ 		curr_mcidx = 1 << 6;
+ 		break;
+ 	case CS_PORT_CUSTOM2:
+-		curr_mcidx = 1 << 7;
+-		break;
+-	case CS_PORT_CUSTOM3:
+ 		curr_mcidx = 1 << 4;
+ 		break;
+ 	default:
+@@ -196,6 +203,12 @@
+ 	}
+ #endif
+ 
++	if (p_flow->flow_type == CS_FLOW_TYPE_MC_L7_FILTER) {
++		curr_mcidx = cs_ni_get_mc_table(p_rule_hash->mcgid) | (1 << p_rule_hash->mcidx);
++		cs_ni_set_mc_table(p_rule_hash->mcgid, curr_mcidx);
++		printk("%s set entry[%d] value 0x%x \n", __func__, p_rule_hash->mcgid, curr_mcidx);
++	}
++
+ 	if (ret == FE_TABLE_ENTRYNOTFOUND){
+ 		/* create new replication hash */
+ 		memcpy(&tmp_rule_hash, p_rule_hash, sizeof(cs_rule_hash_t));
+@@ -212,11 +225,13 @@
+ 		case CS_PORT_CUSTOM0:
+ 		case CS_PORT_CUSTOM1:
+ 		case CS_PORT_CUSTOM2:
+-		case CS_PORT_CUSTOM3:
+ 			tmp_rule_hash.voq_pol.voq_base = ROOT_PORT_VOQ_BASE + (p_flow->voq_offset % 8); // any better solution?
+ 			break;
+ 		}
+-		tmp_rule_hash.fwd_result.l2.mcgid = curr_mcidx;
++		if (p_flow->flow_type == CS_FLOW_TYPE_MC_L7_FILTER)
++			tmp_rule_hash.fwd_result.l2.mcgid = p_rule_hash->mcgid;
++		else
++			tmp_rule_hash.fwd_result.l2.mcgid = curr_mcidx;
+ 		tmp_rule_hash.fwd_result.l2.mcgid_valid = CS_RESULT_ACTION_ENABLE;
+ 
+ 		ret = cs_rule_hash_add_1(&tmp_rule_hash, &tmp_key, &tmp_fvlan_entry, &tmp_voq_pol, &tmp_fwd_rslt);
+@@ -246,8 +261,8 @@
+ 			printk("%s:%d: update the fwdrslt of the replication hash, mcgid = 0x%x\n", __func__, __LINE__, tmp_fwd_rslt.l2.mcgid);
+ 		}
+ #endif
+-
+-		if ((tmp_fwd_rslt.l2.mcgid & curr_mcidx) == 0) {
++		if ((p_flow->flow_type != CS_FLOW_TYPE_MC_L7_FILTER) &&
++			(tmp_fwd_rslt.l2.mcgid & curr_mcidx) == 0) {
+ 			/* make sure it is a new member */
+ 			tmp_fwd_rslt.l2.mcgid |= curr_mcidx;
+ 			ret = cs_fe_table_set_entry(FE_TABLE_FWDRSLT,
+@@ -284,6 +299,7 @@
+ 	u16 crc16, rslt_idx, voq_pol_idx;
+ 	int ret;
+ 	u16 curr_mcidx;
++	u16 mc_vec;
+ 	unsigned int sw_idx;
+ 
+ #ifdef CONFIG_CS752X_PROC
+@@ -314,9 +330,6 @@
+ 		curr_mcidx = 1 << 6;
+ 		break;
+ 	case CS_PORT_CUSTOM2:
+-		curr_mcidx = 1 << 7;
+-		break;
+-	case CS_PORT_CUSTOM3:
+ 		curr_mcidx = 1 << 4;
+ 		break;
+ 	default:
+@@ -345,7 +358,7 @@
+ #endif
+ 
+ 	if (ret == FE_TABLE_ENTRYNOTFOUND){
+-		printk("%s: STRANGE! There is no replication hash to root port.\n", __func__);
++		//printk("%s: STRANGE! There is no replication hash to root port.\n", __func__);
+ 		return CS_OK;
+ 	} else {
+ 		ret = cs_fe_table_get_entry(FE_TABLE_FWDRSLT,
+@@ -362,7 +375,8 @@
+ 		}
+ #endif
+ 
+-		if (tmp_fwd_rslt.l2.mcgid & curr_mcidx) {
++		if ((p_flow->flow_type != CS_FLOW_TYPE_MC_L7_FILTER) &&
++			(tmp_fwd_rslt.l2.mcgid & curr_mcidx)) {
+ 			tmp_fwd_rslt.l2.mcgid &= ~curr_mcidx;
+ 
+ 			if (tmp_fwd_rslt.l2.mcgid > 0) {
+@@ -380,7 +394,20 @@
+ 				}
+ #endif
+ 
+-			} else {
++			}
++		}
++
++		if (p_flow->flow_type == CS_FLOW_TYPE_MC_L7_FILTER) {
++			curr_mcidx = 1 << p_rule_hash->mcidx;
++			curr_mcidx = cs_ni_get_mc_table(p_rule_hash->mcgid) & ~curr_mcidx;
++			cs_ni_set_mc_table(p_rule_hash->mcgid, curr_mcidx);
++			printk("%s set entry[%d] value 0x%x \n", __func__, p_rule_hash->mcgid, curr_mcidx);
++		}
++
++		if (((p_flow->flow_type != CS_FLOW_TYPE_MC_L7_FILTER) &&
++			 (tmp_fwd_rslt.l2.mcgid == 0)) ||
++			((p_flow->flow_type == CS_FLOW_TYPE_MC_L7_FILTER) &&
++			 (curr_mcidx == 0))) {
+ 				voq_pol_idx = tmp_fwd_rslt.dest.voq_pol_table_index;
+ 
+ #ifdef CONFIG_CS752X_PROC
+@@ -407,7 +434,7 @@
+ 				if (ret != CS_OK) {
+ 					printk("%s del fwdrslt index %u failed, ret = %d\n",__func__, voq_pol_idx, ret);
+ 				}
+-			}
++
+ 		}
+ 	}
+ 
+@@ -424,6 +451,7 @@
+ 	cs_uint8_t tpid_encap_type;
+ 	cs_flow_hash_internal_t *p_flow_hash;
+ 	cs_uint8_t tmp_mc_idx;
++	cs_int8_t mc_entry_idx = -1;
+ 
+ 	int ret;
+ 
+@@ -448,9 +476,6 @@
+ 			p_rule_hash->key.mc_idx = 6;
+ 			break;
+ 		case CS_PORT_CUSTOM2:
+-			p_rule_hash->key.mc_idx = 7;
+-			break;
+-		case CS_PORT_CUSTOM3:
+ 			p_rule_hash->key.mc_idx = 4;
+ 			break;
+ 		case CS_PORT_CPU:
+@@ -462,6 +487,27 @@
+ 		}
+ 	}
+ 
++	if (p_flow->flow_type == CS_FLOW_TYPE_MC_L7_FILTER) {
++		mc_entry_idx = cs_mc_ctrl_manager_get_group_idx(p_flow->ingress_pkt.da_ip,
++			p_flow->ingress_pkt.natt_4_bytes);
++		if (mc_entry_idx == -1) {
++			printk("%s: ERROR! flow type %d cannot allocate mcgid entry\n",
++				__func__, p_flow->flow_type);
++			return CS_ERROR;
++		}
++		p_rule_hash->mcgid = mc_entry_idx + HW_MCGID_OFFSET;
++		ret = cs_mc_ctrl_manager_get_client_idx(&p_flow->egress_pkt.da_mac[0]);
++		if (ret == -1) {
++			printk("%s: ERROR! flow type %d cannot allocate mc idx for entry %d \n",
++				__func__, p_flow->flow_type, mc_entry_idx);
++			cs_mc_ctrl_manager_del_by_group_idx(mc_entry_idx);
++			return CS_ERROR;
++		}
++		p_rule_hash->mcidx = ret + HW_MCIDX_OFFSET;
++		printk("%s assign mc entry[%d]: mc idx[%d]\n", __func__, p_rule_hash->mcgid, p_rule_hash->mcidx);
++		p_rule_hash->key.mc_idx = p_rule_hash->mcidx;
++	}
++
+ 	if (p_flow->flow_type == CS_FLOW_TYPE_L3_MC) {
+ 		/* the hash mask of CS_FLOW_TYPE_MC_MEMBER does not watch lspid */
+ 		p_rule_hash->key.lspid = MCAST_PORT;
+@@ -471,6 +517,12 @@
+ 
+ 	if (ret != CS_OK) {
+ 		//printk("%s: cs_rule_hash_add_1() failed!!\n", __func__);
++		if (p_rule_hash->fwd_result.act.drop == 0) {
++			if (p_flow->flow_type == CS_FLOW_TYPE_MC_L7_FILTER) {
++				cs_mc_ctrl_manager_del_client_by_idx(p_rule_hash->mcidx - HW_MCIDX_OFFSET);
++				cs_mc_ctrl_manager_del_by_group_idx(p_rule_hash->mcgid - HW_MCGID_OFFSET);
++			}
++		}
+ 		return CS_ERROR;
+ 	}
+ 
+@@ -703,7 +755,9 @@
+ 		p_rule_hash->key.lspid = p_flow->ingress_pkt.phy_port;
+ 	}
+ 
+-	if ((p_flow->flow_type == CS_FLOW_TYPE_L3_MC) || (p_flow->flow_type == CS_FLOW_TYPE_MC_MEMBER)) {
++	if ((p_rule_hash->fwd_result.act.drop == 0) &&
++		((p_flow->flow_type == CS_FLOW_TYPE_L3_MC) || (p_flow->flow_type == CS_FLOW_TYPE_MC_MEMBER)
++		|| (p_flow->flow_type == CS_FLOW_TYPE_MC_L7_FILTER))) {
+ 		tmp_mc_idx = p_rule_hash->key.mc_idx;
+ 		p_rule_hash->key.mc_idx = 0;
+ 		ret = cs_rep_hash_add(p_rule_hash, p_flow, &key, &fvlan_entry, &voq_pol, &fwd_rslt);
+@@ -712,8 +766,9 @@
+ 		p_rule_hash->key.mc_idx = tmp_mc_idx;
+ 
+ 		if (ret != CS_OK) {
+-			kfree(p_flow_hash);
++			//kfree(p_flow_hash);
+ 			printk("%s: cs_rep_hash_add() failed!\n", __func__);
++			cs_flow_hash_delete(p_flow_hash->rule_hash.hash_index);
+ 			return ret;
+ 		}
+ 	}
+@@ -765,9 +820,12 @@
+ 		else if (p_flow->flow_type == CS_FLOW_TYPE_L3_MC) {
+ 			p_qos_hash->qos_app_type = CORE_QOS_APP_TYPE_L3_QOS_MULTICAST;
+ 		}
+-		else if (p_flow->flow_type == CS_FLOW_TYPE_MC_MEMBER) {
++		else if (p_rule_hash->apptype == CORE_FWD_APP_TYPE_MCAST_CTRL) {
+ 			p_qos_hash->qos_app_type = CORE_QOS_APP_TYPE_MCAST_CTRL;
+ 		}
++		else if (p_rule_hash->apptype == CORE_FWD_APP_TYPE_MCAST_L7_FILTER) {
++			p_qos_hash->qos_app_type = CORE_QOS_APP_TYPE_MCAST_L7_FILTER;
++		}
+ 		else if (p_flow->flow_type == CS_FLOW_TYPE_L4_NATT) {
+ 			p_qos_hash->qos_app_type = CORE_QOS_APP_TYPE_L7_QOS_GENERIC;
+ 		}
+@@ -857,9 +915,8 @@
+ }
+ EXPORT_SYMBOL(cs_flow_hash_get);
+ 
+-cs_status_t cs_flow_hash_delete(cs_uint16_t hash_index)
++cs_status_t cs_flow_hash_delete_data(void *data)
+ {
+-	int ret;
+ 	cs_flow_hash_internal_t *p_flow_hash;
+ 	cs_flow_t *p_flow;
+ 	cs_rule_hash_t *p_rule_hash;
+@@ -867,17 +924,13 @@
+ 	fe_voq_pol_entry_t voq_pol;
+ 	fe_fwd_result_entry_t fwd_rslt;
+ 	fe_sw_hash_t key;
++	int ret;
+ 
+-	ret = cs_core_hmu_get_hash_by_idx(hash_index, (void **)&p_flow_hash);
+-
+-	if (ret != 0) {
+-		printk("%s: cs_core_hmu_get_hash_by_idx(hash_index=%d) failed, ret=%d\n", __func__, hash_index, ret);
+-		return CS_ERROR;
+-	}
+-
++	p_flow_hash = (cs_flow_hash_internal_t *) data;
+ 	if (p_flow_hash != NULL) {
+ 		if (p_flow_hash->hash_type != CS_FLOW_HASH_TYPE) {
+-			printk("%s: hash type is %d, not FLOW HASH!!\n", __func__, p_flow_hash->hash_type);
++			kfree(p_flow_hash);
++			//printk("%s: hash type is %d, not FLOW HASH!!\n", __func__, p_flow_hash->hash_type);
+ 			return CS_ERROR;
+ 		}
+ 		p_flow = &p_flow_hash->flow;
+@@ -887,7 +940,10 @@
+ 			p_rule_hash->key.lspid = p_flow->ingress_pkt.phy_port;
+ 		}
+ 
+-		if ((p_flow->flow_type == CS_FLOW_TYPE_L3_MC) || (p_flow->flow_type == CS_FLOW_TYPE_MC_MEMBER)) {
++		if ((p_flow->egress_pkt.phy_port != 0xff) &&
++			((p_flow->flow_type == CS_FLOW_TYPE_L3_MC)
++			|| (p_flow->flow_type == CS_FLOW_TYPE_MC_MEMBER)
++			|| (p_flow->flow_type == CS_FLOW_TYPE_MC_L7_FILTER))) {
+ 			p_rule_hash->key.mc_idx = 0;
+ 			ret = cs_rep_hash_del(p_rule_hash, p_flow, &key, &fvlan_entry, &voq_pol, &fwd_rslt);
+ 			if (ret != CS_OK) {
+@@ -896,6 +952,43 @@
+ 		}
+ 		kfree(p_flow_hash);
+ 	}
++	return CS_OK;
++}
++EXPORT_SYMBOL(cs_flow_hash_delete_data);
++
++cs_status_t cs_flow_hash_delete(cs_uint16_t hash_index)
++{
++	int ret;
++	cs_flow_hash_internal_t *p_flow_hash;
++	cs_flow_t *p_flow;
++	cs_rule_hash_t *p_rule_hash;
++	fe_voq_pol_entry_t voq_pol;
++	fe_fwd_result_entry_t fwd_rslt;
++	fe_sw_hash_t key;
++	fe_flow_vlan_entry_t fvlan_entry;
++
++	ret = cs_core_hmu_get_hash_by_idx(hash_index, (void **)&p_flow_hash);
++
++	if (ret != 0) {
++		printk("%s: cs_core_hmu_get_hash_by_idx(hash_index=%d) failed, ret=%d\n", __func__, hash_index, ret);
++		return CS_ERROR;
++	}
++
++	if (p_flow_hash->flow.flow_type == CS_FLOW_TYPE_MC_L7_FILTER) {
++
++		p_flow = &p_flow_hash->flow;
++		p_rule_hash = &p_flow_hash->rule_hash;
++
++		if (p_flow->egress_pkt.phy_port != 0xff) {
++			p_rule_hash->key.mc_idx = 0;
++			cs_rep_hash_del(p_rule_hash, p_flow, &key, &fvlan_entry, &voq_pol, &fwd_rslt);
++
++			cs_mc_ctrl_manager_del_client_by_idx(p_flow_hash->rule_hash.mcidx - HW_MCIDX_OFFSET);
++			cs_mc_ctrl_manager_del_by_group_idx(p_flow_hash->rule_hash.mcgid - HW_MCGID_OFFSET);
++			printk("%s: remove client idx[%d] at entry[%d]\n", __func__,
++				p_flow_hash->rule_hash.mcidx, p_flow_hash->rule_hash.mcgid);
++		}
++	}
+ 
+ 	ret = cs_core_hmu_delete_hash_by_idx(hash_index);
+ 
+--- linux-3.4.104/drivers/net/ethernet/cs752x/src/kernel_adapt/multicast/cs_hw_accel_mc.c	2015-07-13 16:16:24.000000000 +0800
++++ linux-3.4.104/drivers/net/ethernet/cs752x/src/kernel_adapt/multicast/cs_hw_accel_mc.c	2015-08-14 18:14:54.513628000 +0800
+@@ -913,7 +913,7 @@
+ 	int i;
+ 
+ 	/*init NI_TOP_NI_MC_INDX_LKUP*/
+-	for (i = 0; i < MCAL_TABLE_SIZE; i++) {
++	for (i = 0; i < MCAL_TABLE_SIZE / 2; i++) {
+ 		cs_ni_set_mc_table(i,i);
+ 	}
+ 
+--- linux-3.4.104/drivers/net/ethernet/cs752x/src/ni/cs752x_eth.c	2015-06-29 10:32:36.000000000 +0800
++++ linux-3.4.104/drivers/net/ethernet/cs752x/src/ni/cs752x_eth.c	2015-08-21 10:27:09.624353000 +0800
+@@ -3511,7 +3511,7 @@
+ }
+ 
+ /* #if defined(MULTIPLE_VTABLE) || defined(CS_UU_TEST) */
+-void cs_ni_get_mc_table(u8 mc_index)
++u16 cs_ni_get_mc_table(u8 mc_index)
+ {
+ 	NI_TOP_NI_MC_INDX_LKUP_ACCESS_t mc_lkup_access, mc_lkup_access_mask;
+ 	u8 access;
+@@ -3537,7 +3537,8 @@
+ 	} while (access == 0x80000000);
+ 
+ 	mc_table_data = NI_READL_MODE(NI_TOP_NI_MC_INDX_LKUP_DATA) & 0xFFFF;
+-	printk("MC Lkup Table\t %3d :\t  0x%04X\n", mc_index, mc_table_data);
++	//printk("MC Lkup Table\t %3d :\t  0x%04X\n", mc_index, mc_table_data);
++	return mc_table_data;
+ }
+ /* #endif */
+ 
+--- linux-3.4.104/arch/arm/mach-goldengate/include/mach/cs_flow_api.h	2015-06-25 09:24:18.000000000 +0800
++++ linux-3.4.104/arch/arm/mach-goldengate/include/mach/cs_flow_api.h	2015-08-21 10:28:42.746373000 +0800
+@@ -10,6 +10,8 @@
+ 	CS_FLOW_TYPE_L4_NATT = 4,      /* CORE_FWD_APP_TYPE_TUNNEL_L4_L7 */ 
+ 	CS_FLOW_TYPE_L2_PASS = 5,      /* CORE_FWD_APP_TYPE_L2_PASS */
+ 	CS_FLOW_TYPE_MC_MEMBER = 6,    /* CORE_FWD_APP_TYPE_MCAST_CTRL */
++	CS_FLOW_TYPE_L2_DA_SA = 7,           /* CORE_FWD_APP_TYPE_L2_DA_SA */
++	CS_FLOW_TYPE_MC_L7_FILTER = 8,           /* CORE_FWD_APP_TYPE_MC_L7_FILTER */
+ } cs_flow_type_t;
+ 
+ typedef enum {
+--- linux-3.4.104/arch/arm/mach-goldengate/include/mach/cs_network_types.h	2015-06-25 09:24:18.000000000 +0800
++++ linux-3.4.104/arch/arm/mach-goldengate/include/mach/cs_network_types.h	2015-08-21 10:29:01.761389000 +0800
+@@ -34,7 +34,6 @@
+ 	CS_PORT_CUSTOM0		= 6, /* customer defined interface#0 */
+ 	CS_PORT_CUSTOM1		= 7, /* customer defined interface#1 */
+ 	CS_PORT_CUSTOM2		= 8, /* customer defined interface#2 */
+-	CS_PORT_CUSTOM3		= 9, /* customer defined interface#3 */
+ } cs_phy_port_id_t;
+ 
+ typedef enum {
+--- linux-3.4.104/arch/arm/mach-goldengate/include/mach/cs_rule_hash_api.h	2015-03-11 12:57:36.000000000 +0800
++++ linux-3.4.104/arch/arm/mach-goldengate/include/mach/cs_rule_hash_api.h	2015-08-21 10:29:14.948467000 +0800
+@@ -147,6 +147,8 @@
+ 	cs_uint32_t                     voq_pol_idx;
+ 	cs_uint32_t                     fwd_rslt_idx;
+ 	cs_uint32_t			vlan_rslt_idx;
++	cs_uint16_t			mcgid;
++	cs_uint16_t			mcidx;
+ } cs_rule_hash_t;
+ 
+ cs_status_t cs_rule_hash_add(CS_IN cs_dev_id_t device_id, CS_IN_OUT cs_rule_hash_t *p_rule_hash);

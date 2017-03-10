@@ -1,0 +1,13 @@
+diff -Nur linux-3.4.104/drivers/net/ethernet/cs752x/src/ni/cs752x_eth.c linux-3.4.104-new/drivers/net/ethernet/cs752x/src/ni/cs752x_eth.c
+--- linux-3.4.104/drivers/net/ethernet/cs752x/src/ni/cs752x_eth.c	2015-11-17 15:13:13.505574467 -0800
++++ linux-3.4.104-new/drivers/net/ethernet/cs752x/src/ni/cs752x_eth.c	2015-11-17 15:11:55.986263758 -0800
+@@ -742,7 +742,8 @@
+ #define K(x) ((x) << (PAGE_SHIFT - 10))
+ 			free_page = global_page_state(NR_FREE_PAGES);
+ 			if ( K(free_page) < cs_ni_min_rsve_mem){
+-				//printk("Delay skb alloc due to low memory!\n");
++				printk_ratelimited(KERN_WARNING "%s.%d: Low memory, delaying buffer allocation\n",
++					dev->name, qid);
+ 				break;
+ 			}
+ 

@@ -1,0 +1,145 @@
+From 7536c58a22390e3c024c1532e5e0cde78ce9af53 Mon Sep 17 00:00:00 2001
+From: Hoang Tran <hoang.tran@greenwavereality.com>
+Date: Mon, 29 Sep 2014 19:17:12 +0800
+Subject: [PATCH 10/12] bhr4 cs_per_cpu_queue_fix
+
+Signed-off-by: Hoang Tran <hoang.tran@greenwavereality.com>
+---
+ .../net/ethernet/cs752x/src/core/cs_core_skb_cb.c  | 42 ++++++++++------------
+ 1 file changed, 18 insertions(+), 24 deletions(-)
+
+diff --git a/drivers/net/ethernet/cs752x/src/core/cs_core_skb_cb.c b/drivers/net/ethernet/cs752x/src/core/cs_core_skb_cb.c
+index 526b378..277b212 100644
+--- a/drivers/net/ethernet/cs752x/src/core/cs_core_skb_cb.c
++++ b/drivers/net/ethernet/cs752x/src/core/cs_core_skb_cb.c
+@@ -43,6 +43,7 @@
+ 
+ typedef struct cs_accel_cb_db_s {
+ 	struct list_head node;
++	unsigned cpu_pool;
+ 	cs_kernel_accel_cb_t content;
+ 	struct sk_buff *skb;
+ } cs_accel_cb_db_t;
+@@ -94,13 +95,12 @@ cs_accel_cb_db_t *get_next_avail_entry(void)
+ #if defined(CONFIG_CB_POOL_LOCK) || defined(CONFIG_USED_CB_POOL)
+ 	unsigned long flags;
+ #endif
++	int cpu = get_cpu();
++	put_cpu();
+ 
+ #ifdef CONFIG_PER_CPU_CB_POOL
+ 
+-#ifndef CONFIG_PREEMPT_NONE
+-	get_cpu();
+-#endif
+-	if (smp_processor_id() == 0) {
++	if (cpu == 0) {
+ 		cpu_pool = &accel_cb_pool_0;
+ 		cb_cnt_ptr = &accel_cb_cnt_0;
+ #ifdef CONFIG_CB_POOL_LOCK
+@@ -113,9 +113,6 @@ cs_accel_cb_db_t *get_next_avail_entry(void)
+ 		pool_lock = &cb_pool_lock_1;
+ #endif
+ 	}
+-#ifndef CONFIG_PREEMPT_NONE
+-	put_cpu();
+-#endif
+ 
+ #else
+ 	cpu_pool = &accel_cb_pool_0;
+@@ -125,12 +122,16 @@ cs_accel_cb_db_t *get_next_avail_entry(void)
+ #endif
+ #endif
+ 
+-	if (list_empty(cpu_pool))
+-		return NULL;
+-
+ #ifdef CONFIG_CB_POOL_LOCK
+ 	spin_lock_irqsave(pool_lock, flags);
+ #endif
++	if (list_empty(cpu_pool)) {
++#ifdef CONFIG_CB_POOL_LOCK
++		spin_unlock_irqrestore(pool_lock, flags);
++#endif
++		return NULL;
++	}
++
+ 	new_db = list_first_entry(cpu_pool, cs_accel_cb_db_t, node);
+ 	list_del(&new_db->node);
+ 	(*cb_cnt_ptr)--;
+@@ -156,13 +157,12 @@ cs_accel_cb_db_t *expand_table_and_get_entry(void)
+ 	spinlock_t *pool_lock;
+ 	unsigned long flags;
+ #endif
++	int cpu = get_cpu();
++	put_cpu();
+ 
+ #ifdef CONFIG_PER_CPU_CB_POOL
+ 
+-#ifndef CONFIG_PREEMPT_NONE
+-	get_cpu();
+-#endif
+-	if (smp_processor_id() == 0) {
++	if (cpu == 0) {
+ 		if (accel_cb_curr_size_0 == accel_cb_max_size)
+ 			return NULL;
+ 
+@@ -183,9 +183,6 @@ cs_accel_cb_db_t *expand_table_and_get_entry(void)
+ 		pool_lock = &cb_pool_lock_1;
+ #endif
+ 	}
+-#ifndef CONFIG_PREEMPT_NONE
+-	put_cpu();
+-#endif
+ #else
+ 	if (accel_cb_curr_size_0 == accel_cb_max_size)
+ 		return NULL;
+@@ -202,6 +199,7 @@ cs_accel_cb_db_t *expand_table_and_get_entry(void)
+ 		new_cb_db = kzalloc(sizeof(cs_accel_cb_db_t), GFP_ATOMIC);
+ 		if (new_cb_db == NULL)
+ 			break;
++		new_cb_db->cpu_pool = cpu;
+ #ifdef CONFIG_CB_POOL_LOCK
+ 		spin_lock_irqsave(pool_lock, flags);
+ #endif
+@@ -274,10 +272,7 @@ int cs_accel_cb_del(struct sk_buff *skb)
+ #endif
+ 
+ #ifdef CONFIG_PER_CPU_CB_POOL
+-#ifndef CONFIG_PREEMPT_NONE
+-	get_cpu();
+-#endif
+-	if (raw_smp_processor_id() == 0) {
++	if (cb_db_ptr->cpu_pool == 0) {
+ 		cpu_pool = &accel_cb_pool_0;
+ 		cb_cnt_ptr = &accel_cb_cnt_0;
+ #ifdef CONFIG_CB_POOL_LOCK
+@@ -290,9 +285,6 @@ int cs_accel_cb_del(struct sk_buff *skb)
+ 		pool_lock = &cb_pool_lock_1;
+ #endif
+ 	}
+-#ifndef CONFIG_PREEMPT_NONE
+-	put_cpu();
+-#endif
+ #else
+ 	cpu_pool = &accel_cb_pool_0;
+ 	cb_cnt_ptr = &accel_cb_cnt_0;
+@@ -456,6 +448,7 @@ int cs_accel_cb_init(void)
+ 		new_cb_db = kzalloc(sizeof(cs_accel_cb_db_t), GFP_ATOMIC);
+ 		if (new_cb_db == NULL)
+ 			break;
++		new_cb_db->cpu_pool = 0;
+ 		list_add_tail(&new_cb_db->node, &accel_cb_pool_0);
+ 		accel_cb_cnt_0++;
+ 	}
+@@ -466,6 +459,7 @@ int cs_accel_cb_init(void)
+ 		new_cb_db = kzalloc(sizeof(cs_accel_cb_db_t), GFP_ATOMIC);
+ 		if (new_cb_db == NULL)
+ 			break;
++		new_cb_db->cpu_pool = 1;
+ 		list_add_tail(&new_cb_db->node, &accel_cb_pool_1);
+ 		accel_cb_cnt_1++;
+ 	}
+-- 
+2.1.1
+

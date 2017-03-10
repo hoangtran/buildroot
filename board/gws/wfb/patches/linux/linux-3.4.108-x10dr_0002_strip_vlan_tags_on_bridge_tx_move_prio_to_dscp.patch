@@ -1,0 +1,65 @@
+--- linux-3.4.108/drivers/net/ethernet/cs752x/src/kernel_adapt/bridge/cs_hw_accel_bridge.c	2016-05-24 02:17:57.481341710 -0700
++++ linux-3.4.108/drivers/net/ethernet/cs752x/src/kernel_adapt/bridge/cs_hw_accel_bridge.c	2016-05-24 02:25:02.792857932 -0700
+@@ -92,6 +92,38 @@
+ 	return NF_ACCEPT;
+ }
+ 
++static void cs_hw_accel_ip_change_dscp(struct iphdr *iph, u8 dscp)
++{
++	u32 csum = ntohs((__force __be16)iph->check) + iph->tos;
++
++	iph->tos = (iph->tos & 0x03) | (dscp << 2);
++	if (((csum + 1) >> 16) != 0)
++		csum = (csum + 1) & 0xFFFF;
++	csum -= iph->tos;
++	csum += csum >> 16;
++	iph->check = (__force __sum16)htons(csum);
++}
++
++static void cs_br_gws_skb_fixup(struct sk_buff *skb, u8 *new_tos, u8 *orig_tos)
++{
++	struct iphdr *iph = (struct iphdr *)skb->data;
++
++	*orig_tos = iph->tos;
++	if (vlan_tx_tag_present(skb) && (skb->vlan_tci & VLAN_VID_MASK) == 0) {
++		switch ((skb->vlan_tci & VLAN_PRIO_MASK) >> VLAN_PRIO_SHIFT) {
++			case 1: cs_hw_accel_ip_change_dscp(iph, 0x08); break;
++			case 2: cs_hw_accel_ip_change_dscp(iph, 0x10); break;
++			case 3: cs_hw_accel_ip_change_dscp(iph, 0x18); break;
++			case 4: cs_hw_accel_ip_change_dscp(iph, 0x20); break;
++			case 6: cs_hw_accel_ip_change_dscp(iph, 0x30); break;
++			case 7: cs_hw_accel_ip_change_dscp(iph, 0x38); break;
++		}
++
++		skb->vlan_tci = 0;
++	}
++	*new_tos = iph->tos;
++}
++
+ static unsigned int cs_br_nf_post_routing(unsigned int hook,
+ 					  struct sk_buff *skb,
+ 					  const struct net_device *in,
+@@ -104,6 +136,9 @@
+ 	struct net_bridge_port *p = br_port_get_rcu(skb->dev);
+ 	struct net_bridge *br;
+ 	struct net_bridge_fdb_entry *dst;
++	u8 new_tos, orig_tos;
++
++	cs_br_gws_skb_fixup(skb, &new_tos, &orig_tos);
+ 
+ 	if (!cs_cb)
+ 		return NF_ACCEPT;
+@@ -145,6 +180,13 @@
+ 	DBG(printk("\t module_mask 0x%x ageing_time=%d \n", cs_cb->common.module_mask,
+ 		br->ageing_time));
+ 
++	if (new_tos != orig_tos) {
++		cs_cb->input.l3_nh.iph.tos = orig_tos;
++		cs_cb->output.l3_nh.iph.tos = new_tos;
++		cs_cb->output_mask |= CS_HM_DSCP_MASK;
++		cs_cb->common.module_mask |= CS_MOD_MASK_QOS_FIELD_CHANGE;
++	}
++
+ 	cs_cb->common.output_dev = (struct net_device *)dst->dst->dev;
+ 	cs_cb->common.sw_only = CS_SWONLY_HW_ACCEL;
+ 	cs_core_logic_add_swid64(cs_cb, CS_MOD_BRIDGE_SWID);
