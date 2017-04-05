@@ -1,0 +1,22 @@
+comment "rtl8814 needs a Linux kernel to be built"
+	depends on !BR2_LINUX_KERNEL
+
+config BR2_PACKAGE_RTL8814
+	bool "rtl8814"
+	depends on BR2_LINUX_KERNEL
+	help
+	  rtl8814 wifi driver
+
+if	BR2_PACKAGE_RTL8814
+
+config BR2_TARGET_RTL8814_PATCH
+	string "Custom RTL8814 patches"
+	help
+	  A space-separated list of patches to apply to rtl8814 driver.
+	  Each patch can be described as an URL, a local file path,
+	  or a directory. In the case of a directory, all files
+	  matching *.patch in the directory will be applied.
+
+	  Most users may leave this empty
+
+endif

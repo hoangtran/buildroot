@@ -1,0 +1,5 @@
+menu "Lego"
+
+	source "lego/rtl8814/Config.in"
+
+endmenu

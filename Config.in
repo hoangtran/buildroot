@@ -740,6 +740,8 @@ source "system/Config.in"
 
 source "linux/Config.in"
 
+source "lego/Config.in"
+
 source "package/Config.in"
 
 source "fs/Config.in"
