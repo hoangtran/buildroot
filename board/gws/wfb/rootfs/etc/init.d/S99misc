@@ -1,15 +1,27 @@
 # !/bin/sh
 
-# Network optimization
-echo 0xe25 > /proc/driver/cs752x/acp/acp_enable
-echo 1 > /proc/driver/cs752x/ne/ni/ni_fastbridge
+do_reset_qtn()
+{
+	echo -en "Reset QTN modules"
+	echo 35 > /sys/class/gpio/export
+	echo 36 > /sys/class/gpio/export
+	echo out > /sys/class/gpio/gpio35/direction
+	echo out > /sys/class/gpio/gpio36/direction
+	echo 0 > /sys/class/gpio/gpio35/value
+	echo 0 > /sys/class/gpio/gpio36/value
+	echo 1 > /sys/class/gpio/gpio35/value
+	echo 1 > /sys/class/gpio/gpio36/value
+}
 
-# Start Quantenna
-echo 35 > /sys/class/gpio/export
-echo 36 > /sys/class/gpio/export
-echo out > /sys/class/gpio/gpio35/direction
-echo out > /sys/class/gpio/gpio36/direction
-echo 0 > /sys/class/gpio/gpio35/value
-echo 0 > /sys/class/gpio/gpio36/value
-echo 1 > /sys/class/gpio/gpio35/value
-echo 1 > /sys/class/gpio/gpio36/value
+case "$1" in
+	start)
+		do_reset_qtn
+		;;
+	stop)
+		;;
+	restart|reload)
+		;;
+	*)
+		echo "Usage: $0 {start|stop|restart}"
+		exit 1
+esac

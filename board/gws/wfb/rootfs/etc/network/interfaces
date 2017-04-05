@@ -51,3 +51,10 @@ iface eth1.133 inet manual
 	down /sbin/ifconfig ${IFACE} down
 	post-down /usr/sbin/brctl delif br133 ${IFACE}
 	post-down /sbin/vconfig rem ${IFACE}
+
+auto wlan0
+iface wlan0 inet manual
+	pre-up /usr/sbin/brctl addif br0 ${IFACE}
+	up /sbin/ifconfig ${IFACE} up
+	down /sbin/ifconfig ${IFACE} down
+	post-down /usr/sbin/brctl delif br0 ${IFACE}

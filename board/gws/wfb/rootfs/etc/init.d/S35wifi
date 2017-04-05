@@ -1,0 +1,172 @@
+# !/bin/sh
+
+do_network_engine()
+{
+	# Network optimization
+	echo 0xe25 > /proc/driver/cs752x/acp/acp_enable
+	echo 1 > /proc/driver/cs752x/ne/ni/ni_fastbridge
+
+	# Affinity settings [1(CPU0),2(CPU1),3(Both)]
+	# G2 PCIE0 int affinity (realtek wifi)
+	echo 1 > /proc/irq/65/smp_affinity
+	# eth0 affinity
+	echo 2 > /proc/irq/69/smp_affinity
+	# eth1 affinity
+	echo 2 > /proc/irq/70/smp_affinity
+	# eth2 affinity
+	echo 2 > /proc/irq/71/smp_affinity
+	# NI_WFO_PE0 affinity (realtek wifi)
+	echo 2 > /proc/irq/72/smp_affinity
+	echo 2 > /proc/irq/73/smp_affinity
+}
+
+do_configure_realtek_ap()
+{
+	# general setup for Secondary WiFi ($1)
+	##  -> AP mode
+	iwpriv $1 set_mib opmode=16
+	##  -> set SSID
+	iwpriv $1 set_mib ssid=$2
+	##  -> enable auto channel selection
+	iwpriv $1 set_mib channel=0
+	##  -> regulatory domain to FCC
+	iwpriv $1 set_mib regdomain=1
+	iwpriv $1 set_mib txpwr_lmt_index=1
+	##  -> set wireless mode support to B/G/N (sum of based on 1: 11b, 2: 11G, 4: 11a, 8: 11n, 64: 11ac)
+	iwpriv $1 set_mib band=75
+	##  -> broadcast (not hidden)
+	iwpriv $1 set_mib hiddenAP=0
+	##  -> phy band is 2.4G
+	iwpriv $1 set_mib phyBandSelect=1
+
+	##  -> enable Multi BSS
+	#iwpriv $1 set_mib vap_enable=1
+
+	##  -> enable vlan strip feature
+	iwpriv $1 set_mib vlan_enable=1
+
+	# security setup for $1 (wpa2 psk w. aes)
+	##  -> use WPA2 encryption
+	iwpriv $1 set_mib encmode=4
+	##  -> disable 802.1x (enterprise mode)
+	iwpriv $1 set_mib 802_1x=0
+	##  -> 802.11 authentication type is AUTO (1: shared key)
+	iwpriv $1 set_mib authtype=2
+	##  -> use WPA2
+	iwpriv $1 set_mib psk_enable=2
+	##  -> use AES
+	iwpriv $1 set_mib wpa2_cipher=8
+	iwpriv $1 set_mib wpa_cipher=0
+	##  -> pre-shared key
+	iwpriv $1 set_mib passphrase=$3
+
+	#From Eric's configration:
+	#3: 2T2R, 5: 3T3R
+	iwpriv $1 set_mib MIMO_TR_mode=5
+	#3: on board, high power, 2: wnic card, normal power
+	iwpriv $1 set_mib rfe_type=2
+
+	#More from Eric's configration:
+	iwpriv $1 set_mib disable_txpwrlmt=0
+	iwpriv $1 set_mib ch_hi=0
+	iwpriv $1 set_mib ch_low=0
+	iwpriv $1 set_mib preamble=0
+	iwpriv $1 set_mib trswitch=0
+	iwpriv $1 set_mib xcap=0
+	iwpriv $1 set_mib tssi1=0
+	iwpriv $1 set_mib tssi2=0
+	iwpriv $1 set_mib ther=0
+	iwpriv $1 set_mib bcnint=100
+	iwpriv $1 set_mib dtimperiod=1
+	iwpriv $1 set_mib aclmode=0
+	iwpriv $1 set_mib aclnum=0
+	iwpriv $1 set_mib oprates=4095
+	iwpriv $1 set_mib basicrates=4096
+	iwpriv $1 set_mib autorate=1
+	iwpriv $1 set_mib disable_protection=1
+	iwpriv $1 set_mib deny_legacy=0
+	iwpriv $1 set_mib stanum=0
+	iwpriv $1 set_mib gk_rekey=86400
+	iwpriv $1 set_mib default_port=0
+	iwpriv $1 set_mib rtsthres=2347
+	iwpriv $1 set_mib fragthres=2346
+	iwpriv $1 set_mib expired_time=1000
+	iwpriv $1 set_mib led_type=0
+	iwpriv $1 set_mib block_relay=0
+	iwpriv $1 set_mib wifi_specific=0
+	iwpriv $1 set_mib groupID=0
+	iwpriv $1 set_mib qos_enable=1
+	iwpriv $1 set_mib wsc_enable=1
+	iwpriv $1 set_mib use40M=1
+	iwpriv $1 set_mib 2ndchoffset=0
+	iwpriv $1 set_mib shortGI20M=1
+	iwpriv $1 set_mib shortGI40M=1
+	iwpriv $1 set_mib stbc=0
+	iwpriv $1 set_mib amsdu=0
+	iwpriv $1 set_mib ampdu=1
+	iwpriv $1 set_mib coexist=0
+	iwpriv $1 set_mib dig_cov_enable=1
+}
+
+do_configure_realtek_sta()
+{
+	iwpriv $1 set_mib opmode=8
+	iwpriv $1 set_mib band=11
+	##  -> set SSID
+	iwpriv $1 set_mib ssid=$2
+	# security setup for $1 (wpa2 psk w. aes)
+	##  -> use WPA2 encryption
+	iwpriv $1 set_mib encmode=4
+	##  -> disable 802.1x (enterprise mode)
+	iwpriv $1 set_mib 802_1x=0
+	##  -> 802.11 authentication type is AUTO (1: shared key)
+	iwpriv $1 set_mib authtype=2
+	##  -> use WPA2
+	iwpriv $1 set_mib psk_enable=2
+	##  -> use AES
+	iwpriv $1 set_mib wpa2_cipher=8
+	iwpriv $1 set_mib wpa_cipher=0
+	##  -> pre-shared key
+	iwpriv $1 set_mib passphrase=password
+
+	iwpriv $1 set_mib use40M=1
+	iwpriv $1 set_mib 2ndchoffset=0
+}
+
+fetch_var_from_cmdline()
+{
+	eval ${1}=$(cat /proc/cmdline | awk -F "${2}=" '{print $2}' | cut -d" " -f1)
+}
+
+do_rtk_wifi()
+{
+	fetch_var_from_cmdline WLAN0ADDR wlan0addr
+	fetch_var_from_cmdline GUESTADDR guestaddr
+
+	ifconfig wlan0 hw ether ${WLAN0ADDR} down
+	ifconfig wlan0-va0 hw ether ${GUESTADDR} down
+
+	RTK_SSID=$(fw_printenv -n "ssidPrimary")
+	RTK_PSK=$(fw_printenv -n "wpa2phrase")
+
+	iwpriv wlan0 set_mib debug_trace=0x00000000
+	iwpriv wlan0 set_mib debug_info=0x00000000
+	iwpriv wlan0 set_mib debug_warn=0x00000000
+	iwpriv wlan0 set_mib debug_err=0xffffffff
+
+	do_configure_realtek_ap wlan0 ${RTK_SSID} ${RTK_PSK}
+}
+
+case "$1" in
+	start)
+		do_network_engine
+		do_rtk_wifi
+		;;
+	stop)
+		;;
+	restart|reload)
+		;;
+	*)
+		echo "Usage: $0 {start|stop|restart}"
+		exit 1
+esac
