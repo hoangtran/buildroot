@@ -1,0 +1,52 @@
+diff --git a/driver/rtl8192cd/8192cd.h b/driver/rtl8192cd/8192cd.h
+index 1fc193b..dea502c 100755
+--- a/driver/rtl8192cd/8192cd.h
++++ b/driver/rtl8192cd/8192cd.h
+@@ -1426,6 +1426,9 @@ struct stat_info {
+ 	unsigned int		private_ie_len;
+ 	unsigned int		tx_ra_bitmap;
+ 
++	unsigned int		txrpt_tx_bytes_pre;
++	unsigned int		txrpt_tx_ok_chk_cnt;
++
+ 	unsigned int		tx_bytes;
+ 	unsigned int		rx_bytes;
+ #ifdef RADIUS_ACCOUNTING
+diff --git a/driver/rtl8192cd/8192cd_util.c b/driver/rtl8192cd/8192cd_util.c
+index c8ebeb7..d4b4248 100755
+--- a/driver/rtl8192cd/8192cd_util.c
++++ b/driver/rtl8192cd/8192cd_util.c
+@@ -7260,7 +7260,18 @@ void _txrpt_handler(struct rtl8192cd_priv *priv, struct stat_info *pstat, struct
+ 
+ 	priv->net_stats.tx_errors += report->txfail;
+ 	pstat->tx_fail += report->txfail;
+-	pstat->tx_pkts += report->txok+report->txfail;
++	pstat->tx_pkts += report->txfail;
++
++	if (pstat->txrpt_tx_bytes_pre == pstat->tx_bytes) {
++		if (report->txok) {
++			pstat->txrpt_tx_ok_chk_cnt++;
++		}
++	} else {
++		pstat->txrpt_tx_bytes_pre = pstat->tx_bytes;
++		pstat->txrpt_tx_ok_chk_cnt = 0;
++	}
++	if (pstat->txrpt_tx_ok_chk_cnt <= 10)
++		pstat->tx_pkts += report->txok;
+ 
+ 	DEBUG_INFO("debug[%02X%02X%02X%02X%02X%02X]:id=%d,ok=%d,fail=%d\n", 
+ 		pstat->hwaddr[0],pstat->hwaddr[1],pstat->hwaddr[2],pstat->hwaddr[3],pstat->hwaddr[4],pstat->hwaddr[5],
+diff --git a/driver/rtl8192cd/WlanHAL/RTL88XX/Hal88XXPhyCfg.c b/driver/rtl8192cd/WlanHAL/RTL88XX/Hal88XXPhyCfg.c
+index cc22240..3b80569 100755
+--- a/driver/rtl8192cd/WlanHAL/RTL88XX/Hal88XXPhyCfg.c
++++ b/driver/rtl8192cd/WlanHAL/RTL88XX/Hal88XXPhyCfg.c
+@@ -2293,7 +2293,8 @@ SwitchWirelessBand88XX_AC(
+ 
+ 		// cck_enable
+ 		PHY_SetBBReg_88XX(Adapter, REG_BB_CCKENABLE_AC, BIT_MASK_BB_BCCKEN_AC | BIT_MASK_BB_BOFDMEN_AC, 0x3);
+-		PHY_SetBBReg_88XX(Adapter, REG_BB_CCK_RX_AC, 0x0f000000, 0x1);
++		if (GET_CHIP_VER(Adapter) != VERSION_8814A)
++			PHY_SetBBReg_88XX(Adapter, REG_BB_CCK_RX_AC, 0x0f000000, 0x1);
+ 
+ 		// CCK_CHECK_en
+ 		HAL_RTL_W8(REG_CCK_CHECK, (HAL_RTL_R8(REG_CCK_CHECK) & ~(BIT(7)))); // 5G to 2.4G last lauch

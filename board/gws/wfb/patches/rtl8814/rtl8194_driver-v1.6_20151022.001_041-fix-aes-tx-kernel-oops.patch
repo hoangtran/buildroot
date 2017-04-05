@@ -1,0 +1,13 @@
+diff -Nur ori/8192cd_sme.c patch/8192cd_sme.c
+--- a/driver/rtl8192cd/8192cd_sme.c	2016-08-12 17:04:58.000000000 +0200
++++ b/driver/rtl8192cd/8192cd_sme.c	2016-08-12 17:03:42.000000000 +0200
+@@ -6129,6 +6129,9 @@
+ 		) {
+ 			unsigned char mic[8];
+ 							
++			if (pfrinfo->pktlen <= pfrinfo->hdr_len+16)
++				return MGMT_FRAME_MIC_ERR;
++
+ 			memcpy(mic,pframe + pfrinfo->pktlen - 8, 8);			
+ 			aesccmp_decrypt(priv, pfrinfo, 1);			
+ 			

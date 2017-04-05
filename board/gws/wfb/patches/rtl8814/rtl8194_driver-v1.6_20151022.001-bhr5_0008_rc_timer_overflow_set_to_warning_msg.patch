@@ -1,0 +1,13 @@
+diff --git a/driver/rtl8192cd/8192cd_rx.c b/driver/rtl8192cd/8192cd_rx.c
+index ec7713e..95264ab 100644
+--- a/driver/rtl8192cd/8192cd_rx.c
++++ b/driver/rtl8192cd/8192cd_rx.c
+@@ -2371,7 +2371,7 @@ static int reorder_ctrl_timer_add(struct rtl8192cd_priv *priv, struct stat_info
+ 		setup_timer = 1;
+ 	}
+ 	else if (CIRC_SPACE(current_idx, priv->pshare->rc_timer_tail, RC_TIMER_NUM) == 0) {
+-		DEBUG_ERR("%s: %s, RC timer overflow!\n", priv->dev->name, __FUNCTION__ );
++		DEBUG_WARN("%s: %s, RC timer overflow!\n", priv->dev->name, __FUNCTION__ );
+ 		return -1;
+ 	}
+ 	else {	// some items in timer queue

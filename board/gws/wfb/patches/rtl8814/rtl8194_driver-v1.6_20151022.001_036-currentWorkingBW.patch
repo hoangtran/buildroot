@@ -1,0 +1,36 @@
+diff -Nur rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/8192cd_proc.c rtl8194_driver_v1.6_20151022.001-new/driver/rtl8192cd/8192cd_proc.c
+--- rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/8192cd_proc.c	2016-07-08 13:02:12.842734378 +0200
++++ rtl8194_driver_v1.6_20151022.001-new/driver/rtl8192cd/8192cd_proc.c	2016-07-08 13:01:53.794734719 +0200
+@@ -3141,6 +3141,32 @@
+ 	PRINT_SINGL_ARG("    11nProtection: ", priv->ht_protection, "%d");
+ //	PRINT_BITMAP_ARG("    has_2r_sta", priv->pshare->has_2r_sta);
+ 
++	switch (priv->pshare->is_40m_bw)
++	{
++	case 0:
++		PRINT_ONE("    currentWorkingBW:20M", "%s", 1);
++		break;
++	case 1:
++#ifdef WIFI_11N_2040_COEXIST
++		if (!(priv->pmib->dot11nConfigEntry.dot11nCoexist && ((OPMODE & WIFI_AP_STATE) && 
++			(priv->bg_ap_timeout || orForce20_Switch20Map(priv)
++			)))) {
++				PRINT_ONE("    currentWorkingBW:40M", "%s", 1);
++			} 
++			else	{
++				PRINT_ONE("    currentWorkingBW:20M", "%s", 1);
++			}
++#else
++		PRINT_ONE("    currentWorkingBW:40M", "%s", 1);
++#endif
++		break;
++	case 2:
++		PRINT_ONE("    currentWorkingBW:80M", "%s", 1);
++		break;
++	default:
++		break;
++	}
++
+ 	return pos;
+ }
+ 

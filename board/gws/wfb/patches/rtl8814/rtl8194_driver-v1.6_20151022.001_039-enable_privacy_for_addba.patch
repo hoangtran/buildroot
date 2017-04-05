@@ -1,0 +1,15 @@
+diff -Nur ori/8192cd_sme.c patch/8192cd_sme.c
+--- a/driver/rtl8192cd/8192cd_sme.c	2016-07-27 21:04:12.000000000 +0200
++++ b/driver/rtl8192cd/8192cd_sme.c	2016-07-29 16:50:30.000000000 +0200
+@@ -13319,7 +13319,10 @@
+ 	txinsn.fr_len += _ADDBA_Rsp_Frame_Length_;
+ 
+ 	SetFrameSubType((txinsn.phdr), WIFI_WMM_ACTION);
+-
++#ifdef CONFIG_IEEE80211W
++	if (txinsn.isPMF)
++		*(unsigned char*)(txinsn.phdr+1) |= BIT(6); // enable privacy 
++#endif	
+ 	memcpy((void *)GetAddr1Ptr((txinsn.phdr)), da, MACADDRLEN);
+ 	memcpy((void *)GetAddr2Ptr((txinsn.phdr)), GET_MY_HWADDR, MACADDRLEN);
+ 	memcpy((void *)GetAddr3Ptr((txinsn.phdr)), BSSID, MACADDRLEN);

@@ -1,0 +1,16 @@
+diff --git a/driver/rtl8192cd/WlanHAL/HalCfg.h b/driver/rtl8192cd/WlanHAL/HalCfg.h
+index 825e4d4..ff16726 100755
+--- a/driver/rtl8192cd/WlanHAL/HalCfg.h
++++ b/driver/rtl8192cd/WlanHAL/HalCfg.h
+@@ -517,9 +517,9 @@ extern void RTL_W32_F(struct rtl8192cd_priv *priv, unsigned int reg, unsigned in
+ 
+ //4 Retry Limit
+ #if defined(CONFIG_RTL8672) || defined(NOT_RTK_BSP)
+-#define RETRY_LIMIT_SHORT_AP        0x30
++#define RETRY_LIMIT_SHORT_AP        0x10 //0x30
+ #define RETRY_LIMIT_SHORT_AP_2G        0x10
+-#define RETRY_LIMIT_LONG_AP         0x30
++#define RETRY_LIMIT_LONG_AP         0x10 //0x30
+ #else
+ #define RETRY_LIMIT_SHORT_AP        0x10
+ #define RETRY_LIMIT_SHORT_AP_2G        0x10

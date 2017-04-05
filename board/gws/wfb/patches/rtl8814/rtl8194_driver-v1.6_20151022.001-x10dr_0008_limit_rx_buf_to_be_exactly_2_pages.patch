@@ -1,0 +1,17 @@
+diff -Nur --exclude '*.orig' rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/8192cd_cfg.h rtl8194_driver_v1.6_20151022.001-new/driver/rtl8192cd/8192cd_cfg.h
+--- rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/8192cd_cfg.h	2017-01-31 10:47:11.117279544 -0800
++++ rtl8194_driver_v1.6_20151022.001-new/driver/rtl8192cd/8192cd_cfg.h	2017-01-31 10:45:56.608109236 -0800
+@@ -2438,8 +2438,13 @@
+ #define MIN_RX_BUF_LEN  3000
+ #else
+ #if defined(SUPPORT_RX_AMSDU_AMPDU)
++#if 1 /* FK */
++#define MAX_RX_BUF_LEN  (SKB_WITH_OVERHEAD(8*1024) - NET_SKB_PAD)
++#define MIN_RX_BUF_LEN  MAX_RX_BUF_LEN
++#else
+ #define MAX_RX_BUF_LEN  8800
+ #define MIN_RX_BUF_LEN  8800
++#endif
+ #else
+ #define MAX_RX_BUF_LEN  2600
+ #define MIN_RX_BUF_LEN  2600

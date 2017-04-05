@@ -1,0 +1,56 @@
+--- rtl8194_driver_v1.6_20151022.001.old/driver/rtl8192cd/Makefile      2015-11-13 03:18:29.000000000 +0100
++++ rtl8194_driver_v1.6_20151022.001.new/driver/rtl8192cd/Makefile      2015-12-15 17:04:50.842746776 +0100
+@@ -401,6 +401,9 @@
+ #EXTRA_CFLAGS += -I$(DIR_LINUX)/drivers/net/rtl819x/
+ endif
+
++# Neccessary for BHR5 egress VLAN tag stripping  
++EXTRA_CFLAGS += -DCONFIG_GREENWAVE_VLAN_8021Q
++
+ ###############################################################################
+ 
+ #EXTRA_CFLAGS += -D"KBUILD_MODNAME=KBUILD_STR(rtl8192cd)" -DMODULE -D__KERNEL__
+diff --git a/driver/rtl8192cd/8192cd_ioctl.c b/driver/rtl8192cd/8192cd_ioctl.c
+index 96bd098..c265da5 100644
+--- a/driver/rtl8192cd/8192cd_ioctl.c
++++ b/driver/rtl8192cd/8192cd_ioctl.c
+@@ -1327,7 +1327,7 @@ static struct iwpriv_arg mib_table[] = {
+ 	{"rc_winsz",	INT_T,		_OFFSET(reorderCtrlEntry.ReorderCtrlWinSz), _SIZE(reorderCtrlEntry.ReorderCtrlWinSz), RC_ENTRY_NUM},
+ 	{"rc_timeout",	INT_T,		_OFFSET(reorderCtrlEntry.ReorderCtrlTimeout), _SIZE(reorderCtrlEntry.ReorderCtrlTimeout), 30000}, /*in us*/
+ 
+-#if defined (CONFIG_RTK_VLAN_SUPPORT) || defined (CONFIG_PUMA_VLAN_8021Q)
++#if defined (CONFIG_RTK_VLAN_SUPPORT) || defined (CONFIG_PUMA_VLAN_8021Q) || defined (CONFIG_GREENWAVE_VLAN_8021Q)
+ 	// struct VlanConfig
+ 	{"global_vlan",	INT_T,		_OFFSET(vlan.global_vlan), _SIZE(vlan.global_vlan), 0},
+ 	{"is_lan",	INT_T,		_OFFSET(vlan.is_lan), _SIZE(vlan.is_lan), 1},
+diff --git a/driver/rtl8192cd/8192cd_tx.c b/driver/rtl8192cd/8192cd_tx.c
+index 6714a00..8f97c9c 100644
+--- a/driver/rtl8192cd/8192cd_tx.c
++++ b/driver/rtl8192cd/8192cd_tx.c
+@@ -45,7 +45,7 @@
+ #if defined(CONFIG_RTL_WAPI_SUPPORT)
+ #include "wapiCrypto.h"
+ #endif
+-#if defined (CONFIG_RTL_VLAN_8021Q) || defined (CONFIG_PUMA_VLAN_8021Q)
++#if defined (CONFIG_RTL_VLAN_8021Q) || defined (CONFIG_PUMA_VLAN_8021Q) || defined (CONFIG_GREENWAVE_VLAN_8021Q)
+ #include <linux/if_vlan.h>
+ #endif
+ 
+@@ -7788,7 +7788,7 @@ int __rtl8192cd_start_xmit(struct sk_buff *skb, struct net_device *dev, int tx_f
+     uint16 vid;
+     struct sk_buff *newskb;
+ #endif
+-#ifdef CONFIG_PUMA_VLAN_8021Q
++#if defined(CONFIG_PUMA_VLAN_8021Q) || defined (CONFIG_GREENWAVE_VLAN_8021Q)
+     struct sk_buff *newskb;
+ #endif
+     int temp;
+@@ -8227,7 +8227,7 @@ int __rtl8192cd_start_xmit(struct sk_buff *skb, struct net_device *dev, int tx_f
+ 	}
+ #endif
+ 
+-#ifdef CONFIG_PUMA_VLAN_8021Q
++#if defined(CONFIG_PUMA_VLAN_8021Q) || defined(CONFIG_GREENWAVE_VLAN_8021Q)
+ 	if (priv->pmib->vlan.vlan_enable) {
+ 		//mem_dump("8021Q,TX", skb->data, 18);
+ 		if(*((UINT16*)(skb->data+(ETH_ALEN<<1))) == __constant_htons(ETH_P_8021Q)){

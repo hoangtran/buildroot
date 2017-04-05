@@ -1,0 +1,16 @@
+diff --git a/driver/rtl8192cd//8192cd_util.c b/driver/rtl8192cd//8192cd_util.c
+index e740f87..ba638e7 100644
+--- a/driver/rtl8192cd//8192cd_util.c
++++ b/driver/rtl8192cd//8192cd_util.c
+@@ -4197,8 +4197,9 @@ int get_bssrate_set(struct rtl8192cd_priv *priv, int bssrate_ie, unsigned char *
+ #ifdef CONFIG_RTL_92D_SUPPORT
+ 	if (priv->pmib->dot11RFEntry.phyBandSelect == PHY_BAND_5G)
+ #else
+-	if ((priv->pshare->curr_band == BAND_5G)||(priv->pmib->dot11nConfigEntry.dot11nUse40M == HT_CHANNEL_WIDTH_80) ||
+-		((GET_CHIP_VER(priv)==VERSION_8814A) && (priv->pmib->dot11RFEntry.phyBandSelect ==  PHY_BAND_2G)) && (priv->pmib->dot11BssType.net_work_type & WIRELESS_11AC)) //AC2G_256QAM
++//	if ((priv->pshare->curr_band == BAND_5G)||(priv->pmib->dot11nConfigEntry.dot11nUse40M == HT_CHANNEL_WIDTH_80) ||
++//		((GET_CHIP_VER(priv)==VERSION_8814A) && (priv->pmib->dot11RFEntry.phyBandSelect ==  PHY_BAND_2G)) && (priv->pmib->dot11BssType.net_work_type & WIRELESS_11AC)) //AC2G_256QAM
++	if ((priv->pshare->curr_band == BAND_5G)||(priv->pmib->dot11nConfigEntry.dot11nUse40M == HT_CHANNEL_WIDTH_80))
+ #endif
+ 	{
+ 

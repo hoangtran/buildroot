@@ -1,0 +1,13 @@
+diff --git a/driver/rtl8192cd/8192cd_tx.c b/driver/rtl8192cd/8192cd_tx.c
+index a1f954a..bab9962 100644
+--- a/driver/rtl8192cd/8192cd_tx.c
++++ b/driver/rtl8192cd/8192cd_tx.c
+@@ -9114,7 +9114,7 @@ int __rtl8192cd_usb_start_xmit(struct rtl8192cd_priv *priv, struct tx_insn* txcf
+ 				{
+ #ifdef CONFIG_WLAN_HAL
+ 					if(IS_HAL_CHIP(priv)) {
+-						DEBUG_ERR("%s:%d: tx drop: %d hw Queue desc not available! head=%d, tail=%d request %d\n", __FUNCTION__, __LINE__,
++						DEBUG_WARN("%s:%d: tx drop: %d hw Queue desc not available! head=%d, tail=%d request %d\n", __FUNCTION__, __LINE__,
+ 							q_num, ptx_dma->tx_queue[q_num].host_idx,  ptx_dma->tx_queue[q_num].hw_idx,2);
+ 					}
+ 					else

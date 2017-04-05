@@ -1,0 +1,13 @@
+diff --git a/driver/rtl8192cd/8192cd_ioctl.c b/driver/rtl8192cd/8192cd_ioctl.c
+index 3970c2b..ff18ac4 100644
+--- a/driver/rtl8192cd/8192cd_ioctl.c
++++ b/driver/rtl8192cd/8192cd_ioctl.c
+@@ -1919,7 +1919,7 @@ static struct iwpriv_arg mib_table[] = {
+ #ifdef CONFIG_WLAN_HAL_8814AE
+ 	{"bf_sup_val",		RFFT_T, _OFFSET_RFFT(bf_sup_val), _SIZE_RFFT(bf_sup_val), 0},
+ #endif 
+-	{"rx_rdu_drop_th",        RFFT_T, _OFFSET_RFFT(rx_rdu_drop_th), _SIZE_RFFT(rx_rdu_drop_th), NUM_RX_DESC * 3},
++	{"rx_rdu_drop_th",        RFFT_T, _OFFSET_RFFT(rx_rdu_drop_th), _SIZE_RFFT(rx_rdu_drop_th), NUM_RX_DESC},
+ };
+ 
+ #ifdef _DEBUG_RTL8192CD_

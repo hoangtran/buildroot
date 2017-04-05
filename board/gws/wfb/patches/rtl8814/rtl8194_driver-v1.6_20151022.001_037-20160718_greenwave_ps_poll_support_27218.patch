@@ -1,0 +1,122 @@
+diff -Nur rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/8192cd_rx.c rtl8194_driver_v1.6_20151022.001-new/driver/rtl8192cd/8192cd_rx.c
+--- rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/8192cd_rx.c	2016-07-20 18:47:56.422086603 +0200
++++ rtl8194_driver_v1.6_20151022.001-new/driver/rtl8192cd/8192cd_rx.c	2016-07-20 18:46:08.157307998 +0200
+@@ -9638,6 +9638,27 @@
+         if(pstat->sta_in_firmware == 1)
+         {    
+             /* check how many packet in hw queue now*/   
++#ifdef CONFIG_WLAN_HAL_8814AE            
++	if (GET_CHIP_VER(priv) == VERSION_8814A) {
++		for(i=0; i<4; i++) {
++			Q_pktnum[i] = (RTL_R16(0x1400+i*2) & 0xFFF);     
++			if(Q_pktnum[i]) { 
++				Q_id[i] = (RTL_R8(0x400+i*4+3)>>1) & 0x7f;       //31:25     7b
++			} else {
++				Q_id[i] = 0;
++			}
++			Q_pktnum[i+4] = (RTL_R16(0x1408+i*2) & 0xFFF);
++			if(Q_pktnum[i+4]) { 
++				Q_id[i+4] = (RTL_R8(0x468+i*4+3)>>1) & 0x7f; //31:25     7b
++			} else {
++				Q_id[i+4] = 0;
++			}	
++		}
++				
++	}
++	else
++#endif			
++	{
+ #if defined(CONFIG_RTL_8812_SUPPORT) || defined(CONFIG_WLAN_HAL)
+             if(hw_queue_num == 8) { /* for 92E, 8812, & 8881A*/
+                 for(i=0; i<4; i++) {
+@@ -9668,14 +9689,26 @@
+                 }
+             }
+ #endif                
+-
++	}
+             for(i=0; i<hw_queue_num; i++) {
+                 if (pstat->aid == Q_id[i]) {
+                     packet_num += Q_pktnum[i];
+                 }
+             }
+ 
+-        
++#ifdef CONFIG_WLAN_HAL_8814AE            
++			if (GET_CHIP_VER(priv) == VERSION_8814A) {
++				// Release one packet			
++				if(packet_num >=1) {	
++					GET_HAL_INTERFACE(priv)->ReleaseOnePacketHandler(priv,REMAP_AID(pstat));
++					return 1;
++				} else {
++					return 0;
++				}
++			} else
++#endif // #ifdef CONFIG_WLAN_HAL_8814AE                           
++ 
++			{        
+             if(pstat->txpause_flag == 1) {
+                 if(packet_num > 1) {    
+                     /* drop packet in hw queue for 11n logo test 4.2.47,
+@@ -9768,7 +9801,7 @@
+                 if(packet_num > 0)
+                     return 1;
+             }
+-
++        }
+ 
+             DEBUG_WARN("%s %d OnPsPoll, set MACID 0 AID = %x \n",__FUNCTION__,__LINE__,REMAP_AID(pstat));
+         }
+@@ -9879,7 +9912,8 @@
+ 			rtl_kfree_skb(priv, pskb, _SKB_TX_);
+ 	}
+ 
+-#ifdef CONFIG_WLAN_HAL
++#if 0
++//#ifdef CONFIG_WLAN_HAL
+ //    if ((GetFrameSubType(pframe)) == WIFI_PSPOLL)
+     {
+         if(IS_HAL_CHIP(priv))
+diff -Nur rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/8192cd_sme.c rtl8194_driver_v1.6_20151022.001-new/driver/rtl8192cd/8192cd_sme.c
+--- rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/8192cd_sme.c	2016-07-20 18:47:56.466086927 +0200
++++ rtl8194_driver_v1.6_20151022.001-new/driver/rtl8192cd/8192cd_sme.c	2016-07-20 18:47:32.185909063 +0200
+@@ -7088,6 +7088,20 @@
+ 
+     if(b_calhwqnum == 8) {
+         for(i=0; i<4; i++) {
++#ifdef CONFIG_WLAN_HAL_8814AE            			
++		if (GET_CHIP_VER(priv) == VERSION_8814A) {
++			if((RTL_R16(0x1400+i*2) & 0xFFF))
++				Q_info[i] = (RTL_R8(0x400+i*4+3)>>1) & 0x7f; //31:25     7b
++			else 
++				Q_info[i] = 0;
++			if((RTL_R16(0x1408+i*2) & 0xFFF))
++				Q_info[i+4] = (RTL_R8(0x468+i*4+3)>>1) & 0x7f; //31:25     7b
++			else
++				Q_info[i+4] = 0;
++		}
++		else
++#endif			
++		{
+             if(RTL_R8(0x400+i*4+1) & 0x7f) // 14:8     7b
+                 Q_info[i] = (RTL_R8(0x400+i*4+3)>>1) & 0x7f; //31:25     7b
+             else 
+@@ -7096,6 +7110,7 @@
+                 Q_info[i+4] = (RTL_R8(0x468+i*4+3)>>1) & 0x7f; //31:25     7b
+             else
+                 Q_info[i+4] = 0;
++		}
+         }
+     }
+     else if(b_calhwqnum == 4) {
+diff -Nur rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/WlanHAL/RTL88XX/Hal88XXGen.c rtl8194_driver_v1.6_20151022.001-new/driver/rtl8192cd/WlanHAL/RTL88XX/Hal88XXGen.c
+--- rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/WlanHAL/RTL88XX/Hal88XXGen.c	2016-07-20 18:47:56.482087043 +0200
++++ rtl8194_driver_v1.6_20151022.001-new/driver/rtl8192cd/WlanHAL/RTL88XX/Hal88XXGen.c	2016-07-20 18:37:48.977974092 +0200
+@@ -427,6 +427,7 @@
+ 							BIT_MGTFLT8En | BIT_MGTFLT9En | BIT_MGTFLT10En | BIT_MGTFLT11En | BIT_MGTFLT12En | BIT_MGTFLT13En |
+ 							BIT_CTRLFLT6En | BIT_CTRLFLT7En | BIT_CTRLFLT8En | BIT_CTRLFLT9En | BIT_CTRLFLT10En | BIT_CTRLFLT11En |
+ 							BIT_CTRLFLT12En | BIT_CTRLFLT13En | BIT_CTRLFLT14En | BIT_CTRLFLT15En);
++				HAL_RTL_W16(REG_RXFLTMAP1, BIT_CTRLFLT10En);
+ 				HAL_RTL_W16(REG_RXFLTMAP, BIT_DATAFLT0En | BIT_DATAFLT1En | BIT_DATAFLT2En | BIT_DATAFLT3En | BIT_DATAFLT4En | BIT_DATAFLT5En |
+ 							BIT_DATAFLT6En | BIT_DATAFLT7En | BIT_DATAFLT8En | BIT_DATAFLT9En | BIT_DATAFLT10En | BIT_DATAFLT11En |
+ 							BIT_DATAFLT12En | BIT_DATAFLT13En | BIT_DATAFLT14En | BIT_DATAFLT15En);

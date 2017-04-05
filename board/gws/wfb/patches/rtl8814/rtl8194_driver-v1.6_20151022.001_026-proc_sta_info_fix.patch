@@ -1,0 +1,106 @@
+--- a/driver/rtl8192cd/8192cd_proc.c	2016-04-11 14:16:39.987422099 +0200
++++ b/driver/rtl8192cd/8192cd_proc.c	2016-04-07 11:55:16.000000000 +0200
+@@ -320,9 +320,9 @@
+ 	if(is_MCS_rate(txrate)) {
+ 		unsigned char sg = (pstat->ht_current_tx_info & TX_USE_SHORT_GI) ? 1 : 0;
+ 		if(is_VHT_rate(txrate)) {
+-			txrate = VHT_MCS_DATA_RATE[MIN_NUM(pstat->tx_bw, 2)][sg][(pstat->current_tx_rate - VHT_RATE_ID)];
++			txrate = VHT_MCS_DATA_RATE[MIN_NUM(pstat->tx_bw, 2)][sg][(txrate - VHT_RATE_ID)];
+ 		} else {			
+-			char index = pstat->current_tx_rate&0xf;
++			char index = txrate & 0xf;
+ 			txrate=  VHT_MCS_DATA_RATE[MIN_NUM(pstat->tx_bw, 1)][sg][(index <8) ? index :(index+2)];
+ 		}
+ 	} 
+@@ -335,9 +335,9 @@
+ 	if(is_MCS_rate(rxrate)) {
+ 		unsigned char sg = (pstat->rx_splcp) ? 1 : 0;		
+ 		if(is_VHT_rate(rxrate)) {
+-			rxrate = VHT_MCS_DATA_RATE[MIN_NUM(pstat->rx_bw, 2)][sg][(pstat->rx_rate - VHT_RATE_ID)];
++			rxrate = VHT_MCS_DATA_RATE[MIN_NUM(pstat->rx_bw, 2)][sg][(rxrate - VHT_RATE_ID)];
+ 		} else {			
+-			char index = pstat->rx_rate &0xf;
++			char index = rxrate & 0xf;
+ 			rxrate=  VHT_MCS_DATA_RATE[MIN_NUM(pstat->rx_bw, 1)][sg][(index <8) ? index :(index+2)];
+ 		}
+ 	} 
+@@ -4080,6 +4080,7 @@
+ 	//unsigned short rate;
+ 	unsigned char tmpbuf[16];
+ 	unsigned char *rate;
++	unsigned char current_rate;
+ 
+ 	PRINT_ONE(num,  " %d: stat_info...", 1);
+ 	CHECK_LEN_B;
+@@ -4200,55 +4191,55 @@
+ 	PRINT_SINGL_ARG("    remapped_aid: ", pstat->remapped_aid, "%d");
+ 	CHECK_LEN_B;
+ 
++	current_rate = pstat->current_tx_rate;
+ #ifdef RTK_AC_SUPPORT  //vht rate , todo, dump vht rates in Mbps
+-	if(pstat->current_tx_rate >= VHT_RATE_ID){
++	if(current_rate >= VHT_RATE_ID){
+ 		int rate = query_vht_rate(pstat);
+ 		PRINT_ONE("    current_tx_rate: VHT NSS", "%s", 0);
+-		PRINT_ONE(((pstat->current_tx_rate - VHT_RATE_ID)/10)+1, "%d", 0);
++		PRINT_ONE(((current_rate - VHT_RATE_ID)/10)+1, "%d", 0);
+ 		PRINT_ONE("-MCS", "%s", 0);
+-		PRINT_ONE((pstat->current_tx_rate - VHT_RATE_ID)%10, "%d", 0);
++		PRINT_ONE((current_rate - VHT_RATE_ID)%10, "%d", 0);
+ 		PRINT_ONE(rate, "  %d", 1);
+ 		CHECK_LEN_B;
+ 	}
+ 	else
+ #endif
+-	if (is_MCS_rate(pstat->current_tx_rate)) {
++	if (is_MCS_rate(current_rate)) {
+ 		PRINT_ONE("    current_tx_rate: MCS", "%s", 0);
+-		PRINT_ONE((pstat->current_tx_rate - HT_RATE_ID), "%d", 0);
+-		rate = (unsigned char *)MCS_DATA_RATEStr[(pstat->ht_current_tx_info&BIT(0))?1:0][(pstat->ht_current_tx_info&BIT(1))?1:0][(pstat->current_tx_rate - HT_RATE_ID)];
++		PRINT_ONE((current_rate - HT_RATE_ID), "%d", 0);
++		rate = (unsigned char *)MCS_DATA_RATEStr[(pstat->ht_current_tx_info&BIT(0))?1:0][(pstat->ht_current_tx_info&BIT(1))?1:0][(current_rate - HT_RATE_ID)];
+ 		PRINT_ONE(rate, " %s", 1);
+ 		CHECK_LEN_B;
+ 	}
+ 	else
+ 	{
+-		PRINT_SINGL_ARG("    current_tx_rate: ", pstat->current_tx_rate/2, "%d");
++		PRINT_SINGL_ARG("    current_tx_rate: ", current_rate/2, "%d");
+ 		CHECK_LEN_B;
+ 	}
+ 
+-
++	current_rate = pstat->rx_rate;
+ #ifdef RTK_AC_SUPPORT  //vht rate , todo, dump vht rates in Mbps
+-	if(pstat->rx_rate >= VHT_RATE_ID){
++	if(current_rate >= VHT_RATE_ID){
+ 		int rate = query_vht_rx_rate(pstat);
+ 		PRINT_ONE("    rx_rate: VHT NSS", "%s", 0);
+-		PRINT_ONE(((pstat->rx_rate - VHT_RATE_ID)/10)+1, "%d", 0);
++		PRINT_ONE(((current_rate - VHT_RATE_ID)/10)+1, "%d", 0);
+ 		PRINT_ONE("-MCS", "%s", 0);
+-		PRINT_ONE((pstat->rx_rate - VHT_RATE_ID)%10, "%d", 0);
++		PRINT_ONE((current_rate - VHT_RATE_ID)%10, "%d", 0);
+ 		PRINT_ONE(rate, "  %d", 1);
+ 		CHECK_LEN_B;
+ 	}
+ 	else
+ #endif
+-
+-	if (is_MCS_rate(pstat->rx_rate)) {
++	if (is_MCS_rate(current_rate)) {
+ 		PRINT_ONE("    current_rx_rate: MCS", "%s", 0);
+-		PRINT_ONE((pstat->rx_rate - HT_RATE_ID), "%d", 0);
+-		rate = (unsigned char *)MCS_DATA_RATEStr[pstat->rx_bw&0x01][pstat->rx_splcp&0x01][(pstat->rx_rate - HT_RATE_ID)];
++		PRINT_ONE((current_rate - HT_RATE_ID), "%d", 0);
++		rate = (unsigned char *)MCS_DATA_RATEStr[pstat->rx_bw&0x01][pstat->rx_splcp&0x01][(current_rate - HT_RATE_ID)];
+ 		PRINT_ONE(rate, " %s", 1);
+ 		CHECK_LEN_B;
+ 	}
+ 	else
+ 	{
+-		PRINT_SINGL_ARG("    current_rx_rate: ", pstat->rx_rate/2, "%d");
++		PRINT_SINGL_ARG("    current_rx_rate: ", current_rate/2, "%d");
+ 		CHECK_LEN_B;
+ 	}
+ 

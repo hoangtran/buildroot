@@ -1,0 +1,119 @@
+diff --git a/driver/rtl8192cd/8192cd_ioctl.c b/driver/rtl8192cd/8192cd_ioctl.c
+index f93fc4b..96f9956 100644
+--- a/driver/rtl8192cd/8192cd_ioctl.c
++++ b/driver/rtl8192cd/8192cd_ioctl.c
+@@ -1147,8 +1147,8 @@ static struct iwpriv_arg mib_table[] = {
+ #ifdef AUTOCH_SS_SPEEDUP
+ 	{"autoch_ss_to",  INT_T,  _OFFSET(miscEntry.autoch_ss_to), _SIZE(miscEntry.autoch_ss_to), 0},
+ 	{"autoch_ss_cnt",  INT_T,  _OFFSET(miscEntry.autoch_ss_cnt), _SIZE(miscEntry.autoch_ss_cnt), 0},
+-	{"autoch_1611_enable",    INT_T,      _OFFSET(miscEntry.autoch_1611_enable), _SIZE(miscEntry.autoch_1611_enable), 0},
+ #endif
++	{"autoch_1611_enable",    INT_T,      _OFFSET(miscEntry.autoch_1611_enable), _SIZE(miscEntry.autoch_1611_enable), 1},
+ #if defined(CONFIG_USB_HCI) || defined(CONFIG_SDIO_HCI)
+ 	{"max_xmitbuf_agg",    INT_T,      _OFFSET(miscEntry.max_xmitbuf_agg), _SIZE(miscEntry.max_xmitbuf_agg), 10},
+ #endif
+diff --git a/driver/rtl8192cd/8192cd_sme.c b/driver/rtl8192cd/8192cd_sme.c
+index 19b1bcb..7da80de 100644
+--- a/driver/rtl8192cd/8192cd_sme.c
++++ b/driver/rtl8192cd/8192cd_sme.c
+@@ -9717,9 +9717,6 @@ choose_ch:
+ 		score[11] = 0xffffffff; // mask chan12
+ 	}
+ 
+-	for (i=0; i<=idx_2G_end; ++i)
+-		if ((priv->available_chnl[i] != 1) && (priv->available_chnl[i] != 6) && (priv->available_chnl[i] != 11)) 
+-			score[i] = 0xffffffff;		// only select chan 1,6,11
+ 	
+ //------------------------------------------------------------------
+ 
+@@ -9824,18 +9821,17 @@ choose_ch:
+ 				groupScore[i] = score[i] + score[i+4];
+ 				DEBUG_INFO("groupScore, ch %d,%d: %d\n", i+1, i+5, groupScore[i]);
+ 				if (groupScore[i] < minScore) {
+-#ifdef AUTOCH_SS_SPEEDUP
+ 					if(priv->pmib->miscEntry.autoch_1611_enable)
+ 					{
+-						if(priv->available_chnl[i]==1 || priv->available_chnl[i]==6 || priv->available_chnl[i]==11)
++						if((priv->available_chnl[i]==1 && (score[i] < score[i+4])) ||
++							(priv->available_chnl[i]==2 && (score[i] > score[i+4])) ||
++							(priv->available_chnl[i]==6 && (score[i] < score[i+4])) ||
++							(priv->available_chnl[i]==7 && (score[i] > score[i+4])))
+ 						{
+ 							minScore = groupScore[i];
+ 							idx = i;
+ 						}
+-					}
+-					else
+-#endif
+-					{					
++					} else {					
+ 						minScore = groupScore[i];
+ 						idx = i;
+ 					}
+@@ -9843,20 +9839,47 @@ choose_ch:
+ 			}
+ 		}
+ 
+-		if (score[idx] < score[idx+4]) {
+-			GET_MIB(priv)->dot11nConfigEntry.dot11n2ndChOffset = HT_2NDCH_OFFSET_ABOVE;
+-			priv->pshare->offset_2nd_chan	= HT_2NDCH_OFFSET_ABOVE;			
++		if(minScore == 0xffffffff && priv->pmib->miscEntry.autoch_1611_enable){
++			for (i=0; i<priv->available_chnl_num; i++) {
++				if (score[i] < minScore) {
++					if(priv->available_chnl[i]==1 || priv->available_chnl[i]==6 || priv->available_chnl[i]==11)
++					{
++						minScore = score[i];
++						idx = i;
++					}
++				}
++			}
++
++			if(priv->available_chnl[idx] == 1){
++				GET_MIB(priv)->dot11nConfigEntry.dot11n2ndChOffset = HT_2NDCH_OFFSET_ABOVE;
++				priv->pshare->offset_2nd_chan	= HT_2NDCH_OFFSET_ABOVE;
++			}else if(priv->available_chnl[idx] == 11){
++				GET_MIB(priv)->dot11nConfigEntry.dot11n2ndChOffset = HT_2NDCH_OFFSET_BELOW;
++				priv->pshare->offset_2nd_chan	= HT_2NDCH_OFFSET_BELOW;
++			}else {//channel 6
++				if(score[idx-4] > score[idx+4]){
++					GET_MIB(priv)->dot11nConfigEntry.dot11n2ndChOffset = HT_2NDCH_OFFSET_ABOVE;
++					priv->pshare->offset_2nd_chan	= HT_2NDCH_OFFSET_ABOVE;
++				}else{
++					GET_MIB(priv)->dot11nConfigEntry.dot11n2ndChOffset = HT_2NDCH_OFFSET_BELOW;
++					priv->pshare->offset_2nd_chan	= HT_2NDCH_OFFSET_BELOW;
++				}
++			}
+ 		} else {
+-			idx = idx + 4;
+-			GET_MIB(priv)->dot11nConfigEntry.dot11n2ndChOffset = HT_2NDCH_OFFSET_BELOW;
+-			priv->pshare->offset_2nd_chan	= HT_2NDCH_OFFSET_BELOW;			
++			if (score[idx] < score[idx+4]) {
++				GET_MIB(priv)->dot11nConfigEntry.dot11n2ndChOffset = HT_2NDCH_OFFSET_ABOVE;
++				priv->pshare->offset_2nd_chan	= HT_2NDCH_OFFSET_ABOVE;			
++			} else {
++				idx = idx + 4;
++				GET_MIB(priv)->dot11nConfigEntry.dot11n2ndChOffset = HT_2NDCH_OFFSET_BELOW;
++				priv->pshare->offset_2nd_chan	= HT_2NDCH_OFFSET_BELOW;			
++			}
+ 		}
+ 	}
+ 	else 
+ 	{
+ 		for (i=0; i<priv->available_chnl_num; i++) {
+ 			if (score[i] < minScore) {
+-#ifdef AUTOCH_SS_SPEEDUP
+ 				if(priv->pmib->miscEntry.autoch_1611_enable)
+ 				{
+ 					if(priv->available_chnl[i]==1 || priv->available_chnl[i]==6 || priv->available_chnl[i]==11)
+@@ -9864,10 +9887,7 @@ choose_ch:
+ 						minScore = score[i];
+ 						idx = i;
+ 					}
+-				}
+-				else
+-#endif
+-				{				
++				} else {				
+ 					minScore = score[i];
+ 					idx = i;
+ 				}

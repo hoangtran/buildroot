@@ -1,0 +1,24 @@
+diff -Nur rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/config.mk rtl8194_driver_v1.6_20151022.001-new/driver/rtl8192cd/config.mk
+--- rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/config.mk	2016-07-01 11:02:32.926968744 +0200
++++ rtl8194_driver_v1.6_20151022.001-new/driver/rtl8192cd/config.mk	2016-07-01 11:02:25.547995662 +0200
+@@ -82,6 +82,9 @@
+ CONFIG_IGMP_SNOOPING_SUPPORT:=y
+ CONFIG_MLD_SNOOPING_SUPPORT:=y
+ 
++# 802.11w support
++CONFIG_RTL_11W_SUPPORT:=y
++
+ CONFIG_SMP_LOAD_BALANCE_SUPPORT:=n
+ 
+ ######## Don't Modify Following Code ########
+@@ -275,6 +278,10 @@
+ 	EXTRA_CFLAGS += -D_FULLY_WIFI_MLD_SNOOPING_SUPPORT_
+ endif
+ 
++ifeq ($(CONFIG_RTL_11W_SUPPORT),y)
++	EXTRA_CFLAGS += -DCONFIG_RTL_11W_SUPPORT
++endif
++
+ ifeq ($(CONFIG_SMP_LOAD_BALANCE_SUPPORT),y)
+ 	EXTRA_CFLAGS += -DSMP_LOAD_BALANCE_SUPPORT
+ endif

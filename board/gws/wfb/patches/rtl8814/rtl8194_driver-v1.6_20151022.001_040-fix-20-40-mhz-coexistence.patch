@@ -1,0 +1,158 @@
+diff -Nur a/driver/rtl8192cd/8192cd_cfg.h b/driver/rtl8192cd/8192cd_cfg.h
+--- a/driver/rtl8192cd/8192cd_cfg.h	2016-07-27 21:04:12.000000000 +0200
++++ b/driver/rtl8192cd/8192cd_cfg.h	2016-08-05 17:10:16.000000000 +0200
+@@ -991,6 +991,7 @@
+ #define WIFI_11N_2040_COEXIST_EXT
+ //#define WIFI_11N_2040_PERMIT_LOGIC
+ #define WIFI_11N_2040_CHANNEL_SELECTION
++
+ //-------------------------------------------------------------
+ // Add TX power by command
+ //-------------------------------------------------------------
+diff -Nur a/driver/rtl8192cd/8192cd.h b/driver/rtl8192cd/8192cd.h
+--- a/driver/rtl8192cd/8192cd.h	2016-07-27 21:04:12.000000000 +0200
++++ b/driver/rtl8192cd/8192cd.h	2016-08-03 20:15:28.000000000 +0200
+@@ -3003,6 +3003,9 @@
+ 
+ 	int						is_40m_bw;
+ 	int						is_40m_bw_bak;
++#ifdef WIFI_11N_2040_CHANNEL_SELECTION
++	int						is_2040_operation_permitted;
++#endif
+ 	char						offset_2nd_chan;
+ //	int						is_giga_exist;
+ 
+diff -Nur a/driver/rtl8192cd/8192cd_ioctl.c b/driver/rtl8192cd/8192cd_ioctl.c
+--- a/driver/rtl8192cd/8192cd_ioctl.c	2016-07-27 21:04:12.000000000 +0200
++++ b/driver/rtl8192cd/8192cd_ioctl.c	2016-08-05 19:45:56.000000000 +0200
+@@ -1320,6 +1320,9 @@
+ #endif
+ 	{"bg_ap_rssi_chk_th",	INT_T,		_OFFSET(dot11nConfigEntry.dot11nBGAPRssiChkTh), _SIZE(dot11nConfigEntry.dot11nBGAPRssiChkTh), 20},
+ #endif
++#ifdef WIFI_11N_2040_CHANNEL_SELECTION
++	{"2040_ch_sel",		INT_T,		_OFFSET(dot11nConfigEntry.dot11n2040ChSel), _SIZE(dot11nConfigEntry.dot11n2040ChSel), 1},
++#endif
+ 	{"txnoack",		INT_T,		_OFFSET(dot11nConfigEntry.dot11nTxNoAck), _SIZE(dot11nConfigEntry.dot11nTxNoAck), 0},
+ 
+ 	// struct ReorderControlEntry
+diff -Nur a/driver/rtl8192cd/8192cd_osdep.c b/driver/rtl8192cd/8192cd_osdep.c
+--- a/driver/rtl8192cd/8192cd_osdep.c	2016-07-27 21:04:12.000000000 +0200
++++ b/driver/rtl8192cd/8192cd_osdep.c	2016-08-05 19:22:20.000000000 +0200
+@@ -7742,7 +7742,9 @@
+ 	if (IS_ROOT_INTERFACE(priv))
+ #endif
+ #ifdef WIFI_11N_2040_CHANNEL_SELECTION
+-	if (priv->pmib->dot11RFEntry.phyBandSelect & PHY_BAND_2G && priv->pshare->is_40m_bw == HT_CHANNEL_WIDTH_20_40) {
++	if ((priv->pmib->dot11RFEntry.phyBandSelect & PHY_BAND_2G) && (priv->pshare->is_40m_bw == HT_CHANNEL_WIDTH_20_40)
++		 && (priv->pmib->dot11nConfigEntry.dot11n2040ChSel)
++	) {
+ 		priv->ss_ssidlen = 0;
+ 		start_clnt_ss(priv);
+ 	} else
+diff -Nur a/driver/rtl8192cd/8192cd_sme.c b/driver/rtl8192cd/8192cd_sme.c
+--- a/driver/rtl8192cd/8192cd_sme.c	2016-07-27 21:04:12.000000000 +0200
++++ b/driver/rtl8192cd/8192cd_sme.c	2016-08-05 19:47:20.000000000 +0200
+@@ -14637,7 +14637,7 @@
+     		debug_print_bss(priv);            
+ 
+ #ifdef WIFI_11N_2040_CHANNEL_SELECTION
+-			if (priv->auto_channel == 0) {
++			if (priv->auto_channel == 0 && priv->pmib->dot11nConfigEntry.dot11n2040ChSel) {
+ 				if (priv->pmib->dot11RFEntry.phyBandSelect & PHY_BAND_2G && priv->pshare->is_40m_bw == HT_CHANNEL_WIDTH_20_40){
+ 					if (priv->pshare->offset_2nd_chan == HT_2NDCH_OFFSET_ABOVE) {
+ 						scanChannelLow = ((priv->pmib->dot11RFEntry.dot11channel+2-5)>0)?(priv->pmib->dot11RFEntry.dot11channel+2-5):1;
+@@ -14648,8 +14648,13 @@
+ 					}
+ 
+ 					for(i=0; i<priv->site_survey->count; i++) {
+-						if ((priv->site_survey->bss[i].channel >= scanChannelLow) && (priv->site_survey->bss[i].channel <= scanChannelHigh)) {
++						if ((priv->site_survey->bss[i].channel >= scanChannelLow) && (priv->site_survey->bss[i].channel <= scanChannelHigh)
++#ifdef WIFI_11N_2040_COEXIST
++						&& (!priv->bg_ap_timeout)
++#endif
++						) {
+ 							priv->pshare->is_40m_bw = HT_CHANNEL_WIDTH_20;
++							priv->pshare->is_2040_operation_permitted = true;
+ 							break;		
+ 						}
+ 					}
+@@ -14767,7 +14772,7 @@
+ 					priv->auto_channel = 2;
+ 
+ #ifdef WIFI_11N_2040_CHANNEL_SELECTION
+-			if (priv->auto_channel == 0) {
++			if (priv->auto_channel == 0 && priv->pmib->dot11nConfigEntry.dot11n2040ChSel) {
+ 				if (priv->pmib->dot11RFEntry.phyBandSelect & PHY_BAND_2G && priv->pshare->is_40m_bw == HT_CHANNEL_WIDTH_20_40){
+ 					if (priv->pshare->offset_2nd_chan == HT_2NDCH_OFFSET_ABOVE) {
+ 						scanChannelLow = ((priv->pmib->dot11RFEntry.dot11channel+2-5)>0)?(priv->pmib->dot11RFEntry.dot11channel+2-5):1;
+@@ -14778,8 +14783,13 @@
+ 					}
+ 
+ 					for(i=0; i<priv->site_survey->count; i++) {
+-						if ((priv->site_survey->bss[i].channel >= scanChannelLow) && (priv->site_survey->bss[i].channel <= scanChannelHigh)) {
++						if ((priv->site_survey->bss[i].channel >= scanChannelLow) && (priv->site_survey->bss[i].channel <= scanChannelHigh)
++#ifdef WIFI_11N_2040_COEXIST
++						&& (!priv->bg_ap_timeout)
++#endif
++						) {
+ 							priv->pshare->is_40m_bw = HT_CHANNEL_WIDTH_20;
++							priv->pshare->is_2040_operation_permitted = true;
+ 							break;		
+ 						}
+ 					}
+@@ -15815,6 +15825,15 @@
+ 
+ 					if(!priv->bg_ap_timeout) {
+ 						priv->bg_ap_timeout = 60;
++#ifdef WIFI_11N_2040_CHANNEL_SELECTION
++						if (priv->pshare->is_2040_operation_permitted) {
++							priv->pshare->is_40m_bw = priv->pmib->dot11nConfigEntry.dot11nUse40M;
++							priv->pshare->CurrentChannelBW = priv->pshare->is_40m_bw;
++							SwBWMode(priv, priv->pshare->CurrentChannelBW, priv->pshare->offset_2nd_chan);
++							SwChnl(priv, priv->pmib->dot11RFEntry.dot11channel, priv->pshare->offset_2nd_chan);
++							priv->pshare->is_2040_operation_permitted = false;
++						}
++#endif
+ #if defined(CONFIG_RTL_8812_SUPPORT) || defined(CONFIG_WLAN_HAL)						
+ 						update_RAMask_to_FW(priv, 1);
+ #endif
+@@ -19325,6 +19344,15 @@
+ 			{			
+ 				if(!priv->bg_ap_timeout) {
+ 					priv->bg_ap_timeout = 60;
++#ifdef WIFI_11N_2040_CHANNEL_SELECTION
++					if (priv->pshare->is_2040_operation_permitted) {
++						priv->pshare->is_40m_bw = priv->pmib->dot11nConfigEntry.dot11nUse40M;
++						priv->pshare->CurrentChannelBW = priv->pshare->is_40m_bw;
++						SwBWMode(priv, priv->pshare->CurrentChannelBW, priv->pshare->offset_2nd_chan);
++						SwChnl(priv, priv->pmib->dot11RFEntry.dot11channel, priv->pshare->offset_2nd_chan);
++						priv->pshare->is_2040_operation_permitted = false;
++					}
++#endif
+ #if defined(CONFIG_RTL_8812_SUPPORT) || defined(CONFIG_WLAN_HAL)					
+ 					update_RAMask_to_FW(priv, 1);
+ #endif					
+diff -Nur a/driver/rtl8192cd/8192cd_util.c b/driver/rtl8192cd/8192cd_util.c
+--- a/driver/rtl8192cd/8192cd_util.c	2016-07-27 21:04:12.000000000 +0200
++++ b/driver/rtl8192cd/8192cd_util.c	2016-08-05 19:28:10.000000000 +0200
+@@ -5758,6 +5758,9 @@
+ #endif					
+ 		SetTxPowerLevel(priv);
+ 	} 
++#ifdef WIFI_11N_2040_CHANNEL_SELECTION
++	if (!priv->pshare->is_2040_operation_permitted)
++#endif
+ 	if( priv->pmib->dot11nConfigEntry.dot11nCoexist) {
+ 		if((FA_counter> priv->pshare->rf_ft_var.bws_Thd)&&((RTL_R8(0xc50) & 0x7f) >= 0x32)) {
+ 			if(priv->pshare->is_40m_bw != HT_CHANNEL_WIDTH_20) {
+diff -Nur a/driver/rtl8192cd/ieee802_mib.h b/driver/rtl8192cd/ieee802_mib.h
+--- a/driver/rtl8192cd/ieee802_mib.h	2016-07-27 21:04:12.000000000 +0200
++++ b/driver/rtl8192cd/ieee802_mib.h	2016-08-05 19:33:24.000000000 +0200
+@@ -656,6 +656,7 @@
+ 	unsigned int	dot11nBGAPRssiChkTh;
+ 	unsigned int	dot11nTxNoAck;
+ 	unsigned int	dot11nAddBAreject;		//add for support sigma test	
++	unsigned int	dot11n2040ChSel;
+ };
+ 
+ struct Dot11acConfigEntry {

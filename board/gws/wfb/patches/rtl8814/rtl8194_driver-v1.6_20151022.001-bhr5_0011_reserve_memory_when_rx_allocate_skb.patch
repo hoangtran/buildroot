@@ -1,0 +1,43 @@
+diff --git a/driver/rtl8192cd/8192cd.h b/driver/rtl8192cd/8192cd.h
+index b2869b3..ec167f2 100644
+--- a/driver/rtl8192cd/8192cd.h
++++ b/driver/rtl8192cd/8192cd.h
+@@ -2251,6 +2251,7 @@ struct rf_finetune_var {
+ #endif
+ 	unsigned char		print_table;
+ 	unsigned int		rx_rdu_drop_th;
++	unsigned int		rx_min_rsve_mem;
+ };
+ 
+ //Filen
+diff --git a/driver/rtl8192cd/8192cd_ioctl.c b/driver/rtl8192cd/8192cd_ioctl.c
+index 238b722..dcdeb2b 100644
+--- a/driver/rtl8192cd/8192cd_ioctl.c
++++ b/driver/rtl8192cd/8192cd_ioctl.c
+@@ -1920,6 +1920,7 @@ static struct iwpriv_arg mib_table[] = {
+ 	{"bf_sup_val",		RFFT_T, _OFFSET_RFFT(bf_sup_val), _SIZE_RFFT(bf_sup_val), 0},
+ #endif 
+ 	{"rx_rdu_drop_th",        RFFT_T, _OFFSET_RFFT(rx_rdu_drop_th), _SIZE_RFFT(rx_rdu_drop_th), NUM_RX_DESC},
++	{"rx_min_rsve_mem",        RFFT_T, _OFFSET_RFFT(rx_min_rsve_mem), _SIZE_RFFT(rx_min_rsve_mem), 20000},
+ };
+ 
+ #ifdef _DEBUG_RTL8192CD_
+diff --git a/driver/rtl8192cd/8192cd_rx.c b/driver/rtl8192cd/8192cd_rx.c
+index 5e8dab6..595acff 100644
+--- a/driver/rtl8192cd/8192cd_rx.c
++++ b/driver/rtl8192cd/8192cd_rx.c
+@@ -5670,6 +5670,14 @@ void rtl88XX_rx_isr(struct rtl8192cd_priv *priv)
+ #else
+ 
+ 			// allocate new one in advance
++#if 1
++		unsigned long free_page;
++		#define K(x) ((x) << (PAGE_SHIFT - 10))
++		free_page = global_page_state(NR_FREE_PAGES);
++		if ( K(free_page) < priv->pshare->rf_ft_var.rx_min_rsve_mem)
++			new_skb = NULL;
++		else
++#endif
+ 			new_skb = rtl_dev_alloc_skb(priv, RX_BUF_LEN, _SKB_RX_, 0);
+ 			if (new_skb == NULL) {
+ 				DEBUG_WARN("out of skb_buff\n");

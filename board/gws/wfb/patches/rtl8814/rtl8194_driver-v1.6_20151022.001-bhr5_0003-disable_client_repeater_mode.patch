@@ -1,0 +1,42 @@
+From 8395e3083b25e58e3688fab3630f14657eb5eb3b Mon Sep 17 00:00:00 2001
+From: Hoang Tran <hoang.tran@greenwavereality.com>
+Date: Mon, 9 Nov 2015 14:13:33 -0800
+Subject: [PATCH] disable client and repeater mode
+
+Signed-off-by: Hoang Tran <hoang.tran@greenwavereality.com>
+---
+ driver/rtl8192cd/8192cd_cfg.h | 2 +-
+ driver/rtl8192cd/config.mk    | 4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/driver/rtl8192cd/8192cd_cfg.h b/driver/rtl8192cd/8192cd_cfg.h
+index c6e4260..76122e0 100644
+--- a/driver/rtl8192cd/8192cd_cfg.h
++++ b/driver/rtl8192cd/8192cd_cfg.h
+@@ -771,7 +771,7 @@
+ #if !defined(CONFIG_RTL_SDRAM_GE_32M) && defined(CONFIG_RTL_8196E)
+ #define RTL8192CD_NUM_VWLAN  1
+ #else
+-#define RTL8192CD_NUM_VWLAN  4
++#define RTL8192CD_NUM_VWLAN  1
+ #endif
+ #else
+ #define RTL8192CD_NUM_VWLAN  0
+diff --git a/driver/rtl8192cd/config.mk b/driver/rtl8192cd/config.mk
+index 76ce372..db65867 100644
+--- a/driver/rtl8192cd/config.mk
++++ b/driver/rtl8192cd/config.mk
+@@ -47,8 +47,8 @@ CONFIG_RTL_DFS_SUPPORT :=n
+ CONFIG_RTL_VAP_SUPPORT :=y
+ 
+ # If Support Client Mode ?
+-CONFIG_RTL_CLIENT_MODE_SUPPORT :=y
+-CONFIG_RTL_REPEATER_MODE_SUPPORT :=y
++CONFIG_RTL_CLIENT_MODE_SUPPORT :=n
++CONFIG_RTL_REPEATER_MODE_SUPPORT :=n
+ CONFIG_RTL_SUPPORT_MULTI_PROFILE :=n
+ 
+ # If Support Wireless Distribution System ?
+-- 
+2.6.2
+

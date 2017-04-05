@@ -1,0 +1,271 @@
+diff --git a/driver/rtl8192cd/8192cd.h b/driver/rtl8192cd/8192cd.h
+index 1544133..b2869b3 100644
+--- a/driver/rtl8192cd/8192cd.h
++++ b/driver/rtl8192cd/8192cd.h
+@@ -1046,6 +1046,7 @@ struct tx_insn	{
+ 	unsigned char		is_dhcp;
+ 	unsigned char		is_mcast;
+ #endif
++	unsigned char		is_urg_pkt;
+ #ifdef WDS
+ 	int					wdsIdx;
+ #endif
+diff --git a/driver/rtl8192cd/8192cd_headers.h b/driver/rtl8192cd/8192cd_headers.h
+index c0d36aa..6fa7af1 100644
+--- a/driver/rtl8192cd/8192cd_headers.h
++++ b/driver/rtl8192cd/8192cd_headers.h
+@@ -880,7 +880,7 @@ EXTERN void flush_rx_queue(struct rtl8192cd_priv *priv);
+ #define EXTERN
+ #endif
+ #ifdef CONFIG_WLAN_HAL
+-EXTERN BOOLEAN compareAvailableTXBD(struct rtl8192cd_priv * priv, unsigned int num, unsigned int qNum, int compareFlag);
++EXTERN BOOLEAN compareAvailableTXBD(struct rtl8192cd_priv * priv, unsigned int num, unsigned int qNum, int compareFlag, BOOLEAN bUrgent);
+ #endif
+ EXTERN void check_chipID_MIMO(struct rtl8192cd_priv *priv);
+ #ifdef EN_EFUSE
+diff --git a/driver/rtl8192cd/8192cd_hw.c b/driver/rtl8192cd/8192cd_hw.c
+index eb62b6c..3b51253 100644
+--- a/driver/rtl8192cd/8192cd_hw.c
++++ b/driver/rtl8192cd/8192cd_hw.c
+@@ -23214,7 +23214,8 @@ compareAvailableTXBD(
+ 	struct rtl8192cd_priv   *priv,
+ 	unsigned int            num,
+ 	unsigned int            qNum,
+-	int                     compareFlag
++	int                     compareFlag,
++	BOOLEAN		bUrgent
+ )
+ {
+ 	PHCI_TX_DMA_MANAGER_88XX    ptx_dma = (PHCI_TX_DMA_MANAGER_88XX)(_GET_HAL_DATA(priv)->PTxDMA88XX);
+@@ -23234,12 +23235,26 @@ compareAvailableTXBD(
+ 			return FALSE;
+ 		}
+ 	} else if (compareFlag == 2) {
+-		if (ptx_dma->tx_queue[halQnum].avail_txbd_num < num)  {
+-			RESTORE_INT(avail_txbd_flag);
+-			return TRUE;
++		if (bUrgent) {
++			if (ptx_dma->tx_queue[halQnum].avail_txbd_num < num)  {
++				RESTORE_INT(avail_txbd_flag);
++				return TRUE;
++			} else {
++				RESTORE_INT(avail_txbd_flag);
++				return FALSE;
++			}
+ 		} else {
+-			RESTORE_INT(avail_txbd_flag);
+-			return FALSE;
++			// reserve 32 tx desc for urgent
++			if (ptx_dma->tx_queue[halQnum].avail_txbd_num < 32) {
++				RESTORE_INT(avail_txbd_flag);
++				return TRUE;
++			} else if ((ptx_dma->tx_queue[halQnum].avail_txbd_num - 32) < num)  {
++				RESTORE_INT(avail_txbd_flag);
++				return TRUE;
++			} else {
++				RESTORE_INT(avail_txbd_flag);
++				return FALSE;
++			}
+ 		}
+ 	} else {
+ 		printk("%s(%d): Error setting !!! \n", __FUNCTION__, __LINE__);
+diff --git a/driver/rtl8192cd/8192cd_rx.c b/driver/rtl8192cd/8192cd_rx.c
+index ec7713e..16a194e 100644
+--- a/driver/rtl8192cd/8192cd_rx.c
++++ b/driver/rtl8192cd/8192cd_rx.c
+@@ -7325,6 +7325,10 @@ check_privacy:
+ 		}
+ 		else
+ 		{
++			if (OPMODE & WIFI_AP_STATE){
++		        	issue_deauth(priv, sa, _RSON_UNSPECIFIED_);
++		        	printk("sa:%X%X%X%X%X%X\n", sa[0], sa[1], sa[2], sa[3],sa[4], sa[5]);
++			}
+ 			DEBUG_ERR("RX DROP: encrypted packet but no key in sta or wrong enc type!\n");
+ 			goto free_skb_in_defrag;
+ 		}
+diff --git a/driver/rtl8192cd/8192cd_tx.c b/driver/rtl8192cd/8192cd_tx.c
+index 52e8544..bafbd0b 100644
+--- a/driver/rtl8192cd/8192cd_tx.c
++++ b/driver/rtl8192cd/8192cd_tx.c
+@@ -1303,10 +1303,10 @@ int rtl8192cd_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ 		return 0; 
+ 	}
+ 	#else
+-	if (compareAvailableTXBD(priv, (NUM_TX_DESC/10), VI_QUEUE, 2) ||
+-		compareAvailableTXBD(priv, (NUM_TX_DESC/10), VO_QUEUE, 2) ||
+-		compareAvailableTXBD(priv, (NUM_TX_DESC/10), BE_QUEUE, 2) ||
+-		compareAvailableTXBD(priv, (NUM_TX_DESC/10), BK_QUEUE, 2)) {
++	if (compareAvailableTXBD(priv, (NUM_TX_DESC/10), VI_QUEUE, 2, FALSE) ||
++		compareAvailableTXBD(priv, (NUM_TX_DESC/10), VO_QUEUE, 2, FALSE) ||
++		compareAvailableTXBD(priv, (NUM_TX_DESC/10), BE_QUEUE, 2, FALSE) ||
++		compareAvailableTXBD(priv, (NUM_TX_DESC/10), BK_QUEUE, 2, FALSE)) {
+ 		if (skb_queue_len(&priv->pshare->skb_xmit_queue) >= NUM_TX_DESC/10) {
+ 			DEBUG_ERR("TX DROP: exceed the skb xmit queue!\n");
+ 			priv->ext_stats.tx_drops++;
+@@ -1423,7 +1423,7 @@ static int amsdu_xmit(struct rtl8192cd_priv *priv, struct stat_info *pstat, stru
+ 			if (skb_queue_len(&pstat->amsdu_tx_que[tid]) > 0) {
+                 if (
+ #ifdef  CONFIG_WLAN_HAL
+-                    (IS_HAL_CHIP(priv)) ? (compareAvailableTXBD(priv, 10, q_num, 2)) :
++                    (IS_HAL_CHIP(priv)) ? (compareAvailableTXBD(priv, 10, q_num, 2, FALSE)) :
+ #endif		
+                     (CIRC_SPACE_RTK(*tx_head, *tx_tail, CURRENT_NUM_TX_DESC) < 10) ) {
+ 
+@@ -1438,7 +1438,7 @@ static int amsdu_xmit(struct rtl8192cd_priv *priv, struct stat_info *pstat, stru
+ 
+                     if (
+ #ifdef  CONFIG_WLAN_HAL
+-                        (IS_HAL_CHIP(priv)) ? (compareAvailableTXBD(priv, 10, q_num, 2)) :
++                        (IS_HAL_CHIP(priv)) ? (compareAvailableTXBD(priv, 10, q_num, 2, FALSE)) :
+ #endif		
+                         (CIRC_SPACE_RTK(*tx_head, *tx_tail, CURRENT_NUM_TX_DESC) < 10) ) {
+ 
+@@ -1471,7 +1471,7 @@ static int amsdu_xmit(struct rtl8192cd_priv *priv, struct stat_info *pstat, stru
+ 				((total_len + pstat->amsdu_tx_que[tid].next->len + sizeof(struct llc_snap) + 3) > max_size) ||
+ 				(
+ #ifdef CONFIG_WLAN_HAL
+-                (IS_HAL_CHIP(priv)) ? (compareAvailableTXBD(priv, 1, q_num, 2)) : 
++                (IS_HAL_CHIP(priv)) ? (compareAvailableTXBD(priv, 1, q_num, 2, FALSE)) : 
+ #endif
+ 				(total_num >= (space - 4)) )|| // 1 for header, 1 for ICV when sw encrypt, 2 for spare 
+ 				(!pstat->is_realtek_sta && (total_num >= (priv->pmib->dot11nConfigEntry.dot11nAMSDUSendNum-1)))
+@@ -1707,7 +1707,7 @@ void amsdu_timeout(struct rtl8192cd_priv *priv, unsigned int current_time)
+ 
+ #ifdef  CONFIG_WLAN_HAL
+     if (IS_HAL_CHIP(priv)) {
+-        if (compareAvailableTXBD(priv, 10, q_num, 2))
++        if (compareAvailableTXBD(priv, 10, q_num, 2, FALSE))
+             return RET_AGGRE_DESC_FULL;
+     } else 
+ #endif
+@@ -1853,7 +1853,7 @@ static inline void check_tx_queue(struct rtl8192cd_priv *priv)
+ 		}
+         if (
+ #ifdef  CONFIG_WLAN_HAL
+-            (IS_HAL_CHIP(priv)) ? (compareAvailableTXBD(priv, (CURRENT_NUM_TX_DESC/4), BE_QUEUE, 2)) :
++            (IS_HAL_CHIP(priv)) ? (compareAvailableTXBD(priv, (CURRENT_NUM_TX_DESC/4), BE_QUEUE, 2, FALSE)) :
+ #endif		
+ 			(CIRC_SPACE_RTK(*tx_head, *tx_tail, CURRENT_NUM_TX_DESC) < (CURRENT_NUM_TX_DESC/4)) 
+ 		)	
+@@ -2175,7 +2175,7 @@ int mlcst2unicst(struct rtl8192cd_priv *priv, struct sk_buff *skb)
+ 				if (priv->stop_tx_mcast2uni  == 1) {
+ #ifdef CONFIG_WLAN_HAL
+                         if(IS_HAL_CHIP(priv)) {
+-                        	if(compareAvailableTXBD(priv, ((CURRENT_NUM_TX_DESC*1)/4), q_num, 1)) 
++                        	if(compareAvailableTXBD(priv, ((CURRENT_NUM_TX_DESC*1)/4), q_num, 1, FALSE)) 
+ 								priv->stop_tx_mcast2uni = 0;
+                         } else if(CONFIG_WLAN_NOT_HAL_EXIST)
+ #endif
+@@ -2202,7 +2202,7 @@ int mlcst2unicst(struct rtl8192cd_priv *priv, struct sk_buff *skb)
+ 			} else {
+ #ifdef CONFIG_WLAN_HAL
+                 if(IS_HAL_CHIP(priv)) {
+-					if(compareAvailableTXBD(priv, 20, q_num, 2)) {
++					if(compareAvailableTXBD(priv, 20, q_num, 2, FALSE)) {
+ 						asoc_list_unref(priv, pstat);
+ 						#ifdef __ECOS
+ 						#else
+@@ -7373,7 +7373,7 @@ __inline__ static int rtl8192cd_swq_bdfull(struct rtl8192cd_priv *priv, struct s
+ 
+ #ifdef CONFIG_WLAN_HAL	 	 
+     if(IS_HAL_CHIP(priv))    {
+-        if(compareAvailableTXBD(priv, qlen, qnum, 2))
++        if(compareAvailableTXBD(priv, qlen, qnum, 2, FALSE))
+             return 1;
+     } else if(CONFIG_WLAN_NOT_HAL_EXIST)
+ #endif
+@@ -8051,6 +8051,7 @@ int __rtl8192cd_start_xmit(struct sk_buff *skb, struct net_device *dev, int tx_f
+ 	unsigned long flags;
+ #endif
+ 	int locked=0;	
++	unsigned short  protocol;
+ 
+ 
+ 	DECLARE_TXCFG(txcfg, tx_insn);
+@@ -8521,6 +8522,13 @@ int __rtl8192cd_start_xmit(struct sk_buff *skb, struct net_device *dev, int tx_f
+ 	}
+ #endif // WDS
+ 
++       protocol = ntohs(*((UINT16 *)((UINT8 *)skb->data + ETH_ALEN*2)));
++
++       if ( (isDHCPpkt(skb) == TRUE) || (protocol == 0x888E) )
++            txcfg->is_urg_pkt = 1;
++       else
++            txcfg->is_urg_pkt = 0; 
++
+ 	if (priv->pmib->miscEntry.func_off || priv->pmib->miscEntry.raku_only) {
+ 		goto free_and_stop;
+ 	}
+@@ -8759,7 +8767,7 @@ int __rtl8192cd_start_xmit(struct sk_buff *skb, struct net_device *dev, int tx_f
+ #else
+ 			return __rtl8192cd_start_xmit_out(skb, pstat);
+ #endif
+-	} else if (priv->pshare->swq_en) {//swq_en=1
++	} else if (priv->pshare->swq_en && !txcfg->is_urg_pkt) {//swq_en=1
+ 		if ((priv->ext_stats.swq_enque_pkt - priv->ext_stats.swq_xmit_out_pkt - priv->ext_stats.swq_drop_pkt) > 36000) {
+ 			DEBUG_ERR("TX DROP: exceed the SW tx queue!\n");
+ 			priv->ext_stats.tx_drops++;
+@@ -9237,7 +9245,7 @@ int __rtl8192cd_usb_start_xmit(struct rtl8192cd_priv *priv, struct tx_insn* txcf
+ 
+             if(
+ #ifdef CONFIG_WLAN_HAL
+-            IS_HAL_CHIP(priv) ? (compareAvailableTXBD(priv, (CURRENT_NUM_TX_DESC/2), q_num, 2)) :
++            IS_HAL_CHIP(priv) ? (compareAvailableTXBD(priv, (CURRENT_NUM_TX_DESC/2), q_num, 2, txcfg->is_urg_pkt)) :
+ #endif // CONFIG_WLAN_HAL
+             (CIRC_SPACE_RTK(*tx_head, *tx_tail, CURRENT_NUM_TX_DESC) < CURRENT_NUM_TX_DESC/2)
+ 
+@@ -9255,7 +9263,7 @@ int __rtl8192cd_usb_start_xmit(struct rtl8192cd_priv *priv, struct tx_insn* txcf
+ 
+             if(
+ #ifdef CONFIG_WLAN_HAL
+-            IS_HAL_CHIP(priv) ? (compareAvailableTXBD(priv, 32, q_num, 2)) : 
++            IS_HAL_CHIP(priv) ? (compareAvailableTXBD(priv, 32, q_num, 2, txcfg->is_urg_pkt)) : 
+ #endif // CONFIG_WLAN_HAL
+             (CIRC_SPACE_RTK(*tx_head, *tx_tail, CURRENT_NUM_TX_DESC) < 10)
+ 
+@@ -9312,7 +9320,7 @@ int __rtl8192cd_usb_start_xmit(struct rtl8192cd_priv *priv, struct tx_insn* txcf
+             if(
+ #ifdef CONFIG_WLAN_HAL
+             IS_HAL_CHIP(priv) ? 
+-                ( compareAvailableTXBD(priv, ((GET_TX_EARLY_MODE && GET_EM_SWQ_ENABLE) ? 14 : 4), q_num, 2)) :
++                ( compareAvailableTXBD(priv, ((GET_TX_EARLY_MODE && GET_EM_SWQ_ENABLE) ? 14 : 4), q_num, 2, txcfg->is_urg_pkt)) :
+ #endif // CONFIG_WLAN_HAL
+                 (((GET_TX_EARLY_MODE && GET_EM_SWQ_ENABLE) ? 14 : 4) > CIRC_SPACE_RTK(*tx_head, *tx_tail, CURRENT_NUM_TX_DESC))
+ 
+@@ -9320,7 +9328,7 @@ int __rtl8192cd_usb_start_xmit(struct rtl8192cd_priv *priv, struct tx_insn* txcf
+ #else
+ 			if(
+ #ifdef CONFIG_WLAN_HAL
+-            IS_HAL_CHIP(priv) ? (compareAvailableTXBD(priv, 4, q_num, 2)) : 
++            IS_HAL_CHIP(priv) ? (compareAvailableTXBD(priv, 4, q_num, 2, txcfg->is_urg_pkt)) : 
+ #endif // CONFIG_WLAN_HAL			
+ #ifdef TX_SCATTER
+ 			((ptxsc_entry->has_desc3 && 6 > CIRC_SPACE_RTK(*tx_head, *tx_tail, CURRENT_NUM_TX_DESC)) ||
+@@ -11597,9 +11605,16 @@ int __rtl8192cd_firetx(struct rtl8192cd_priv *priv, struct tx_insn* txcfg)
+ #endif		
+ #endif		
+ 		//SMP_LOCK_XMIT(x);
++
++		if (GetFrameType(txcfg->phdr) == WIFI_MGT_TYPE) {
++			txcfg->is_urg_pkt = TRUE;
++		} else {
++			txcfg->is_urg_pkt = FALSE;
++		}
++
+ 		if (
+ #ifdef CONFIG_WLAN_HAL
+-		IS_HAL_CHIP(priv)? (compareAvailableTXBD(priv, val32+1, q_num, 2))  :
++		IS_HAL_CHIP(priv)? (compareAvailableTXBD(priv, val32+1, q_num, 2, txcfg->is_urg_pkt))  :
+ #endif
+ 		((val32 + 2) > CIRC_SPACE_RTK(*tx_head, *tx_tail, CURRENT_NUM_TX_DESC)) //per mpdu, we need 2 desc...
+ 		){
+@@ -12639,7 +12654,7 @@ static void rtl88XX_tx_dsr(unsigned long task_priv)
+ #ifdef CONFIG_WLAN_HAL
+         ptx_dma = (PHCI_TX_DMA_MANAGER_88XX)(_GET_HAL_DATA(priv)->PTxDMA88XX);
+ 
+-        if (compareAvailableTXBD(priv, (CURRENT_NUM_TX_DESC/2), BE_QUEUE, 1)) {
++        if (compareAvailableTXBD(priv, (CURRENT_NUM_TX_DESC/2), BE_QUEUE, 1, FALSE)) {
+ 			SMP_UNLOCK_XMIT(flags);
+             mp_ctx(priv, (unsigned char *)"tx-isr");
+ 			SMP_LOCK_XMIT(flags);

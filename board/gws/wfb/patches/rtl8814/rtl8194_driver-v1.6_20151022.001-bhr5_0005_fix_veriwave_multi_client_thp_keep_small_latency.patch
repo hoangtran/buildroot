@@ -1,0 +1,461 @@
+diff --git a/driver/rtl8192cd/8192cd.h b/driver/rtl8192cd/8192cd.h
+index 00fcb13..94bded5 100644
+--- a/driver/rtl8192cd/8192cd.h
++++ b/driver/rtl8192cd/8192cd.h
+@@ -1159,6 +1159,7 @@ struct sw_tx_q {
+ 	struct sk_buff_head		swq_queue[8];
+ 	unsigned short			swq_timer_id[8];    
+ 	unsigned char			swq_empty[8];      //0:empty; 1:not empty    
++	unsigned int			swq_tri_time[8];    
+ 
+     /* below is for old swq*/
+     unsigned char			q_aggnumIncSlow[8];
+diff --git a/driver/rtl8192cd/8192cd_cfg.h b/driver/rtl8192cd/8192cd_cfg.h
+index 418bb87..e7a6c2c 100644
+--- a/driver/rtl8192cd/8192cd_cfg.h
++++ b/driver/rtl8192cd/8192cd_cfg.h
+@@ -993,6 +993,11 @@
+ #define WIFI_11N_2040_CHANNEL_SELECTION
+ 
+ //-------------------------------------------------------------
++// Do SMP LOAD BALANCE
++//-------------------------------------------------------------
++#define SMP_LOAD_BALANCE_SUPPORT
++
++//-------------------------------------------------------------
+ // Add TX power by command
+ //-------------------------------------------------------------
+ #define ADD_TX_POWER_BY_CMD
+@@ -2132,7 +2137,7 @@
+ #endif
+ #elif defined(NOT_RTK_BSP)
+ #if defined(CONFIG_WLAN_HAL_8814AE)
+-#define NUM_TX_DESC		2176 //512		// kmalloc max size issue
++#define NUM_TX_DESC		4096 //512		// kmalloc max size issue
+ #else
+ #define NUM_TX_DESC		512
+ #endif
+diff --git a/driver/rtl8192cd/8192cd_headers.h b/driver/rtl8192cd/8192cd_headers.h
+index 963090a..c0d36aa 100644
+--- a/driver/rtl8192cd/8192cd_headers.h
++++ b/driver/rtl8192cd/8192cd_headers.h
+@@ -170,6 +170,7 @@ EXTERN unsigned int find_rate_MP(struct rtl8192cd_priv *priv, struct stat_info *
+ EXTERN void init_stainfo(struct rtl8192cd_priv *priv, struct stat_info *pstat);
+ EXTERN void release_stainfo(struct rtl8192cd_priv *priv, struct stat_info *pstat);
+ EXTERN struct stat_info *alloc_stainfo(struct rtl8192cd_priv *priv, unsigned char *hwaddr, int id);
++EXTERN int is_sta_tx_skb_empty(struct rtl8192cd_priv *priv, struct stat_info *pstat);
+ EXTERN void free_sta_tx_skb(struct rtl8192cd_priv *priv, struct stat_info *pstat);
+ EXTERN void free_sta_skb(struct rtl8192cd_priv *priv, struct stat_info *pstat);
+ EXTERN int free_stainfo(struct rtl8192cd_priv *priv, struct	stat_info *pstat);
+diff --git a/driver/rtl8192cd/8192cd_ioctl.c b/driver/rtl8192cd/8192cd_ioctl.c
+index f073fb9..df2f6c4 100644
+--- a/driver/rtl8192cd/8192cd_ioctl.c
++++ b/driver/rtl8192cd/8192cd_ioctl.c
+@@ -1676,24 +1676,24 @@ static struct iwpriv_arg mib_table[] = {
+ 	{"swqen",         RFFT_T, _OFFSET_RFFT(swq_enable), _SIZE_RFFT(swq_enable), 1},
+ 	{"swqdbg",        RFFT_T, _OFFSET_RFFT(swq_dbg), _SIZE_RFFT(swq_dbg), 0},
+ #ifdef NOT_RTK_BSP
+-	{"swqaggnum",		RFFT_T, _OFFSET_RFFT(swq_aggnum), _SIZE_RFFT(swq_aggnum), 32},
++	{"swqaggnum",		RFFT_T, _OFFSET_RFFT(swq_aggnum), _SIZE_RFFT(swq_aggnum), 40},
+ #else
+ 	{"swqaggnum",		RFFT_T, _OFFSET_RFFT(swq_aggnum), _SIZE_RFFT(swq_aggnum), 8},
+ #endif
+-	{"swqturboaggnum",		RFFT_T, _OFFSET_RFFT(swqturboaggnum), _SIZE_RFFT(swqturboaggnum), 16},
++	{"swqturboaggnum",		RFFT_T, _OFFSET_RFFT(swqturboaggnum), _SIZE_RFFT(swqturboaggnum), 40},
+ 	{"swqmaxturbotime",		RFFT_T, _OFFSET_RFFT(swqmaxturbotime), _SIZE_RFFT(swqmaxturbotime), 1},
+ 
+ 	{"thd1",			RFFT_T, _OFFSET_RFFT(timeout_thd), _SIZE_RFFT(timeout_thd), 60},
+ 	{"thd2",            RFFT_T, _OFFSET_RFFT(timeout_thd2), _SIZE_RFFT(timeout_thd2), 150},
+ 	{"thd3",		  	RFFT_T, _OFFSET_RFFT(timeout_thd3), _SIZE_RFFT(timeout_thd3), 300},
+-	{"tri_time1",		RFFT_T, _OFFSET_RFFT(tri_time1), _SIZE_RFFT(tri_time1), 1},
+-	{"tri_time2",		RFFT_T, _OFFSET_RFFT(tri_time2), _SIZE_RFFT(tri_time2), 6},
+-	{"tri_time3",		RFFT_T, _OFFSET_RFFT(tri_time3), _SIZE_RFFT(tri_time3), 10},
++	{"tri_time1",		RFFT_T, _OFFSET_RFFT(tri_time1), _SIZE_RFFT(tri_time1), 15},
++	{"tri_time2",		RFFT_T, _OFFSET_RFFT(tri_time2), _SIZE_RFFT(tri_time2), 15},
++	{"tri_time3",		RFFT_T, _OFFSET_RFFT(tri_time3), _SIZE_RFFT(tri_time3), 15},
+ #ifdef NOT_RTK_BSP
+-	{"tri_time4",		RFFT_T, _OFFSET_RFFT(tri_time4), _SIZE_RFFT(tri_time4), 15},
+-	{"tri_time5",		RFFT_T, _OFFSET_RFFT(tri_time5), _SIZE_RFFT(tri_time5), 20},
+-	{"tri_time6",		RFFT_T, _OFFSET_RFFT(tri_time6), _SIZE_RFFT(tri_time6), 20},
+-	{"tri_time7",		RFFT_T, _OFFSET_RFFT(tri_time7), _SIZE_RFFT(tri_time7), 20},
++	{"tri_time4",		RFFT_T, _OFFSET_RFFT(tri_time4), _SIZE_RFFT(tri_time4), 10},
++	{"tri_time5",		RFFT_T, _OFFSET_RFFT(tri_time5), _SIZE_RFFT(tri_time5), 5},
++	{"tri_time6",		RFFT_T, _OFFSET_RFFT(tri_time6), _SIZE_RFFT(tri_time6), 1},
++	{"tri_time7",		RFFT_T, _OFFSET_RFFT(tri_time7), _SIZE_RFFT(tri_time7), 1},
+ #else
+ 	{"tri_time4",		RFFT_T, _OFFSET_RFFT(tri_time4), _SIZE_RFFT(tri_time4), 20},
+ 	{"tri_time5",		RFFT_T, _OFFSET_RFFT(tri_time5), _SIZE_RFFT(tri_time5), 25},
+diff --git a/driver/rtl8192cd/8192cd_osdep.c b/driver/rtl8192cd/8192cd_osdep.c
+index d7d9a5b..e928876 100644
+--- a/driver/rtl8192cd/8192cd_osdep.c
++++ b/driver/rtl8192cd/8192cd_osdep.c
+@@ -1671,6 +1671,9 @@ int_retry_process:
+             if(priv->pshare->swq_use_hw_timer) {
+                 if (!priv->pshare->has_triggered_sw_tx_Q_tasklet) {
+                     priv->pshare->has_triggered_sw_tx_Q_tasklet = 1;
++#ifdef SMP_LOAD_BALANCE_SUPPORT
++                    RTL_W32(TC4_CTRL, 0);
++#endif		
+                     #ifdef __ECOS                
+                     priv->pshare->call_dsr = 1; /*by DSR(ECOS) at 8192cd_ecos.c  / tasklet(Linux)*/ 
+                     #else
+diff --git a/driver/rtl8192cd/8192cd_proc.c b/driver/rtl8192cd/8192cd_proc.c
+index c91ddb8..2ea938f 100644
+--- a/driver/rtl8192cd/8192cd_proc.c
++++ b/driver/rtl8192cd/8192cd_proc.c
+@@ -5228,6 +5228,11 @@ static int rtl8192cd_proc_stats(char *buf, char **start, off_t offset,
+ 	PRINT_SINGL_ARG("    IQK fail count: ", priv->pshare->IQK_fail_cnt, "%d");
+ 	PRINT_SINGL_ARG("    Phy para Version:    ", priv->pshare->PhyVersion, "%d");
+ 
++    #ifdef SW_TX_QUEUE
++	PRINT_SINGL_ARG("    swq_enque_pkt:    ", priv->ext_stats.swq_enque_pkt, "%lu");
++	PRINT_SINGL_ARG("    swq_xmit_out_pkt:    ", priv->ext_stats.swq_xmit_out_pkt, "%lu");
++	PRINT_SINGL_ARG("    swq_drop_pkt:    ", priv->ext_stats.swq_drop_pkt, "%lu");
++    #endif
+ 	RESTORE_INT(flags);
+ 
+ 	return pos;
+diff --git a/driver/rtl8192cd/8192cd_sme.c b/driver/rtl8192cd/8192cd_sme.c
+index a297ee2..849e7e2 100644
+--- a/driver/rtl8192cd/8192cd_sme.c
++++ b/driver/rtl8192cd/8192cd_sme.c
+@@ -1272,18 +1272,22 @@ static void assoc_expire(struct rtl8192cd_priv *priv)
+ 			if (pstat->expire_to > 0)
+ 			{
+ 				// free queued skb if sta is idle longer than 5 seconds
+-				if ((priv->expire_to - pstat->expire_to) == 5){			
+-					pstat->idle_count = 0;
+-					free_sta_skb(priv, pstat);
+-				for (i=0; i<8; i++)
+-					for (j=0; j<TUPLE_WINDOW; j++)
+-						pstat->tpcache[i][j] = 0xffff;
+-				pstat->tpcache_mgt = 0xffff;
+-				}
++				if (!is_sta_tx_skb_empty(priv, pstat)) {
++					if ((priv->expire_to - pstat->expire_to) == 5){			
++						pstat->idle_count = 0;
++						free_sta_skb(priv, pstat);
++						for (i=0; i<8; i++)
++							for (j=0; j<TUPLE_WINDOW; j++)
++								pstat->tpcache[i][j] = 0xffff;
++						pstat->tpcache_mgt = 0xffff;
++					}
+ 
+-				if(pstat->idle_count >= 5) {
++					if(pstat->idle_count >= 5) {
++						pstat->idle_count = 0;
++						free_sta_tx_skb(priv, pstat);
++					}
++				} else {
+ 					pstat->idle_count = 0;
+-					free_sta_tx_skb(priv, pstat);
+ 				}
+ 				
+ 				// calculate STA number
+diff --git a/driver/rtl8192cd/8192cd_tx.c b/driver/rtl8192cd/8192cd_tx.c
+index 17cc41a..9f64c4c 100644
+--- a/driver/rtl8192cd/8192cd_tx.c
++++ b/driver/rtl8192cd/8192cd_tx.c
+@@ -1292,17 +1292,32 @@ int rtl8192cd_start_xmit(struct sk_buff *skb, struct net_device *dev)
+  	}
+ 
+ #ifdef SMP_LOAD_BALANCE_SUPPORT
++	#ifdef SW_TX_QUEUE
++	if (skb_queue_len(&priv->pshare->skb_xmit_queue) == 0) {
++                RTL_W32(TC4_CTRL, BIT26 | BIT25 | BIT24 | (RTL_MICROSECONDS_TO_GTIMERCOUNTER(1000) & 0x00FFFFFF));    
++	}
++	if (skb_queue_len(&priv->pshare->skb_xmit_queue) >= 36000) {
++		DEBUG_ERR("TX DROP: exceed the skb xmit queue!\n");
++		priv->ext_stats.tx_drops++;
++		dev_kfree_skb_any(skb);
++		return 0; 
++	}
++	#else
+ 	if (compareAvailableTXBD(priv, (NUM_TX_DESC/10), VI_QUEUE, 2) ||
+ 		compareAvailableTXBD(priv, (NUM_TX_DESC/10), VO_QUEUE, 2) ||
+ 		compareAvailableTXBD(priv, (NUM_TX_DESC/10), BE_QUEUE, 2) ||
+ 		compareAvailableTXBD(priv, (NUM_TX_DESC/10), BK_QUEUE, 2)) {
+ 		if (skb_queue_len(&priv->pshare->skb_xmit_queue) >= NUM_TX_DESC/10) {
++			DEBUG_ERR("TX DROP: exceed the skb xmit queue!\n");
++			priv->ext_stats.tx_drops++;
+ 			dev_kfree_skb_any(skb);
+ 			return 0; 
+ 		}
+ 	}
++	#endif
+ 	skb_queue_tail(&priv->pshare->skb_xmit_queue, skb);
+ 
++	#ifndef SW_TX_QUEUE
+ 	if (smp_processor_id() == 0) {
+ 		#if defined(RTK_NL80211) && defined(MBSSID)
+ 			smp_call_function_single(1, rtl8192cd_xmit_smp, (void *)dev_vap, 0);
+@@ -1317,6 +1332,7 @@ int rtl8192cd_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ 		#endif
+ 			smp_call_function_single(0, rtl8192cd_xmit_smp, (void *)dev, 0);
+ 	}
++	#endif
+ #else
+ 	SAVE_INT_AND_CLI(x);
+ 	SMP_LOCK_XMIT(x);
+@@ -7350,13 +7366,13 @@ int __rtl8192cd_start_xmit_out(struct sk_buff *skb, struct stat_info	*pstat);
+ 
+ 
+ #if defined(SW_TX_QUEUE)
+-__inline__ static int rtl8192cd_swq_bdfull(struct rtl8192cd_priv *priv, struct stat_info *pstat,  unsigned char qnum)
++__inline__ static int rtl8192cd_swq_bdfull(struct rtl8192cd_priv *priv, struct stat_info *pstat,  unsigned char qnum, int qlen)
+ {
+     int *tx_head=NULL, *tx_tail=NULL;
+ 
+ #ifdef CONFIG_WLAN_HAL	 	 
+     if(IS_HAL_CHIP(priv))    {
+-        if(compareAvailableTXBD(priv, 4, qnum, 2))
++        if(compareAvailableTXBD(priv, qlen, qnum, 2))
+             return 1;
+     } else if(CONFIG_WLAN_NOT_HAL_EXIST)
+ #endif
+@@ -7390,7 +7406,9 @@ __inline__ static void rtl8192cd_swq_settimer(struct rtl8192cd_priv *priv, UINT3
+                 if(current_time - priv->pshare->swq_last_tsf < SWQ_HWTIMER_DELAY) {
+                     delay_us(SWQ_HWTIMER_DELAY - (current_time - priv->pshare->swq_last_tsf));
+                 }
++#ifndef SMP_LOAD_BALANCE_SUPPORT
+                 RTL_W32(TC4_CTRL, 0);           
++#endif
+                 priv->pshare->swq_last_tsf = RTL_R32(TSFTR1);
+             }
+             else {      
+@@ -7427,7 +7445,9 @@ __inline__ static void rtl8192cd_swq_settimer(struct rtl8192cd_priv *priv, UINT3
+                 priv->pshare->swq_current_timeout = (timer_timeout == 0?1:timer_timeout);            
+                 set_timeout = RTL_MICROSECONDS_TO_GTIMERCOUNTER(set_timeout);                
+                 set_timeout = BIT26 | BIT24 | (set_timeout & 0x00FFFFFF);  //TC40INT_EN | TC4EN | TC4Data
++#ifndef SMP_LOAD_BALANCE_SUPPORT
+                 RTL_W32(TC4_CTRL, set_timeout);           
++#endif
+                 priv->pshare->swq_last_tsf = RTL_R32(TSFTR1);
+             }            
+         }
+@@ -7592,11 +7612,14 @@ __inline__ static int rtl8192cd_swq_dequeue(struct rtl8192cd_priv *priv, struct
+         __rtl8192cd_start_xmit_out(tmpskb, pstat);
+ #endif
+         count++;
++
++	if (count ==  pstat->swq.q_aggnum[qnum])
++		break;
+     }
+ 
+     if(skb_queue_len(&pstat->swq.swq_queue[qnum]) == 0) {        
+-        if(priv->pshare->swq_use_hw_timer && pstat->swq.swq_empty[qnum] == 1)
+-            priv->pshare->swq_numActiveSTA--;
++        //if(priv->pshare->swq_use_hw_timer && pstat->swq.swq_empty[qnum] == 1)
++        //    priv->pshare->swq_numActiveSTA--;
+         pstat->swq.swq_empty[qnum] = 0;        
+     }
+         
+@@ -7659,6 +7682,16 @@ __inline__ static int rtl8192cd_swq_enqueue(struct rtl8192cd_priv *priv, struct
+ 	}
+ 	else
+ 	{
++#if 1
++		if (assoc_num > 1) {
++			if(!pstat->swq.swq_en[q_num]) {
++		                pstat->swq.swq_en[q_num] = 1; /*enable swq*/ 
++		                pstat->swq.swq_prev_timeout[q_num] = 1;
++		                pstat->swq.swq_timeout_change[q_num] = 0;
++		                pstat->swq.swq_keeptime[q_num] = 0;         
++			}
++		}	
++#else
+ 	        /*check if we need to enable/disable the swq for the specific q_num and pstat*/
+ 	        if(pstat->swq.swq_en[q_num] && assoc_num <= 8) {
+ 	            if(pstat->tx_avarage < 625000 || 20000000 < pstat->tx_avarage) { /* 5M < TP  or 160M < TP*/
+@@ -7677,6 +7710,7 @@ __inline__ static int rtl8192cd_swq_enqueue(struct rtl8192cd_priv *priv, struct
+ 	                pstat->swq.swq_keeptime[q_num] = 0;         
+ 	           }
+ 	        }
++#endif			
+ 	}
+ 
+         if(pstat->swq.swq_en[q_num] == 0) {
+@@ -7714,14 +7748,14 @@ __inline__ static int rtl8192cd_swq_enqueue(struct rtl8192cd_priv *priv, struct
+     if(need_deque) {
+         if (pstat->swq.swq_timer_id[q_num])
+             rtl8192cd_swq_deltimer(priv, pstat, q_num);
+-        if(rtl8192cd_swq_bdfull(priv, pstat, q_num)) {           
++        if(rtl8192cd_swq_bdfull(priv, pstat, q_num, (pstat->swq.q_aggnum[q_num]+1) *2)) {           
+             skb_queue_tail(&pstat->swq.swq_queue[q_num], skb);
+             if(priv->pshare->swq_use_hw_timer && pstat->swq.swq_empty[q_num] == 0) {
+-                priv->pshare->swq_numActiveSTA++;
+-                if(priv->pshare->swq_numActiveSTA == 9) {
++                //priv->pshare->swq_numActiveSTA++;
++                //if(priv->pshare->swq_numActiveSTA == 9) {
+                     turbo_swq_setting(priv);
+                     priv->pshare->swq_turbo_time = priv->up_time;
+-                }
++                //}
+             }
+             pstat->swq.swq_empty[q_num] = 1;                                       
+ #ifdef SW_TXQ_RSVD_DESC
+@@ -7745,11 +7779,11 @@ __inline__ static int rtl8192cd_swq_enqueue(struct rtl8192cd_priv *priv, struct
+     else {
+         skb_queue_tail(&pstat->swq.swq_queue[q_num], skb);
+         if(priv->pshare->swq_use_hw_timer && pstat->swq.swq_empty[q_num] == 0) {
+-            priv->pshare->swq_numActiveSTA++;
+-            if(priv->pshare->swq_numActiveSTA == 9) {
++            //priv->pshare->swq_numActiveSTA++;
++            //if(priv->pshare->swq_numActiveSTA == 9) {
+                 turbo_swq_setting(priv);
+                 priv->pshare->swq_turbo_time = priv->up_time;
+-            }
++            //}
+         }
+         pstat->swq.swq_empty[q_num] = 1;  
+ #ifdef SW_TXQ_RSVD_DESC
+@@ -7778,6 +7812,7 @@ __inline__ static int rtl8192cd_swq_enqueue(struct rtl8192cd_priv *priv, struct
+                 	tri_time = priv->pshare->rf_ft_var.tri_time6;
+                 else
+                     tri_time = priv->pshare->rf_ft_var.tri_time7;
++                pstat->swq.swq_tri_time[q_num] = tri_time;
+                        
+                 if(pstat->swq.swq_prev_timeout[q_num] != tri_time) {
+                     pstat->swq.swq_prev_timeout[q_num] = tri_time;
+@@ -7796,6 +7831,7 @@ __inline__ static int rtl8192cd_swq_enqueue(struct rtl8192cd_priv *priv, struct
+                     tri_time = 120;              
+                 else
+                     tri_time = 10;    
++                pstat->swq.swq_tri_time[q_num] = tri_time;
+                 
+                 tri_time = jiffies + RTL_MILISECONDS_TO_JIFFIES(tri_time);
+             }
+@@ -7823,8 +7859,13 @@ void rtl8192cd_swq_timeout(unsigned long task_priv)
+     struct rtl8192cd_priv *priv_this=NULL;
+     unsigned char qnum;    
+     UINT32 current_time;
+-    int bdfull;
++    int bdfull, qlen;
+     unsigned long x = 0;
++
++#ifdef SMP_LOAD_BALANCE_SUPPORT
++    rtl8192cd_xmit_dsr(task_priv);
++#endif
++
+     SMP_LOCK_XMIT(x);
+     SAVE_INT_AND_CLI(x);
+     
+@@ -7870,8 +7911,8 @@ void rtl8192cd_swq_timeout(unsigned long task_priv)
+             
+             add_timer = 0;
+             if(need_dequeue) {  
+-                bdfull = rtl8192cd_swq_bdfull(priv, pstat, qnum);
+-                if(bdfull && skb_queue_len(&pstat->swq.swq_queue[qnum]) < pstat->swq.q_aggnum[qnum]*2 ) {
++                bdfull = rtl8192cd_swq_bdfull(priv, pstat, qnum, (pstat->swq.q_aggnum[qnum]*2));
++                if(bdfull) {
+                     add_timer = 1;
+                     if(priv->pshare->swq_use_hw_timer) {                        
+                         add_timer_timeout = 1;   
+@@ -7892,11 +7933,34 @@ void rtl8192cd_swq_timeout(unsigned long task_priv)
+                         else {
+                         pstat->swq.q_TOCount[qnum] += rtl8192cd_swq_dequeue(priv_this, pstat, qnum); 
+                         }
++			qlen = skb_queue_len(&pstat->swq.swq_queue[qnum]);
++			// Becuase swq_dequeue costs time, renew current time for avoid add_timer_timeout overflow
++			if(priv->pshare->swq_use_hw_timer) {     
++				current_time = RTL_R32(TSFTR1);
++			}
++			else {
++				current_time = jiffies;
++			}
++			if (qlen == 0) {
++                        	add_timer = 0;
++			} else if (0< qlen < pstat->swq.q_aggnum[qnum]) {
++				add_timer_timeout = pstat->swq.swq_tri_time[qnum];  
++				add_timer_timeout = add_timer_timeout*1000;
++				add_timer_timeout += current_time; 
++                        	add_timer = 1;
++			} else {
++				add_timer_timeout = 1;  
++				add_timer_timeout = add_timer_timeout*1000;
++				add_timer_timeout += current_time; 
++                        	add_timer = 1;
+                 }
+                 
++                }
++                #if 0
+                 if(!bdfull) {
+                     adjust_swq_setting(priv, pstat, qnum, CHECK_DEC_AGGN);
+                 }  
++                #endif  
+             }
+             else {                        
+                 add_timer = 1;
+@@ -7933,6 +7997,9 @@ void rtl8192cd_swq_timeout(unsigned long task_priv)
+     }    
+ 
+     priv->pshare->has_triggered_sw_tx_Q_tasklet = 0;
++#ifdef SMP_LOAD_BALANCE_SUPPORT
++    RTL_W32(TC4_CTRL, BIT26 | BIT25 | BIT24 | (RTL_MICROSECONDS_TO_GTIMERCOUNTER(1000) & 0x00FFFFFF));
++#endif
+ 
+     RESTORE_INT(x);		
+     SMP_UNLOCK_XMIT(x);    
+@@ -8692,8 +8759,13 @@ int __rtl8192cd_start_xmit(struct sk_buff *skb, struct net_device *dev, int tx_f
+ 			return __rtl8192cd_start_xmit_out(skb, pstat);
+ #endif
+ 	} else if (priv->pshare->swq_en) {//swq_en=1
+-        	priv->ext_stats.swq_enque_pkt++;
+-		return rtl8192cd_swq_enqueue(priv, skb, pstat);
++		if ((priv->ext_stats.swq_enque_pkt - priv->ext_stats.swq_xmit_out_pkt - priv->ext_stats.swq_drop_pkt) > 36000) {
++			priv->ext_stats.tx_drops++;
++			goto free_and_stop;
++		} else {
++        		priv->ext_stats.swq_enque_pkt++;
++			return rtl8192cd_swq_enqueue(priv, skb, pstat);
++		}
+ 	} else { //swq_en=0 and swq still have packet queuing
+ 		for(temp = BK_QUEUE; temp <= VO_QUEUE; temp++)
+ 		{
+diff --git a/driver/rtl8192cd/8192cd_util.c b/driver/rtl8192cd/8192cd_util.c
+index 1c2480c..3bf7af8 100644
+--- a/driver/rtl8192cd/8192cd_util.c
++++ b/driver/rtl8192cd/8192cd_util.c
+@@ -1457,6 +1457,19 @@ void dump_sta_dz_queue_num(struct rtl8192cd_priv *priv, struct stat_info *pstat)
+ #endif
+ 
+ #ifdef CONFIG_PCI_HCI
++int is_sta_tx_skb_empty(struct rtl8192cd_priv *priv, struct stat_info *pstat)
++{
++	SMP_LOCK_XMIT(x);
++
++	if (skb_queue_len(&pstat->dz_queue)) {
++		SMP_UNLOCK_XMIT(x);
++		return FALSE;	
++	} else {
++		SMP_UNLOCK_XMIT(x);
++		return TRUE;
++	}
++}
++
+ void free_sta_tx_skb(struct rtl8192cd_priv *priv, struct stat_info *pstat)
+ {
+ #ifdef WIFI_WMM
+@@ -1552,6 +1565,11 @@ void free_sta_tx_skb(struct rtl8192cd_priv *priv, struct stat_info *pstat)
+ #endif // CONFIG_PCI_HCI
+ 
+ #if defined(CONFIG_USB_HCI) || defined(CONFIG_SDIO_HCI)
++int is_sta_tx_skb_empty(struct rtl8192cd_priv *priv, struct stat_info *pstat)
++{
++	return FALSE;	
++}
++
+ void free_sta_tx_skb(struct rtl8192cd_priv *priv, struct stat_info *pstat)
+ {
+ 	int i;
+@@ -8522,8 +8540,8 @@ void init_STA_SWQAggNum(struct rtl8192cd_priv *priv)
+             pstat = &(priv->pshare->aidarray[i]->station);
+            SMP_LOCK_XMIT(x);
+             for(j=BK_QUEUE;j<HIGH_QUEUE;j++) {
+-                if(priv->pshare->swq_numActiveSTA > 8)
+-                    pstat->swq.q_aggnum[j] = 16;
++                //if(priv->pshare->swq_numActiveSTA > 8)
++                //    pstat->swq.q_aggnum[j] = 16;
+                 if(pstat->tx_avarage> (1<<16)) {
+                     pstat->swq.q_aggnum[j] = priv->pshare->rf_ft_var.swq_aggnum>>1;                               
+                 }

@@ -1,0 +1,18 @@
+diff --git a/driver/rtl8192cd/8192cd_security.h b/driver/rtl8192cd/8192cd_security.h
+index 5a17485..80f4705 100755
+--- a/driver/rtl8192cd/8192cd_security.h
++++ b/driver/rtl8192cd/8192cd_security.h
+@@ -714,7 +714,12 @@ typedef	union _DOT11_RSN_CAPABILITY{
+ 		unsigned short NoPairwise:1; // B1
+ 		unsigned short PtksaReplayCounter:2; // B3 B2
+ 		unsigned short GtksaReplayCounter:2; // B5 B4
+-		unsigned short Reserved1:2; // B7 B6
++#ifdef CONFIG_IEEE80211W
++        unsigned short MFPR:1; // B6
++        unsigned short MFPC:1; // B7
++#else
++        unsigned short Reserved1:2; // B7 B6
++#endif
+ 		unsigned short Reserved2:8;
+ #endif
+ 	} __WLAN_ATTRIB_PACK__ field;

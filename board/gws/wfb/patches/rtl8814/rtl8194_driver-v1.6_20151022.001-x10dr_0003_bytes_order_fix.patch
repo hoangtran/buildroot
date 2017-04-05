@@ -1,0 +1,54 @@
+From d2e201eb4f1b0b3b877df9856456283da82a554c Mon Sep 17 00:00:00 2001
+From: Hoang Tran <hoang.tran@greenwavereality.com>
+Date: Fri, 21 Oct 2016 13:31:13 -0700
+Subject: [PATCH] fix wrong byte order of read reg command
+
+---
+ driver/rtl8192cd/8192cd_ioctl.c | 9 +++++++++
+ driver/rtl8192cd/8192cd_mp.c    | 3 +++
+ 2 files changed, 12 insertions(+)
+
+--- a/driver/rtl8192cd/8192cd_ioctl.c
++++ b/driver/rtl8192cd/8192cd_ioctl.c
+@@ -3391,6 +3391,9 @@ static int read_reg(struct rtl8192cd_pri
+ 		}
+ 		panic_printk("\nread word reg %x=0x%04x\n", offset, w_val);
+ 		len = 2;
++#ifdef _LITTLE_ENDIAN_
++		w_val = ___constant_swab16(w_val);
++#endif
+ 		memcpy(org_ptr, (char *)&w_val, len);
+ 		break;
+ 	case 3:
+@@ -3406,6 +3409,9 @@ static int read_reg(struct rtl8192cd_pri
+ 		}
+ 		panic_printk("\nread dword reg %x=0x%08lx\n", offset, dw_val);
+ 		len = 4;
++#ifdef _LITTLE_ENDIAN_
++		dw_val = ___constant_swab32(dw_val);
++#endif
+ 		memcpy(org_ptr, (char *)&dw_val, len);
+ 		break;
+ 	}
+@@ -3660,6 +3666,9 @@ static int read_rf_reg(struct rtl8192cd_
+ 		offset = (unsigned char)_atoi((char *)arg, 16);
+ 		val = PHY_QueryRFReg(priv, path, offset, bMask20Bits, 1);
+ 		panic_printk("\nread RF %d reg %02x=0x%08x\n", path, offset, val);
++#ifdef _LITTLE_ENDIAN_
++		val = ___constant_swab32(val);
++#endif
+ 		memcpy(data, (char *)&val, 4);
+ 		return 4;
+ 	}
+--- a/driver/rtl8192cd/8192cd_mp.c
++++ b/driver/rtl8192cd/8192cd_mp.c
+@@ -4440,6 +4440,9 @@ int mp_query_psd(struct rtl8192cd_priv *
+ 		sprintf(tmp, "%x ", psd_data);
+ 		strcat(data, tmp);
+ #else
++#ifdef _LITTLE_ENDIAN_
++		psd_data = ___constant_swab32(psd_data);
++#endif
+ 		sprintf(data, "%s%x ",data, psd_data);
+ #endif
+ 		i++;

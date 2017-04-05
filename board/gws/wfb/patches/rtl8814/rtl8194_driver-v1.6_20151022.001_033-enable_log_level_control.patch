@@ -1,0 +1,25 @@
+diff -Naurp rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/8192cd_cfg.h patch/8192cd_cfg.h
+--- rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/8192cd_cfg.h	2016-07-01 12:22:02.373928207 +0200
++++ patch/8192cd_cfg.h	2016-07-01 12:21:31.325926925 +0200
+@@ -303,7 +303,7 @@
+ //-------------------------------------------------------------
+ // Debug function
+ //-------------------------------------------------------------
+-//#define _DEBUG_RTL8192CD_		// defined when debug print is used
++#define _DEBUG_RTL8192CD_		// defined when debug print is used
+ #define _IOCTL_DEBUG_CMD_		// defined when read/write register/memory command is used in ioctl
+ //#define _AMPSDU_AMSDU_DEBUG_		// defined when debug for ampdu_amsdu
+ 
+diff -Naurp rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/8192cd_debug.h patch/8192cd_debug.h
+--- rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/8192cd_debug.h	2016-07-01 12:22:09.305928494 +0200
++++ patch/8192cd_debug.h	2016-07-01 12:21:31.325926925 +0200
+@@ -265,7 +265,8 @@ enum _module_define_ {
+ 
+ #define DBFENTER	printk("----->%s\n", (char *)__FUNCTION__)
+ #define DBFEXIT		printk("%s----->\n", (char *)__FUNCTION__)
+-#define PRINT_INFO(fmt, args...)	printk(fmt, ## args)
++//#define PRINT_INFO(fmt, args...)	printk(fmt, ## args)
++#define PRINT_INFO	DEBUG_INFO
+ #endif
+ #endif	// __GNUC__
+ 

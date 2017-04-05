@@ -1,0 +1,29 @@
+diff -Naurp rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/8192cd_tx.c patch/8192cd_tx.c
+--- rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/8192cd_tx.c	2016-06-21 14:31:34.000000000 +0200
++++ patch/8192cd_tx.c	2016-07-07 19:05:52.000000000 +0200
+@@ -9425,6 +9425,12 @@ int __rtl8192cd_usb_start_xmit(struct rt
+ 			// for SW LED
+ 			priv->pshare->LED_tx_cnt++;
+ 
++			// workaround for for 11n logo test 4.2.47
++			if ((priv->pmib->dot11StationConfigEntry.dot11DesiredSSIDLen==2) && 
++				!memcmp(priv->pmib->dot11StationConfigEntry.dot11DesiredSSID, "ps", 2)) {
++				delay_us(500);
++			}
++
+ #ifdef SW_TX_QUEUE
+ 			if (priv->pshare->rf_ft_var.swq_dbg == 2) {
+ 			    if(pstat)
+@@ -11659,6 +11665,12 @@ int __rtl8192cd_firetx(struct rtl8192cd_
+ 	PCIeWakeUp(priv, (POWER_DOWN_T0));
+ #endif
+ 
++	// workaround for for 11n logo test 4.2.47
++	if ((priv->pmib->dot11StationConfigEntry.dot11DesiredSSIDLen==2) && 
++		!memcmp(priv->pmib->dot11StationConfigEntry.dot11DesiredSSID, "ps", 2)) {
++		delay_us(500);
++	}
++
+ 	SAVE_INT_AND_CLI(x);
+ 	//SMP_LOCK_XMIT(x);
+ 	

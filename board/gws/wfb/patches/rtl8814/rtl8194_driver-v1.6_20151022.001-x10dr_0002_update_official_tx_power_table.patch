@@ -1,0 +1,4979 @@
+--- a/driver/rtl8192cd/WlanHAL/Data/8814A/PHY_REG_PG_8814Amp_hp.txt
++++ b/driver/rtl8192cd/WlanHAL/Data/8814A/PHY_REG_PG_8814Amp_hp.txt
+@@ -1,80 +1,80 @@
+ //RL6302_MAC_PHY_Parameter_v054_20141124
+ #[v1][Exact]#
+ #[2.4G][A]#
+-[1Tx] 0xc20	0xffffffff	 	 19 22 22 22 // TXAGC codeword (H-byte->L-byte)={11M 5.5M 2M 1M}
+-[1Tx] 0xc24	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)={18M 12M 9M 6M}
+-[1Tx] 0xc28	0xffffffff		 19 22 22 22 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
+-[1Tx] 0xc2c	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
+-[1Tx] 0xc30	0xffffffff		 19 20 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
+-[2Tx] 0xc34	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
+-[2Tx] 0xc38	0xffffffff		 19 20 20 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
+-[3Tx] 0xcd8	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
+-[3Tx] 0xcdc	0xffffffff		 19 20 20 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
+-[1Tx] 0xc3c	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
+-[1Tx] 0xc40	0xffffffff		 19 20 20 22 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
+-[1Tx] 0xc44	0xffffffff		 22 22 17 18 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
+-[2Tx] 0xc48	0xffffffff		 20 22 22 22 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
+-[2Tx] 0xc4c	0xffffffff		 17 18 19 20 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
+-[3Tx] 0xce0	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
+-[3Tx] 0xce4	0xffffffff		 19 20 20 22 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
+-[3Tx] 0xce8	0x0000ffff		 10 10 17 18  // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
++[1Tx] 0xc20	0xffffffff	 	 25 25 25 25 // TXAGC codeword (H-byte->L-byte)={11M 5.5M 2M 1M}
++[1Tx] 0xc24	0xffffffff		 25 25 25 25 // TXAGC codeword (H-byte->L-byte)={18M 12M 9M 6M}
++[1Tx] 0xc28	0xffffffff		 23 23 25 25 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
++[1Tx] 0xc2c	0xffffffff		 25 25 25 25 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0xc30	0xffffffff		 22 23 24 25 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
++[2Tx] 0xc34	0xffffffff		 25 25 25 25 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
++[2Tx] 0xc38	0xffffffff		 22 23 24 25 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
++[3Tx] 0xcd8	0xffffffff		 25 25 25 25 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
++[3Tx] 0xcdc	0xffffffff		 22 23 24 25 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
++[1Tx] 0xc3c	0xffffffff		 25 25 25 25 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0xc40	0xffffffff		 22 22 24 25 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
++[1Tx] 0xc44	0xffffffff		 25 25 21 21 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
++[2Tx] 0xc48	0xffffffff		 24 25 25 25 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
++[2Tx] 0xc4c	0xffffffff		 21 21 22 22 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
++[3Tx] 0xce0	0xffffffff		 25 25 25 25 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
++[3Tx] 0xce4	0xffffffff		 22 22 24 25 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
++[3Tx] 0xce8	0x0000ffff		 10 10 21 21 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
+ #[END]#
+ #[2.4G][B]#
+-[1Tx] 0xe20	0xffffffff		 19 22 22 22 // TXAGC codeword (H-byte->L-byte)={11M 5.5M 2M 1M}
+-[1Tx] 0xe24	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)={18M 12M 9M 6M}
+-[1Tx] 0xe28	0xffffffff		 19 22 22 22 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
+-[1Tx] 0xe2c	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
+-[1Tx] 0xe30	0xffffffff		 19 20 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
+-[2Tx] 0xe34	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
+-[2Tx] 0xe38	0xffffffff		 19 20 20 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
+-[3Tx] 0xed8	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
+-[3Tx] 0xedc	0xffffffff		 19 20 20 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
+-[1Tx] 0xe3c	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
+-[1Tx] 0xe40	0xffffffff		 19 20 20 22 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
+-[1Tx] 0xe44	0xffffffff		 22 22 17 18 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
+-[2Tx] 0xe48	0xffffffff		 20 22 22 22 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
+-[2Tx] 0xe4c	0xffffffff		 17 18 19 20 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
+-[3Tx] 0xee0	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
+-[3Tx] 0xee4	0xffffffff		 19 20 20 22 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
+-[3Tx] 0xee8	0x0000ffff		 10 10 17 18 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
++[1Tx] 0xe20	0xffffffff		 25 25 25 25 // TXAGC codeword (H-byte->L-byte)={11M 5.5M 2M 1M}
++[1Tx] 0xe24	0xffffffff		 25 25 25 25 // TXAGC codeword (H-byte->L-byte)={18M 12M 9M 6M}
++[1Tx] 0xe28	0xffffffff		 23 23 25 25 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
++[1Tx] 0xe2c	0xffffffff		 25 25 25 25 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0xe30	0xffffffff		 22 23 24 25 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
++[2Tx] 0xe34	0xffffffff		 25 25 25 25 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
++[2Tx] 0xe38	0xffffffff		 22 23 24 25 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
++[3Tx] 0xed8	0xffffffff		 25 25 25 25 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
++[3Tx] 0xedc	0xffffffff		 22 23 24 25 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
++[1Tx] 0xe3c	0xffffffff		 25 25 25 25 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0xe40	0xffffffff		 22 22 24 25 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
++[1Tx] 0xe44	0xffffffff		 25 25 21 21 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
++[2Tx] 0xe48	0xffffffff		 24 25 25 25 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
++[2Tx] 0xe4c	0xffffffff		 21 21 22 22 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
++[3Tx] 0xee0	0xffffffff		 25 25 25 25 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
++[3Tx] 0xee4	0xffffffff		 22 22 24 25 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
++[3Tx] 0xee8	0x0000ffff		 10 10 21 21 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
+ #[END]#
+ #[2.4G][C]#
+-[1Tx] 0x1820	0xffffffff		 19 22 22 22 // TXAGC codeword (H-byte->L-byte)={11M 5.5M 2M 1M}
+-[1Tx] 0x1824	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)={18M 12M 9M 6M}
+-[1Tx] 0x1828	0xffffffff		 19 22 22 22 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
+-[1Tx] 0x182c	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
+-[1Tx] 0x1830	0xffffffff		 19 20 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
+-[2Tx] 0x1834	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
+-[2Tx] 0x1838	0xffffffff		 19 20 20 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
+-[3Tx] 0x18d8	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
+-[3Tx] 0x18dc	0xffffffff		 19 20 20 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
+-[1Tx] 0x183c	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
+-[1Tx] 0x1840	0xffffffff		 19 20 20 22 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
+-[1Tx] 0x1844	0xffffffff		 22 22 17 18 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
+-[2Tx] 0x1848	0xffffffff		 20 22 22 22 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
+-[2Tx] 0x184c	0xffffffff		 17 18 19 20 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
+-[3Tx] 0x18e0	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
+-[3Tx] 0x18e4	0xffffffff		 19 20 20 22 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
+-[3Tx] 0x18e8	0x0000ffff		 10 10 17 18 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
++[1Tx] 0x1820	0xffffffff		 25 25 25 25 // TXAGC codeword (H-byte->L-byte)={11M 5.5M 2M 1M}
++[1Tx] 0x1824	0xffffffff		 25 25 25 25 // TXAGC codeword (H-byte->L-byte)={18M 12M 9M 6M}
++[1Tx] 0x1828	0xffffffff		 23 23 25 25 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
++[1Tx] 0x182c	0xffffffff		 25 25 25 25 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0x1830	0xffffffff		 22 23 24 25 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
++[2Tx] 0x1834	0xffffffff		 25 25 25 25 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
++[2Tx] 0x1838	0xffffffff		 22 23 24 25 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
++[3Tx] 0x18d8	0xffffffff		 25 25 25 25 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
++[3Tx] 0x18dc	0xffffffff		 22 23 24 25 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
++[1Tx] 0x183c	0xffffffff		 25 25 25 25 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0x1840	0xffffffff		 22 22 24 25 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
++[1Tx] 0x1844	0xffffffff		 25 25 21 21 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
++[2Tx] 0x1848	0xffffffff		 24 25 25 25 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
++[2Tx] 0x184c	0xffffffff		 21 21 22 22 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
++[3Tx] 0x18e0	0xffffffff		 25 25 25 25 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
++[3Tx] 0x18e4	0xffffffff		 22 22 24 25 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
++[3Tx] 0x18e8	0x0000ffff		 10 10 21 21 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
+ #[END]#
+ #[2.4G][D]#
+-[1Tx] 0x1a20	0xffffffff		 19 22 22 22 // TXAGC codeword (H-byte->L-byte)={11M 5.5M 2M 1M}
+-[1Tx] 0x1a24	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)={18M 12M 9M 6M}
+-[1Tx] 0x1a28	0xffffffff		 19 22 22 22 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
+-[1Tx] 0x1a2c	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
+-[1Tx] 0x1a30	0xffffffff		 19 20 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
+-[2Tx] 0x1a34	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
+-[2Tx] 0x1a38	0xffffffff		 19 20 20 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
+-[3Tx] 0x1ad8	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
+-[3Tx] 0x1adc	0xffffffff		 19 20 20 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
+-[1Tx] 0x1a3c	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
+-[1Tx] 0x1a40	0xffffffff		 19 20 20 22 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
+-[1Tx] 0x1a44	0xffffffff		 22 22 17 18 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
+-[2Tx] 0x1a48	0xffffffff		 20 22 22 22 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
+-[2Tx] 0x1a4c	0xffffffff		 17 18 19 20 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
+-[3Tx] 0x1ae0	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
+-[3Tx] 0x1ae4	0xffffffff		 19 20 20 22 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
+-[3Tx] 0x1ae8	0x0000ffff		 10 10 17 18 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
++[1Tx] 0x1a20	0xffffffff		 25 25 25 25 // TXAGC codeword (H-byte->L-byte)={11M 5.5M 2M 1M}
++[1Tx] 0x1a24	0xffffffff		 25 25 25 25 // TXAGC codeword (H-byte->L-byte)={18M 12M 9M 6M}
++[1Tx] 0x1a28	0xffffffff		 23 23 25 25 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
++[1Tx] 0x1a2c	0xffffffff		 25 25 25 25 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0x1a30	0xffffffff		 22 23 24 25 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
++[2Tx] 0x1a34	0xffffffff		 25 25 25 25 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
++[2Tx] 0x1a38	0xffffffff		 22 23 24 25 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
++[3Tx] 0x1ad8	0xffffffff		 25 25 25 25 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
++[3Tx] 0x1adc	0xffffffff		 22 23 24 25 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
++[1Tx] 0x1a3c	0xffffffff		 25 25 25 25 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0x1a40	0xffffffff		 22 22 24 25 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
++[1Tx] 0x1a44	0xffffffff		 25 25 21 21 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
++[2Tx] 0x1a48	0xffffffff		 24 25 25 25 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
++[2Tx] 0x1a4c	0xffffffff		 21 21 22 22 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
++[3Tx] 0x1ae0	0xffffffff		 25 25 25 25 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
++[3Tx] 0x1ae4	0xffffffff		 22 22 24 25 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
++[3Tx] 0x1ae8	0x0000ffff		 10 10 21 21 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
+ #[END]#
+ #[5G][A]#
+ [1Tx] 0xc24	0xffffffff		 21 21 21 21 // TXAGC codeword (H-byte->L-byte)={8M 12M 9M 6M}
+--- a/driver/rtl8192cd/WlanHAL/Data/8814A/TXPWR_LMT_8814Amp.txt
++++ b/driver/rtl8192cd/WlanHAL/Data/8814A/TXPWR_LMT_8814Amp.txt
+@@ -1,4 +1,3 @@
+-//RL6302_MAC_PHY_Parameter_v046_20141008
+ // Format:							
+ //							
+ // 		Note: The order of the tables MUST match the definition in WLAN driver.
+@@ -23,20 +22,20 @@
+ ##	2.4G, 20M, 1T, CCK, //(1M;2M;5.5M;11M)						
+ ##	START
+ ##	#3#	FCC	ETSI	MKK	
+-CH01	18	16	16	
+-CH02	18	16	16	
+-CH03	18	16	16	
+-CH04	18	16	16	
+-CH05	18	16	16	
+-CH06	18	16	16	
+-CH07	18	16	16	
+-CH08	18	16	16	
+-CH09	18	16	16	
+-CH10	18	16	16	
+-CH11	18	16	16	
+-CH12	NA	16	16	
+-CH13	NA	16	16	
+-CH14	NA	NA	16	
++CH01	23	23	23	
++CH02	23	23	23	
++CH03	23	23	23	
++CH04	23	23	23	
++CH05	23	23	23	
++CH06	23	23	23	
++CH07	23	23	23	
++CH08	23	23	23	
++CH09	23	23	23	
++CH10	23	23	23	
++CH11	23	23	23	
++CH12	NA	23	23	
++CH13	NA	23	23	
++CH14	NA	NA	23	
+ ##	END						
+ //							
+ //Table 2: ===========================================							
+@@ -44,19 +43,19 @@ CH14	NA	NA	16
+ ##	2.4G, 20M, 1T, OFDM, //(6M;9M;12M;18M;24M;36M;48M;54M)						
+ ##	START
+ ##	#3#	FCC	ETSI	MKK	
+-CH01	17	16	16	
+-CH02	18	16	16	
+-CH03	18	16	16	
+-CH04	18	16	16	
+-CH05	18	16	16	
+-CH06	18	16	16	
+-CH07	18	16	16	
+-CH08	18	16	16	
+-CH09	18	16	16	
+-CH10	18	16	16	
+-CH11	16	16	16	
+-CH12	NA	16	16	
+-CH13	NA	16	16	
++CH01	23	23	23	
++CH02	23	23	23	
++CH03	23	23	23	
++CH04	23	23	23	
++CH05	23	23	23	
++CH06	23	23	23	
++CH07	23	23	23	
++CH08	23	23	23	
++CH09	23	23	23	
++CH10	23	23	23	
++CH11	23	23	23	
++CH12	NA	23	23	
++CH13	NA	23	23	
+ CH14	NA	NA	NA	
+ ##	END						
+ //							
+@@ -65,19 +64,19 @@ CH14	NA	NA	NA
+ ##	2.4G, 20M, 1T, HT, //(MCS0~MCS7)						
+ ##	START
+ ##	#3#	FCC	ETSI	MKK	
+-CH01	17	16	16	
+-CH02	18	16	16	
+-CH03	18	16	16	
+-CH04	18	16	16	
+-CH05	18	16	16	
+-CH06	18	16	16	
+-CH07	18	16	16	
+-CH08	18	16	16	
+-CH09	18	16	16	
+-CH10	18	16	16	
+-CH11	16	16	16	
+-CH12	NA	16	16	
+-CH13	NA	16	16	
++CH01	23	23	23	
++CH02	23	23	23	
++CH03	23	23	23	
++CH04	23	23	23	
++CH05	23	23	23	
++CH06	23	23	23	
++CH07	23	23	23	
++CH08	23	23	23	
++CH09	23	23	23	
++CH10	23	23	23	
++CH11	23	23	23	
++CH12	NA	23	23	
++CH13	NA	23	23	
+ CH14	NA	NA	NA	
+ ##	END						
+ //							
+@@ -86,19 +85,19 @@ CH14	NA	NA	NA
+ ##	2.4G, 20M, 2T, HT, //(MCS8~MCS15)						
+ ##	START
+ ##	#3#	FCC	ETSI	MKK	
+-CH01	16	15	15	
+-CH02	17	15	15	
+-CH03	17	15	15	
+-CH04	17	15	15	
+-CH05	17	15	15	
+-CH06	17	15	15	
+-CH07	17	15	15	
+-CH08	17	15	15	
+-CH09	17	15	15	
+-CH10	17	15	15	
+-CH11	15	15	15	
+-CH12	NA	15	15	
+-CH13	NA	15	15	
++CH01	23	23	23	
++CH02	23	23	23	
++CH03	23	23	23	
++CH04	23	23	23	
++CH05	23	23	23	
++CH06	23	23	23	
++CH07	23	23	23	
++CH08	23	23	23	
++CH09	23	23	23	
++CH10	23	23	23	
++CH11	23	23	23	
++CH12	NA	23	23	
++CH13	NA	23	23	
+ CH14	NA	NA	NA	
+ ##	END       						
+ //							
+@@ -107,19 +106,19 @@ CH14	NA	NA	NA
+ ##	2.4G, 20M, 3T, HT, //(MCS16~MCS23)						
+ ##	START
+ ##	#3#	FCC	ETSI	MKK	
+-CH01	15	14	14	
+-CH02	16	14	14	
+-CH03	16	14	14	
+-CH04	16	14	14	
+-CH05	16	14	14	
+-CH06	16	14	14	
+-CH07	16	14	14	
+-CH08	16	14	14	
+-CH09	16	14	14	
+-CH10	16	14	14	
+-CH11	14	14	14	
+-CH12	NA	14	14	
+-CH13	NA	14	14	
++CH01	23	23	23	
++CH02	23	23	23	
++CH03	23	23	23	
++CH04	23	23	23	
++CH05	23	23	23	
++CH06	23	23	23	
++CH07	23	23	23	
++CH08	23	23	23	
++CH09	23	23	23	
++CH10	23	23	23	
++CH11	23	23	23	
++CH12	NA	23	23	
++CH13	NA	23	23	
+ CH14	NA	NA	NA	
+ ##	END       						
+ //							
+@@ -128,19 +127,19 @@ CH14	NA	NA	NA
+ ##	2.4G, 20M, 4T, HT, //(MCS24~MCS31)						
+ ##	START
+ ##	#3#	FCC	ETSI	MKK	
+-CH01	14	13	13	
+-CH02	15	13	13	
+-CH03	15	13	13	
+-CH04	15	13	13	
+-CH05	15	13	13	
+-CH06	15	13	13	
+-CH07	15	13	13	
+-CH08	15	13	13	
+-CH09	15	13	13	
+-CH10	15	13	13	
+-CH11	13	13	13	
+-CH12	NA	13	13	
+-CH13	NA	13	13	
++CH01	23	23	23	
++CH02	23	23	23	
++CH03	23	23	23	
++CH04	23	23	23	
++CH05	23	23	23	
++CH06	23	23	23	
++CH07	23	23	23	
++CH08	23	23	23	
++CH09	23	23	23	
++CH10	23	23	23	
++CH11	23	23	23	
++CH12	NA	23	23	
++CH13	NA	23	23	
+ CH14	NA	NA	NA	
+ ##	END       						
+ //                							
+@@ -151,17 +150,17 @@ CH14	NA	NA	NA
+ ##	#3#	FCC	ETSI	MKK	
+ CH01	NA	NA	NA	
+ CH02	NA	NA	NA	
+-CH03	16	16	16	
+-CH04	18	16	16	
+-CH05	18	16	16	
+-CH06	18	16	16	
+-CH07	18	16	16	
+-CH08	18	16	16	
+-CH09	18	16	16	
+-CH10	18	16	16	
+-CH11	16	16	16	
+-CH12	NA	16	16	
+-CH13	NA	16	16	
++CH03	23	23	23	
++CH04	23	23	23	
++CH05	23	23	23	
++CH06	23	23	23	
++CH07	23	23	23	
++CH08	23	23	23	
++CH09	23	23	23	
++CH10	23	23	23	
++CH11	23	23	23	
++CH12	NA	23	23	
++CH13	NA	23	23	
+ CH14	NA	NA	NA	
+ ##	END						
+ //							
+@@ -172,17 +171,17 @@ CH14	NA	NA	NA
+ ##	#3#	FCC	ETSI	MKK	
+ CH01	NA	NA	NA	
+ CH02	NA	NA	NA	
+-CH03	15	15	15	
+-CH04	17	15	15	
+-CH05	17	15	15	
+-CH06	17	15	15	
+-CH07	17	15	15	
+-CH08	17	15	15	
+-CH09	17	15	15	
+-CH10	17	15	15	
+-CH11	15	15	15	
+-CH12	NA	15	15	
+-CH13	NA	15	15	
++CH03	23	23	23	
++CH04	23	23	23	
++CH05	23	23	23	
++CH06	23	23	23	
++CH07	23	23	23	
++CH08	23	23	23	
++CH09	23	23	23	
++CH10	23	23	23	
++CH11	23	23	23	
++CH12	NA	23	23	
++CH13	NA	23	23	
+ CH14	NA	NA	NA	
+ ##	END						
+ //							
+@@ -193,17 +192,17 @@ CH14	NA	NA	NA
+ ##	#3#	FCC	ETSI	MKK	
+ CH01	NA	NA	NA	
+ CH02	NA	NA	NA	
+-CH03	14	14	14	
+-CH04	16	14	14	
+-CH05	16	14	14	
+-CH06	16	14	14	
+-CH07	16	14	14	
+-CH08	16	14	14	
+-CH09	16	14	14	
+-CH10	16	14	14	
+-CH11	14	14	14	
+-CH12	NA	14	14	
+-CH13	NA	14	14	
++CH03	23	23	23	
++CH04	23	23	23	
++CH05	23	23	23	
++CH06	23	23	23	
++CH07	23	23	23	
++CH08	23	23	23	
++CH09	23	23	23	
++CH10	23	23	23	
++CH11	23	23	23	
++CH12	NA	23	23	
++CH13	NA	23	23	
+ CH14	NA	NA	NA	
+ ##	END						
+ //							
+@@ -214,17 +213,17 @@ CH14	NA	NA	NA
+ ##	#3#	FCC	ETSI	MKK	
+ CH01	NA	NA	NA	
+ CH02	NA	NA	NA	
+-CH03	13	13	13	
+-CH04	15	13	13	
+-CH05	15	13	13	
+-CH06	15	13	13	
+-CH07	15	13	13	
+-CH08	15	13	13	
+-CH09	15	13	13	
+-CH10	15	13	13	
+-CH11	13	13	13	
+-CH12	NA	13	13	
+-CH13	NA	13	13	
++CH03	23	23	23	
++CH04	23	23	23	
++CH05	23	23	23	
++CH06	23	23	23	
++CH07	23	23	23	
++CH08	23	23	23	
++CH09	23	23	23	
++CH10	23	23	23	
++CH11	23	23	23	
++CH12	NA	23	23	
++CH13	NA	23	23	
+ CH14	NA	NA	NA	
+ ##	END						
+ //							
+@@ -234,33 +233,33 @@ CH14	NA	NA	NA
+ ##	START
+ ##	#3#	FCC	ETSI	MKK	
+ //5G Band 1							
+-CH36	22	16	16	
+-CH40	22	16	16	
+-CH44	22	16	16	
+-CH48	22	16	16	
++CH36	23	23	23	
++CH40	23	23	23	
++CH44	23	23	23	
++CH48	23	23	23	
+ //5G Band 2       	  						
+-CH52	22	16	16	
+-CH56	22	16	16	
+-CH60	22	16	16	
+-CH64	22	16	16	
++CH52	23	23	23	
++CH56	23	23	23	
++CH60	23	23	23	
++CH64	23	23	23	
+ //5G Band 3           							
+-CH100	22	16	16	
+-CH104	22	16	16	
+-CH108	22	16	16	
+-CH112	22	16	16	
+-CH116	22	16	16	
+-CH120	22	16	16	
+-CH124	22	16	16	
+-CH128	22	16	16	
+-CH132	22	16	16	
+-CH136	22	16	16	
+-CH140	22	16	16	
++CH100	23	23	23	
++CH104	23	23	23	
++CH108	23	23	23	
++CH112	23	23	23	
++CH116	23	23	23	
++CH120	23	23	23	
++CH124	23	23	23	
++CH128	23	23	23	
++CH132	23	23	23	
++CH136	23	23	23	
++CH140	23	23	23	
+ //5G Band 4       	  						
+-CH149	22	16	NA	
+-CH153	22	16	NA	
+-CH157	22	16	NA	
+-CH161	22	16	NA	
+-CH165	22	16	NA	
++CH149	23	23	NA	
++CH153	23	23	NA	
++CH157	23	23	NA	
++CH161	23	23	NA	
++CH165	23	23	NA	
+ ##	END						
+ //							
+ //Table 12: ======================================							
+@@ -269,33 +268,33 @@ CH165	22	16	NA
+ ##	START
+ ##	#3#	FCC	ETSI	MKK	
+ //5G Band 1							
+-CH36	22	16	16	
+-CH40	22	16	16	
+-CH44	22	16	16	
+-CH48	22	16	16	
++CH36	23	23	23	
++CH40	23	23	23	
++CH44	23	23	23	
++CH48	23	23	23	
+ //5G Band 2 				  			 
+-CH52	22	16	16	
+-CH56	22	16	16	
+-CH60	22	16	16	
+-CH64	22	16	16	
++CH52	23	23	23	
++CH56	23	23	23	
++CH60	23	23	23	
++CH64	23	23	23	
+ //5G Band 3 				  			 
+-CH100	22	16	16	
+-CH104	22	16	16	
+-CH108	22	16	16	
+-CH112	22	16	16	
+-CH116	22	16	16	
+-CH120	22	16	16	
+-CH124	22	16	16	
+-CH128	22	16	16	
+-CH132	22	16	16	
+-CH136	22	16	16	
+-CH140	22	16	16	
++CH100	23	23	23	
++CH104	23	23	23	
++CH108	23	23	23	
++CH112	23	23	23	
++CH116	23	23	23	
++CH120	23	23	23	
++CH124	23	23	23	
++CH128	23	23	23	
++CH132	23	23	23	
++CH136	23	23	23	
++CH140	23	23	23	
+ //5G Band 4 				  			 
+-CH149	22	16	NA	
+-CH153	22	16	NA	
+-CH157	22	16	NA	
+-CH161	22	16	NA	
+-CH165	22	16	NA	
++CH149	23	23	NA	
++CH153	23	23	NA	
++CH157	23	23	NA	
++CH161	23	23	NA	
++CH165	23	23	NA	
+ ##	END						
+ //							
+ //Table 13: ===========================================							
+@@ -304,33 +303,33 @@ CH165	22	16	NA
+ ##	START
+ ##	#3#	FCC	ETSI	MKK	
+ //5G Band 1							
+-CH36	22	15	15	
+-CH40	22	15	15	
+-CH44	22	15	15	
+-CH48	22	15	15	
++CH36	23	23	23	
++CH40	23	23	23	
++CH44	23	23	23	
++CH48	23	23	23	
+ //5G Band 2 				  			
+-CH52	22	15	15	
+-CH56	22	15	15	
+-CH60	22	15	15	
+-CH64	22	15	15	
++CH52	23	23	23	
++CH56	23	23	23	
++CH60	23	23	23	
++CH64	23	23	23	
+ //5G Band 3 				  			
+-CH100	22	15	15	
+-CH104	22	15	15	
+-CH108	22	15	15	
+-CH112	22	15	15	
+-CH116	22	15	15	
+-CH120	22	15	15	
+-CH124	22	15	15	
+-CH128	22	15	15	
+-CH132	22	15	15	
+-CH136	22	15	15	
+-CH140	22	15	15	
++CH100	23	23	23	
++CH104	23	23	23	
++CH108	23	23	23	
++CH112	23	23	23	
++CH116	23	23	23	
++CH120	23	23	23	
++CH124	23	23	23	
++CH128	23	23	23	
++CH132	23	23	23	
++CH136	23	23	23	
++CH140	23	23	23	
+ //5G Band 4 				  			
+-CH149	22	15	NA	
+-CH153	22	15	NA	
+-CH157	22	15	NA	
+-CH161	22	15	NA	
+-CH165	22	15	NA	
++CH149	23	23	NA	
++CH153	23	23	NA	
++CH157	23	23	NA	
++CH161	23	23	NA	
++CH165	23	23	NA	
+ ##	END                       						
+ //							
+ //Table 14: ===========================================							
+@@ -339,33 +338,33 @@ CH165	22	15	NA
+ ##	START
+ ##	#3#	FCC	ETSI	MKK	
+ //5G Band 1							
+-CH36	22	14	14	
+-CH40	22	14	14	
+-CH44	22	14	14	
+-CH48	22	14	14	
++CH36	23	23	23	
++CH40	23	23	23	
++CH44	23	23	23	
++CH48	23	23	23	
+ //5G Band 2 				  			
+-CH52	22	14	14	
+-CH56	22	14	14	
+-CH60	22	14	14	
+-CH64	22	14	14	
++CH52	23	23	23	
++CH56	23	23	23	
++CH60	23	23	23	
++CH64	23	23	23	
+ //5G Band 3 				  			
+-CH100	22	14	14	
+-CH104	22	14	14	
+-CH108	22	14	14	
+-CH112	22	14	14	
+-CH116	22	14	14	
+-CH120	22	14	14	
+-CH124	22	14	14	
+-CH128	22	14	14	
+-CH132	22	14	14	
+-CH136	22	14	14	
+-CH140	22	14	14	
++CH100	23	23	23	
++CH104	23	23	23	
++CH108	23	23	23	
++CH112	23	23	23	
++CH116	23	23	23	
++CH120	23	23	23	
++CH124	23	23	23	
++CH128	23	23	23	
++CH132	23	23	23	
++CH136	23	23	23	
++CH140	23	23	23	
+ //5G Band 4 				  			
+-CH149	22	14	NA	
+-CH153	22	14	NA	
+-CH157	22	14	NA	
+-CH161	22	14	NA	
+-CH165	22	14	NA	
++CH149	23	23	NA	
++CH153	23	23	NA	
++CH157	23	23	NA	
++CH161	23	23	NA	
++CH165	23	23	NA	
+ ##	END                       						
+ //							
+ //Table 15: ===========================================							
+@@ -374,33 +373,33 @@ CH165	22	14	NA
+ ##	START
+ ##	#3#	FCC	ETSI	MKK	
+ //5G Band 1							
+-CH36	22	13	13	
+-CH40	22	13	13	
+-CH44	22	13	13	
+-CH48	22	13	13	
++CH36	23	23	23	
++CH40	23	23	23	
++CH44	23	23	23	
++CH48	23	23	23	
+ //5G Band 2 				  			
+-CH52	22	13	13	
+-CH56	22	13	13	
+-CH60	22	13	13	
+-CH64	22	13	13	
++CH52	23	23	23	
++CH56	23	23	23	
++CH60	23	23	23	
++CH64	23	23	23	
+ //5G Band 3 				  			
+-CH100	22	13	13	
+-CH104	22	13	13	
+-CH108	22	13	13	
+-CH112	22	13	13	
+-CH116	22	13	13	
+-CH120	22	13	13	
+-CH124	22	13	13	
+-CH128	22	13	13	
+-CH132	22	13	13	
+-CH136	22	13	13	
+-CH140	22	13	13	
++CH100	23	23	23	
++CH104	23	23	23	
++CH108	23	23	23	
++CH112	23	23	23	
++CH116	23	23	23	
++CH120	23	23	23	
++CH124	23	23	23	
++CH128	23	23	23	
++CH132	23	23	23	
++CH136	23	23	23	
++CH140	23	23	23	
+ //5G Band 4 				  			
+-CH149	22	13	NA	
+-CH153	22	13	NA	
+-CH157	22	13	NA	
+-CH161	22	13	NA	
+-CH165	22	13	NA	
++CH149	23	23	NA	
++CH153	23	23	NA	
++CH157	23	23	NA	
++CH161	23	23	NA	
++CH165	23	23	NA	
+ ##	END                       						
+ //                							
+ //Table 16: ===========================================							
+@@ -409,20 +408,20 @@ CH165	22	13	NA
+ ##	START
+ ##	#3#	FCC	ETSI	MKK	
+ //5G Band 1							
+-CH38	22	16	16	
+-CH46	22	16	16	
++CH38	23	23	23	
++CH46	23	23	23	
+ //5G Band 2       	  						
+-CH54	22	16	16	
+-CH62	22	16	16	
++CH54	23	23	23	
++CH62	23	23	23	
+ //5G Band 3       							
+-CH102	22	16	16	
+-CH110	22	16	16	
+-CH118	22	16	16	
+-CH126	22	16	16	
+-CH134	22	16	16	
++CH102	23	23	23	
++CH110	23	23	23	
++CH118	23	23	23	
++CH126	23	23	23	
++CH134	23	23	23	
+ //5G Band 4         							
+-CH151	22	16	NA	
+-CH159	22	16	NA	
++CH151	23	23	NA	
++CH159	23	23	NA	
+ ##	END       						
+ //                							
+ //Table 17: ===========================================							
+@@ -431,20 +430,20 @@ CH159	22	16	NA
+ ##	START
+ ##	#3#	FCC	ETSI	MKK	
+ //5G Band 1							
+-CH38	22	15	15	
+-CH46	22	15	15	
++CH38	23	23	23	
++CH46	23	23	23	
+ //5G Band 2       	  						
+-CH54	22	15	15	
+-CH62	22	15	15	
++CH54	23	23	23	
++CH62	23	23	23	
+ //5G Band 3       	  						
+-CH102	22	15	15	
+-CH110	22	15	15	
+-CH118	22	15	15	
+-CH126	22	15	15	
+-CH134	22	15	15	
++CH102	23	23	23	
++CH110	23	23	23	
++CH118	23	23	23	
++CH126	23	23	23	
++CH134	23	23	23	
+ //5G Band 4       	  						
+-CH151	22	15	NA	
+-CH159	22	15	NA	
++CH151	23	23	NA	
++CH159	23	23	NA	
+ ##	END						
+ //                							
+ //Table 18: ===========================================							
+@@ -453,20 +452,20 @@ CH159	22	15	NA
+ ##	START
+ ##	#3#	FCC	ETSI	MKK	
+ //5G Band 1							
+-CH38	22	14	14	
+-CH46	22	14	14	
++CH38	23	23	23	
++CH46	23	23	23	
+ //5G Band 2       	  						
+-CH54	22	14	14	
+-CH62	22	14	14	
++CH54	23	23	23	
++CH62	23	23	23	
+ //5G Band 3       	  						
+-CH102	22	14	14	
+-CH110	22	14	14	
+-CH118	22	14	14	
+-CH126	22	14	14	
+-CH134	22	14	14	
++CH102	23	23	23	
++CH110	23	23	23	
++CH118	23	23	23	
++CH126	23	23	23	
++CH134	23	23	23	
+ //5G Band 4       	  						
+-CH151	22	14	NA	
+-CH159	22	14	NA	
++CH151	23	23	NA	
++CH159	23	23	NA	
+ ##	END						
+ //                							
+ //Table 19: ===========================================							
+@@ -475,20 +474,20 @@ CH159	22	14	NA
+ ##	START
+ ##	#3#	FCC	ETSI	MKK	
+ //5G Band 1							
+-CH38	22	13	13	
+-CH46	22	13	13	
++CH38	23	23	23	
++CH46	23	23	23	
+ //5G Band 2       	  						
+-CH54	22	13	13	
+-CH62	22	13	13	
++CH54	23	23	23	
++CH62	23	23	23	
+ //5G Band 3       	  						
+-CH102	22	13	13	
+-CH110	22	13	13	
+-CH118	22	13	13	
+-CH126	22	13	13	
+-CH134	22	13	13	
++CH102	23	23	23	
++CH110	23	23	23	
++CH118	23	23	23	
++CH126	23	23	23	
++CH134	23	23	23	
+ //5G Band 4       	  						
+-CH151	22	13	NA	
+-CH159	22	13	NA	
++CH151	23	23	NA	
++CH159	23	23	NA	
+ ##	END						
+ //                							
+ //Table 20: ===========================================							
+@@ -497,14 +496,14 @@ CH159	22	13	NA
+ ##	START
+ ##	#3#	FCC	ETSI	MKK	
+ //5G Band 1							
+-CH42	22	16	16	
++CH42	23	23	23	
+ //5G Band 2       	  						
+-CH58	22	16	16	
++CH58	23	23	23	
+ //5G Band 3       	  						
+-CH106	22	16	16	
+-CH122	22	16	16	
++CH106	23	23	23	
++CH122	23	23	23	
+ //5G Band 4       	  						
+-CH155	22	16	NA	
++CH155	23	23	NA	
+ ##	END						
+ //                							
+ //Table 21: ===========================================							
+@@ -513,14 +512,14 @@ CH155	22	16	NA
+ ##	START
+ ##	#3#	FCC	ETSI	MKK	
+ //5G Band 1       							
+-CH42	22	15	15	
++CH42	23	23	23
+ //5G Band 2       	  						
+-CH58	22	15	15	
++CH58	23	23	23
+ //5G Band 3       	  						
+-CH106	22	15	15	
+-CH122	22	15	15	
++CH106	23	23	23
++CH122	23	23	23
+ //5G Band 4       	  						
+-CH155	22	15	NA	
++CH155	23	23	NA	   
+ ##	END						
+ //                							
+ //Table 22: ===========================================							
+@@ -529,14 +528,14 @@ CH155	22	15	NA
+ ##	START
+ ##	#3#	FCC	ETSI	MKK	
+ //5G Band 1       							
+-CH42	22	14	14	
++CH42	23	23	23
+ //5G Band 2       	  						
+-CH58	22	14	14	
++CH58	23	23	23
+ //5G Band 3       	  						
+-CH106	22	14	14	
+-CH122	22	14	14	
++CH106	23	23	23
++CH122	23	23	23
+ //5G Band 4       	  						
+-CH155	22	14	NA	
++CH155	23	23	NA	   
+ ##	END						
+ //                							
+ //Table 23: ===========================================							
+@@ -545,12 +544,12 @@ CH155	22	14	NA
+ ##	START
+ ##	#3#	FCC	ETSI	MKK	
+ //5G Band 1       							
+-CH42	22	13	13	
++CH42	23	23	23
+ //5G Band 2       	  						
+-CH58	22	13	13	
++CH58	23	23	23
+ //5G Band 3       	  						
+-CH106	22	13	13	
+-CH122	22	13	13	
++CH106	23	23	23
++CH122	23	23	23
+ //5G Band 4       	  						
+-CH155	22	13	NA	
++CH155	23	23	NA	   
+ ##	END						
+--- /dev/null
++++ b/driver/rtl8192cd/WlanHAL/Data/8814A/PHY_REG_PG_8814Amp_Type0.txt
+@@ -0,0 +1,151 @@
++//RL6302_MAC_PHY_Parameter_v018_20140708
++#[v1][Exact]#
++#[2.4G][A]#
++[1Tx] 0xc20	0xffffffff	 	 17 17 17 17 // TXAGC codeword (H-byte->L-byte)={11M 5.5M 2M 1M}
++[1Tx] 0xc24	0xffffffff		 17 17 17 17 // TXAGC codeword (H-byte->L-byte)={18M 12M 9M 6M}
++[1Tx] 0xc28	0xffffffff		 14 15 16 17 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
++[1Tx] 0xc2c	0xffffffff		 17 17 17 17 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0xc30	0xffffffff		 13 14 15 16 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
++[2Tx] 0xc34	0xffffffff		 16 16 16 16 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
++[2Tx] 0xc38	0xffffffff		 12 13 14 15 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
++[3Tx] 0xcd8	0xffffffff		 15 15 15 15 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
++[3Tx] 0xcdc	0xffffffff		 11 12 13 14 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
++[1Tx] 0xc3c	0xffffffff		 17 17 17 17  // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0xc40	0xffffffff		 13 14 15 16  // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
++[1Tx] 0xc44	0xffffffff		 16 16 11 12 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
++[2Tx] 0xc48	0xffffffff		 14 15 16 16 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
++[2Tx] 0xc4c	0xffffffff		 10 11 12 13 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
++[3Tx] 0xce0	0xffffffff		 15 15 15 15 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
++[3Tx] 0xce4	0xffffffff		 11 12 13 14 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
++[3Tx] 0xce8	0x0000ffff		 10 10  9 10 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
++#[END]#
++#[2.4G][B]#
++[1Tx] 0xe20	0xffffffff		 17 17 17 17 // TXAGC codeword (H-byte->L-byte)={11M 5.5M 2M 1M}
++[1Tx] 0xe24	0xffffffff		 17 17 17 17 // TXAGC codeword (H-byte->L-byte)={18M 12M 9M 6M}
++[1Tx] 0xe28	0xffffffff		 14 15 16 17 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
++[1Tx] 0xe2c	0xffffffff		 17 17 17 17 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0xe30	0xffffffff		 13 14 15 16 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
++[2Tx] 0xe34	0xffffffff		 16 16 16 16 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
++[2Tx] 0xe38	0xffffffff		 12 13 14 15 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
++[3Tx] 0xed8	0xffffffff		 15 15 15 15 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
++[3Tx] 0xedc	0xffffffff		 11 12 13 14 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
++[1Tx] 0xe3c	0xffffffff		 17 17 17 17 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0xe40	0xffffffff		 13 14 15 16 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
++[1Tx] 0xe44	0xffffffff		 16 16 11 12 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
++[2Tx] 0xe48	0xffffffff		 14 15 16 16 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
++[2Tx] 0xe4c	0xffffffff		 10 11 12 13 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
++[3Tx] 0xee0	0xffffffff		 15 15 15 15 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
++[3Tx] 0xee4	0xffffffff		 11 12 13 14 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
++[3Tx] 0xee8	0x0000ffff		 10 10  9 10 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
++#[END]#
++#[2.4G][C]#
++[1Tx] 0x1820	0xffffffff		 17 17 17 17 // TXAGC codeword (H-byte->L-byte)={11M 5.5M 2M 1M}
++[1Tx] 0x1824	0xffffffff		 17 17 17 17 // TXAGC codeword (H-byte->L-byte)={18M 12M 9M 6M}
++[1Tx] 0x1828	0xffffffff		 14 15 16 17 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
++[1Tx] 0x182c	0xffffffff		 17 17 17 17 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0x1830	0xffffffff		 13 14 15 16 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
++[2Tx] 0x1834	0xffffffff		 16 16 16 16 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
++[2Tx] 0x1838	0xffffffff		 12 13 14 15 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
++[3Tx] 0x18d8	0xffffffff		 15 15 15 15 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
++[3Tx] 0x18dc	0xffffffff		 11 12 13 14 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
++[1Tx] 0x183c	0xffffffff		 17 17 17 17 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0x1840	0xffffffff		 13 14 15 16 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
++[1Tx] 0x1844	0xffffffff		 16 16 11 12 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
++[2Tx] 0x1848	0xffffffff		 14 15 16 16 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
++[2Tx] 0x184c	0xffffffff		 10 11 12 13 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
++[3Tx] 0x18e0	0xffffffff		 15 15 15 15 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
++[3Tx] 0x18e4	0xffffffff		 11 12 13 14 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
++[3Tx] 0x18e8	0x0000ffff		 10 10  9 10 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
++#[END]#
++#[2.4G][D]#
++[1Tx] 0x1a20	0xffffffff		 17 17 17 17 // TXAGC codeword (H-byte->L-byte)={11M 5.5M 2M 1M}
++[1Tx] 0x1a24	0xffffffff		 17 17 17 17 // TXAGC codeword (H-byte->L-byte)={18M 12M 9M 6M}
++[1Tx] 0x1a28	0xffffffff		 14 15 16 17 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
++[1Tx] 0x1a2c	0xffffffff		 17 17 17 17 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0x1a30	0xffffffff		 13 14 15 16 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
++[2Tx] 0x1a34	0xffffffff		 16 16 16 16 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
++[2Tx] 0x1a38	0xffffffff		 12 13 14 15 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
++[3Tx] 0x1ad8	0xffffffff		 15 15 15 15 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
++[3Tx] 0x1adc	0xffffffff		 11 12 13 14 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
++[1Tx] 0x1a3c	0xffffffff		 17 17 17 17 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0x1a40	0xffffffff		 13 14 15 16 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
++[1Tx] 0x1a44	0xffffffff		 16 16 11 12 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
++[2Tx] 0x1a48	0xffffffff		 14 15 16 16 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
++[2Tx] 0x1a4c	0xffffffff		 10 11 12 13 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
++[3Tx] 0x1ae0	0xffffffff		 15 15 15 15 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
++[3Tx] 0x1ae4	0xffffffff		 11 12 13 14 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
++[3Tx] 0x1ae8	0x0000ffff		 10 10  9 10 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
++#[END]#
++#[5G][A]#
++[1Tx] 0xc24	0xffffffff		 17 17 17 17 // TXAGC codeword (H-byte->L-byte)={8M 12M 9M 6M}
++[1Tx] 0xc28	0xffffffff		 14 15 16 17 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
++[1Tx] 0xc2c	0xffffffff		 17 17 17 17 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0xc30	0xffffffff		 13 14 15 16 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
++[2Tx] 0xc34	0xffffffff		 16 16 16 16 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
++[2Tx] 0xc38	0xffffffff		 12 13 14 15 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
++[3Tx] 0xcd8	0xffffffff		 15 15 15 15 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
++[3Tx] 0xcdc	0xffffffff		 11 12 13 14 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
++[1Tx] 0xc3c	0xffffffff		 17 17 17 17 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0xc40	0xffffffff		 13 14 15 16 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
++[1Tx] 0xc44	0xffffffff		 16 16 11 12 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
++[2Tx] 0xc48	0xffffffff		 14 15 16 16 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
++[2Tx] 0xc4c	0xffffffff		 10 11 12 13 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
++[3Tx] 0xce0	0xffffffff		 15 15 15 15 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
++[3Tx] 0xce4	0xffffffff		 11 12 13 14 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
++[3Tx] 0xce8	0x0000ffff		 10 10  9 10 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
++#[END]#
++#[5G][B]#
++[1Tx] 0xe24	0xffffffff		 17 17 17 17 // TXAGC codeword (H-byte->L-byte)={8M 12M 9M 6M}
++[1Tx] 0xe28	0xffffffff		 14 15 16 17 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
++[1Tx] 0xe2c	0xffffffff		 17 17 17 17 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0xe30	0xffffffff		 13 14 15 16 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
++[2Tx] 0xe34	0xffffffff		 16 16 16 16 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
++[2Tx] 0xe38	0xffffffff		 12 13 14 15 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
++[3Tx] 0xed8	0xffffffff		 15 15 15 15 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
++[3Tx] 0xedc	0xffffffff		 11 12 13 14 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
++[1Tx] 0xe3c	0xffffffff		 17 17 17 17 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0xe40	0xffffffff		 13 14 15 16 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
++[1Tx] 0xe44	0xffffffff		 16 16 11 12 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
++[2Tx] 0xe48	0xffffffff		 14 15 16 16 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
++[2Tx] 0xe4c	0xffffffff		 10 11 12 13 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
++[3Tx] 0xee0	0xffffffff		 15 15 15 15 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
++[3Tx] 0xee4	0xffffffff		 11 12 13 14 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
++[3Tx] 0xee8	0x0000ffff		 10 10  9 10 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
++#[END]#
++#[5G][C]#
++[1Tx] 0x1824	0xffffffff		 17 17 17 17 // TXAGC codeword (H-byte->L-byte)={8M 12M 9M 6M}
++[1Tx] 0x1828	0xffffffff		 14 15 16 17 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
++[1Tx] 0x182c	0xffffffff		 17 17 17 17 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0x1830	0xffffffff		 13 14 15 16 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
++[2Tx] 0x1834	0xffffffff		 16 16 16 16 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
++[2Tx] 0x1838	0xffffffff		 12 13 14 15 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
++[3Tx] 0x18d8	0xffffffff		 15 15 15 15 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
++[3Tx] 0x18dc	0xffffffff		 11 12 13 14 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
++[1Tx] 0x183c	0xffffffff		 17 17 17 17 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0x1840	0xffffffff		 13 14 15 16 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
++[1Tx] 0x1844	0xffffffff		 16 16 11 12 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
++[2Tx] 0x1848	0xffffffff		 14 15 16 16 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
++[2Tx] 0x184c	0xffffffff		 10 11 12 13 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
++[3Tx] 0x18e0	0xffffffff		 15 15 15 15 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
++[3Tx] 0x18e4	0xffffffff		 11 12 13 14 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
++[3Tx] 0x18e8	0x0000ffff		 10 10  9 10 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
++#[END]#
++#[5G][D]#
++[1Tx] 0x1a24	0xffffffff		 17 17 17 17 // TXAGC codeword (H-byte->L-byte)={8M 12M 9M 6M}
++[1Tx] 0x1a28	0xffffffff		 14 15 16 17 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
++[1Tx] 0x1a2c	0xffffffff		 17 17 17 17 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0x1a30	0xffffffff		 13 14 15 16 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
++[2Tx] 0x1a34	0xffffffff		 16 16 16 16 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
++[2Tx] 0x1a38	0xffffffff		 12 13 14 15 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
++[3Tx] 0x1ad8	0xffffffff		 15 15 15 15 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
++[3Tx] 0x1adc	0xffffffff		 11 12 13 14 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
++[1Tx] 0x1a3c	0xffffffff		 17 17 17 17 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0x1a40	0xffffffff		 13 14 15 16 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
++[1Tx] 0x1a44	0xffffffff		 16 16 11 12 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
++[2Tx] 0x1a48	0xffffffff		 14 15 16 16 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
++[2Tx] 0x1a4c	0xffffffff		 10 11 12 13 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
++[3Tx] 0x1ae0	0xffffffff		 15 15 15 15 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
++[3Tx] 0x1ae4	0xffffffff		 11 12 13 14 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
++[3Tx] 0x1ae8	0x0000ffff		 10 10  9 10 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
++#[END]#
++0xffff 0xffff
+--- /dev/null
++++ b/driver/rtl8192cd/WlanHAL/Data/8814A/PHY_REG_PG_8814Amp_Type2.txt
+@@ -0,0 +1,151 @@
++//RL6302_MAC_PHY_Parameter_v054_20141124			
++#[v1][Exact]#			
++#[2.4G][A]#			
++[1Tx] 0xc20	0xffffffff	 	 21 21 21 21 // TXAGC codeword (H-byte->L-byte)={11M 5.5M 2M 1M}
++[1Tx] 0xc24	0xffffffff		 21 21 21 21 // TXAGC codeword (H-byte->L-byte)={18M 12M 9M 6M}
++[1Tx] 0xc28	0xffffffff		 19 20 20 20 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
++[1Tx] 0xc2c	0xffffffff		 20 21 21 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0xc30	0xffffffff		 19 19 19 20 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
++[2Tx] 0xc34	0xffffffff		 20 21 21 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
++[2Tx] 0xc38	0xffffffff		 19 19 19 20 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
++[3Tx] 0xcd8	0xffffffff		 20 21 21 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
++[3Tx] 0xcdc	0xffffffff		 19 19 19 20 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
++[1Tx] 0xc3c	0xffffffff		 20 21 21 22 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0xc40	0xffffffff		 19 19 19 20 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
++[1Tx] 0xc44	0xffffffff		 21 22 18 18 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
++[2Tx] 0xc48	0xffffffff		 19 20 20 21 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
++[2Tx] 0xc4c	0xffffffff		 18 18 19 19 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
++[3Tx] 0xce0	0xffffffff		 20 21 21 22 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
++[3Tx] 0xce4	0xffffffff		 19 19 19 20 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
++[3Tx] 0xce8	0x0000ffff		 10 10 18 18 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
++#[END]#			
++#[2.4G][B]#			
++[1Tx] 0xe20	0xffffffff		 21 21 21 21 // TXAGC codeword (H-byte->L-byte)={11M 5.5M 2M 1M}
++[1Tx] 0xe24	0xffffffff		 21 21 21 21 // TXAGC codeword (H-byte->L-byte)={18M 12M 9M 6M}
++[1Tx] 0xe28	0xffffffff		 19 20 20 20 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
++[1Tx] 0xe2c	0xffffffff		 20 21 21 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0xe30	0xffffffff		 19 19 19 20 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
++[2Tx] 0xe34	0xffffffff		 20 21 21 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
++[2Tx] 0xe38	0xffffffff		 19 19 19 20 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
++[3Tx] 0xed8	0xffffffff		 20 21 21 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
++[3Tx] 0xedc	0xffffffff		 19 19 19 20 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
++[1Tx] 0xe3c	0xffffffff		 20 21 21 22 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0xe40	0xffffffff		 19 19 19 20 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
++[1Tx] 0xe44	0xffffffff		 21 22 18 18 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
++[2Tx] 0xe48	0xffffffff		 19 20 20 21 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
++[2Tx] 0xe4c	0xffffffff		 18 18 19 19 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
++[3Tx] 0xee0	0xffffffff		 20 21 21 22 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
++[3Tx] 0xee4	0xffffffff		 19 19 19 20 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
++[3Tx] 0xee8	0x0000ffff		 10 10 18 18 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
++#[END]#			
++#[2.4G][C]#			
++[1Tx] 0x1820	0xffffffff		 21 21 21 21 // TXAGC codeword (H-byte->L-byte)={11M 5.5M 2M 1M}
++[1Tx] 0x1824	0xffffffff		 21 21 21 21 // TXAGC codeword (H-byte->L-byte)={18M 12M 9M 6M}
++[1Tx] 0x1828	0xffffffff		 19 20 20 20 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
++[1Tx] 0x182c	0xffffffff		 20 21 21 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0x1830	0xffffffff		 19 19 19 20 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
++[2Tx] 0x1834	0xffffffff		 20 21 21 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
++[2Tx] 0x1838	0xffffffff		 19 19 19 20 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
++[3Tx] 0x18d8	0xffffffff		 20 21 21 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
++[3Tx] 0x18dc	0xffffffff		 19 19 19 20 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
++[1Tx] 0x183c	0xffffffff		 20 21 21 22 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0x1840	0xffffffff		 19 19 19 20 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
++[1Tx] 0x1844	0xffffffff		 21 22 18 18 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
++[2Tx] 0x1848	0xffffffff		 19 20 20 21 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
++[2Tx] 0x184c	0xffffffff		 18 18 19 19 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
++[3Tx] 0x18e0	0xffffffff		 20 21 21 22 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
++[3Tx] 0x18e4	0xffffffff		 19 19 19 20 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
++[3Tx] 0x18e8	0x0000ffff		 10 10 18 18 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
++#[END]#			
++#[2.4G][D]#			
++[1Tx] 0x1a20	0xffffffff		 21 21 21 21 // TXAGC codeword (H-byte->L-byte)={11M 5.5M 2M 1M}
++[1Tx] 0x1a24	0xffffffff		 21 21 21 21 // TXAGC codeword (H-byte->L-byte)={18M 12M 9M 6M}
++[1Tx] 0x1a28	0xffffffff		 19 20 20 20 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
++[1Tx] 0x1a2c	0xffffffff		 20 21 21 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0x1a30	0xffffffff		 19 19 19 20 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
++[2Tx] 0x1a34	0xffffffff		 20 21 21 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
++[2Tx] 0x1a38	0xffffffff		 19 19 19 20 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
++[3Tx] 0x1ad8	0xffffffff		 20 21 21 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
++[3Tx] 0x1adc	0xffffffff		 19 19 19 20 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
++[1Tx] 0x1a3c	0xffffffff		 20 21 21 22 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0x1a40	0xffffffff		 19 19 19 20 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
++[1Tx] 0x1a44	0xffffffff		 21 22 18 18 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
++[2Tx] 0x1a48	0xffffffff		 19 20 20 21 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
++[2Tx] 0x1a4c	0xffffffff		 18 18 19 19 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
++[3Tx] 0x1ae0	0xffffffff		 20 21 21 22 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
++[3Tx] 0x1ae4	0xffffffff		 19 19 19 20 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
++[3Tx] 0x1ae8	0x0000ffff		 10 10 18 18 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
++#[END]#			
++#[5G][A]#			
++[1Tx] 0xc24	0xffffffff		 21 21 21 21 // TXAGC codeword (H-byte->L-byte)={8M 12M 9M 6M}
++[1Tx] 0xc28	0xffffffff		 18 21 21 21 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
++[1Tx] 0xc2c	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0xc30	0xffffffff		 19 20 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
++[2Tx] 0xc34	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
++[2Tx] 0xc38	0xffffffff		 19 20 20 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
++[3Tx] 0xcd8	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
++[3Tx] 0xcdc	0xffffffff		 19 20 20 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
++[1Tx] 0xc3c	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0xc40	0xffffffff		 19 20 20 22 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
++[1Tx] 0xc44	0xffffffff		 22 22 17 18 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
++[2Tx] 0xc48	0xffffffff		 20 22 22 22 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
++[2Tx] 0xc4c	0xffffffff		 17 18 19 20 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
++[3Tx] 0xce0	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
++[3Tx] 0xce4	0xffffffff		 19 20 20 22 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
++[3Tx] 0xce8	0x0000ffff		 10 10 17 18// TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
++#[END]#                                  			
++#[5G][B]#			
++[1Tx] 0xe24	0xffffffff		 21 21 21 21 // TXAGC codeword (H-byte->L-byte)={8M 12M 9M 6M}
++[1Tx] 0xe28	0xffffffff		 18 21 21 21 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
++[1Tx] 0xe2c	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0xe30	0xffffffff		 19 20 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
++[2Tx] 0xe34	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
++[2Tx] 0xe38	0xffffffff		 19 20 20 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
++[3Tx] 0xed8	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
++[3Tx] 0xedc	0xffffffff		 19 20 20 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
++[1Tx] 0xe3c	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0xe40	0xffffffff		 19 20 20 22 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
++[1Tx] 0xe44	0xffffffff		 22 22 17 18 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
++[2Tx] 0xe48	0xffffffff		 20 22 22 22 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
++[2Tx] 0xe4c	0xffffffff		 17 18 19 20 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
++[3Tx] 0xee0	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
++[3Tx] 0xee4	0xffffffff		 19 20 20 22 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
++[3Tx] 0xee8	0x0000ffff		 10 10 17 18 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
++#[END]#                                  			
++#[5G][C]#			
++[1Tx] 0x1824	0xffffffff		 21 21 21 21 // TXAGC codeword (H-byte->L-byte)={8M 12M 9M 6M}
++[1Tx] 0x1828	0xffffffff		 18 21 21 21 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
++[1Tx] 0x182c	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0x1830	0xffffffff		 19 20 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
++[2Tx] 0x1834	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
++[2Tx] 0x1838	0xffffffff		 19 20 20 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
++[3Tx] 0x18d8	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
++[3Tx] 0x18dc	0xffffffff		 19 20 20 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
++[1Tx] 0x183c	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0x1840	0xffffffff		 19 20 20 22 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
++[1Tx] 0x1844	0xffffffff		 22 22 17 18 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
++[2Tx] 0x1848	0xffffffff		 20 22 22 22 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
++[2Tx] 0x184c	0xffffffff		 17 18 19 20 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
++[3Tx] 0x18e0	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
++[3Tx] 0x18e4	0xffffffff		 19 20 20 22 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
++[3Tx] 0x18e8	0x0000ffff		 10 10 17 18// TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
++#[END]#                                  			
++#[5G][D]#			
++[1Tx] 0x1a24	0xffffffff		 21 21 21 21 // TXAGC codeword (H-byte->L-byte)={8M 12M 9M 6M}
++[1Tx] 0x1a28	0xffffffff		 18 21 21 21 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
++[1Tx] 0x1a2c	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0x1a30	0xffffffff		 19 20 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
++[2Tx] 0x1a34	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
++[2Tx] 0x1a38	0xffffffff		 19 20 20 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
++[3Tx] 0x1ad8	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
++[3Tx] 0x1adc	0xffffffff		 19 20 20 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
++[1Tx] 0x1a3c	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0x1a40	0xffffffff		 19 20 20 22 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
++[1Tx] 0x1a44	0xffffffff		 22 22 17 18 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
++[2Tx] 0x1a48	0xffffffff		 20 22 22 22 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
++[2Tx] 0x1a4c	0xffffffff		 17 18 19 20 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
++[3Tx] 0x1ae0	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
++[3Tx] 0x1ae4	0xffffffff		 19 20 20 22 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
++[3Tx] 0x1ae8	0x0000ffff		 10 10 17 18// TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
++#[END]#                                  			
++0xffff 0xffff			
+--- /dev/null
++++ b/driver/rtl8192cd/WlanHAL/Data/8814A/PHY_REG_PG_8814Amp_Type3.txt
+@@ -0,0 +1,151 @@
++//RL6302_MAC_PHY_Parameter_v054_20141124
++#[v1][Exact]#
++#[2.4G][A]#
++[1Tx] 0xc20	0xffffffff	 	 24 24 24 24 // TXAGC codeword (H-byte->L-byte)={11M 5.5M 2M 1M}
++[1Tx] 0xc24	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)={18M 12M 9M 6M}
++[1Tx] 0xc28	0xffffffff		 22 23 23 23 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
++[1Tx] 0xc2c	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0xc30	0xffffffff		 21 22 23 23 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
++[2Tx] 0xc34	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
++[2Tx] 0xc38	0xffffffff		 20 21 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
++[3Tx] 0xcd8	0xffffffff		 21 21 21 21 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
++[3Tx] 0xcdc	0xffffffff		 19 20 21 21 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
++[1Tx] 0xc3c	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0xc40	0xffffffff		 21 22 23 23 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
++[1Tx] 0xc44	0xffffffff		 22 22 20 20 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
++[2Tx] 0xc48	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
++[2Tx] 0xc4c	0xffffffff		 19 19 20 21 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
++[3Tx] 0xce0	0xffffffff		 21 21 21 21 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
++[3Tx] 0xce4	0xffffffff		 19 20 21 21 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
++[3Tx] 0xce8	0x0000ffff		 10 10 18 18  // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
++#[END]#
++#[2.4G][B]#
++[1Tx] 0xe20	0xffffffff		 24 24 24 24 // TXAGC codeword (H-byte->L-byte)={11M 5.5M 2M 1M}
++[1Tx] 0xe24	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)={18M 12M 9M 6M}
++[1Tx] 0xe28	0xffffffff		 22 23 23 23 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
++[1Tx] 0xe2c	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0xe30	0xffffffff		 21 22 23 23 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
++[2Tx] 0xe34	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
++[2Tx] 0xe38	0xffffffff		 20 21 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
++[3Tx] 0xed8	0xffffffff		 21 21 21 21 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
++[3Tx] 0xedc	0xffffffff		 19 20 21 21 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
++[1Tx] 0xe3c	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0xe40	0xffffffff		 21 22 23 23 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
++[1Tx] 0xe44	0xffffffff		 22 22 20 20 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
++[2Tx] 0xe48	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
++[2Tx] 0xe4c	0xffffffff		 19 19 20 21 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
++[3Tx] 0xee0	0xffffffff		 21 21 21 21 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
++[3Tx] 0xee4	0xffffffff		 19 20 21 21 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
++[3Tx] 0xee8	0x0000ffff		 10 10 18 18 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
++#[END]#
++#[2.4G][C]#
++[1Tx] 0x1820	0xffffffff		 24 24 24 24 // TXAGC codeword (H-byte->L-byte)={11M 5.5M 2M 1M}
++[1Tx] 0x1824	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)={18M 12M 9M 6M}
++[1Tx] 0x1828	0xffffffff		 22 23 23 23 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
++[1Tx] 0x182c	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0x1830	0xffffffff		 21 22 23 23 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
++[2Tx] 0x1834	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
++[2Tx] 0x1838	0xffffffff		 20 21 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
++[3Tx] 0x18d8	0xffffffff		 21 21 21 21 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
++[3Tx] 0x18dc	0xffffffff		 19 20 21 21 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
++[1Tx] 0x183c	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0x1840	0xffffffff		 21 22 23 23 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
++[1Tx] 0x1844	0xffffffff		 22 22 20 20 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
++[2Tx] 0x1848	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
++[2Tx] 0x184c	0xffffffff		 19 19 20 21 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
++[3Tx] 0x18e0	0xffffffff		 21 21 21 21 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
++[3Tx] 0x18e4	0xffffffff		 19 20 21 21 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
++[3Tx] 0x18e8	0x0000ffff		 10 10 18 18 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
++#[END]#
++#[2.4G][D]#
++[1Tx] 0x1a20	0xffffffff		 24 24 24 24 // TXAGC codeword (H-byte->L-byte)={11M 5.5M 2M 1M}
++[1Tx] 0x1a24	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)={18M 12M 9M 6M}
++[1Tx] 0x1a28	0xffffffff		 22 23 23 23 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
++[1Tx] 0x1a2c	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0x1a30	0xffffffff		 21 22 23 23 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
++[2Tx] 0x1a34	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
++[2Tx] 0x1a38	0xffffffff		 20 21 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
++[3Tx] 0x1ad8	0xffffffff		 21 21 21 21 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
++[3Tx] 0x1adc	0xffffffff		 19 20 21 21 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
++[1Tx] 0x1a3c	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0x1a40	0xffffffff		 21 22 23 23 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
++[1Tx] 0x1a44	0xffffffff		 22 22 20 20 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
++[2Tx] 0x1a48	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
++[2Tx] 0x1a4c	0xffffffff		 19 19 20 21 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
++[3Tx] 0x1ae0	0xffffffff		 21 21 21 21 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
++[3Tx] 0x1ae4	0xffffffff		 19 20 21 21 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
++[3Tx] 0x1ae8	0x0000ffff		 10 10 18 18 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
++#[END]#
++#[5G][A]#
++[1Tx] 0xc24	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)={8M 12M 9M 6M}
++[1Tx] 0xc28	0xffffffff		 22 23 23 23 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
++[1Tx] 0xc2c	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0xc30	0xffffffff		 21 22 23 23 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
++[2Tx] 0xc34	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
++[2Tx] 0xc38	0xffffffff		 20 21 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
++[3Tx] 0xcd8	0xffffffff		 21 21 21 21 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
++[3Tx] 0xcdc	0xffffffff		 19 20 21 21 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
++[1Tx] 0xc3c	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0xc40	0xffffffff		 21 22 23 23 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
++[1Tx] 0xc44	0xffffffff		 22 22 19 20 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
++[2Tx] 0xc48	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
++[2Tx] 0xc4c	0xffffffff		 18 19 20 21 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
++[3Tx] 0xce0	0xffffffff		 21 21 21 21 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
++[3Tx] 0xce4	0xffffffff		 19 20 21 21 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
++[3Tx] 0xce8	0x0000ffff		 10 10 17 18// TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
++#[END]#                                  
++#[5G][B]#
++[1Tx] 0xe24	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)={8M 12M 9M 6M}
++[1Tx] 0xe28	0xffffffff		 22 23 23 23 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
++[1Tx] 0xe2c	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0xe30	0xffffffff		 21 22 23 23 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
++[2Tx] 0xe34	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
++[2Tx] 0xe38	0xffffffff		 20 21 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
++[3Tx] 0xed8	0xffffffff		 21 21 21 21 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
++[3Tx] 0xedc	0xffffffff		 19 20 21 21 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
++[1Tx] 0xe3c	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0xe40	0xffffffff		 21 22 23 23 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
++[1Tx] 0xe44	0xffffffff		 22 22 19 20 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
++[2Tx] 0xe48	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
++[2Tx] 0xe4c	0xffffffff		 18 19 20 21 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
++[3Tx] 0xee0	0xffffffff		 21 21 21 21 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
++[3Tx] 0xee4	0xffffffff		 19 20 21 21 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
++[3Tx] 0xee8	0x0000ffff		 10 10 17 18 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
++#[END]#                                  
++#[5G][C]#
++[1Tx] 0x1824	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)={8M 12M 9M 6M}
++[1Tx] 0x1828	0xffffffff		 22 23 23 23 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
++[1Tx] 0x182c	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0x1830	0xffffffff		 21 22 23 23 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
++[2Tx] 0x1834	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
++[2Tx] 0x1838	0xffffffff		 20 21 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
++[3Tx] 0x18d8	0xffffffff		 21 21 21 21 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
++[3Tx] 0x18dc	0xffffffff		 19 20 21 21 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
++[1Tx] 0x183c	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0x1840	0xffffffff		 21 22 23 23 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
++[1Tx] 0x1844	0xffffffff		 22 22 19 20 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
++[2Tx] 0x1848	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
++[2Tx] 0x184c	0xffffffff		 18 19 20 21 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
++[3Tx] 0x18e0	0xffffffff		 21 21 21 21 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
++[3Tx] 0x18e4	0xffffffff		 19 20 21 21 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
++[3Tx] 0x18e8	0x0000ffff		 10 10 17 18// TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
++#[END]#                                  
++#[5G][D]#
++[1Tx] 0x1a24	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)={8M 12M 9M 6M}
++[1Tx] 0x1a28	0xffffffff		 22 23 23 23 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
++[1Tx] 0x1a2c	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0x1a30	0xffffffff		 21 22 23 23 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
++[2Tx] 0x1a34	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
++[2Tx] 0x1a38	0xffffffff		 20 21 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
++[3Tx] 0x1ad8	0xffffffff		 21 21 21 21 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
++[3Tx] 0x1adc	0xffffffff		 19 20 21 21 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
++[1Tx] 0x1a3c	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0x1a40	0xffffffff		 21 22 23 23 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
++[1Tx] 0x1a44	0xffffffff		 22 22 19 20 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
++[2Tx] 0x1a48	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
++[2Tx] 0x1a4c	0xffffffff		 18 19 20 21 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
++[3Tx] 0x1ae0	0xffffffff		 21 21 21 21 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
++[3Tx] 0x1ae4	0xffffffff		 19 20 21 21 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
++[3Tx] 0x1ae8	0x0000ffff		 10 10 17 18// TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
++#[END]#                                  
++0xffff 0xffff
+--- /dev/null
++++ b/driver/rtl8192cd/WlanHAL/Data/8814A/PHY_REG_PG_8814Amp_Type4.txt
+@@ -0,0 +1,151 @@
++//RL6302_MAC_PHY_Parameter_v018_20140708
++#[v1][Exact]#
++#[2.4G][A]#
++[1Tx] 0xc20	0xffffffff	 	 18 18 18 18 // TXAGC codeword (H-byte->L-byte)={11M 5.5M 2M 1M}
++[1Tx] 0xc24	0xffffffff		 18 18 18 18 // TXAGC codeword (H-byte->L-byte)={18M 12M 9M 6M}
++[1Tx] 0xc28	0xffffffff		 15 16 17 18 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
++[1Tx] 0xc2c	0xffffffff		 18 18 18 18 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0xc30	0xffffffff		 14 15 16 17 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
++[2Tx] 0xc34	0xffffffff		 17 17 17 17 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
++[2Tx] 0xc38	0xffffffff		 13 14 15 16 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
++[3Tx] 0xcd8	0xffffffff		 16 16 16 16 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
++[3Tx] 0xcdc	0xffffffff		 12 13 14 15 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
++[1Tx] 0xc3c	0xffffffff		 18 18 18 18 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0xc40	0xffffffff		 14 15 16 17 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
++[1Tx] 0xc44	0xffffffff		 17 17 12 13 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
++[2Tx] 0xc48	0xffffffff		 15 16 17 17 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
++[2Tx] 0xc4c	0xffffffff		 11 12 13 14 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
++[3Tx] 0xce0	0xffffffff		 16 16 16 16 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
++[3Tx] 0xce4	0xffffffff		 12 13 14 15 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
++[3Tx] 0xce8	0x0000ffff		 10 10 10 11 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
++#[END]#
++#[2.4G][B]#
++[1Tx] 0xe20	0xffffffff		 18 18 18 18 // TXAGC codeword (H-byte->L-byte)={11M 5.5M 2M 1M}
++[1Tx] 0xe24	0xffffffff		 18 18 18 18 // TXAGC codeword (H-byte->L-byte)={18M 12M 9M 6M}
++[1Tx] 0xe28	0xffffffff		 15 16 17 18 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
++[1Tx] 0xe2c	0xffffffff		 18 18 18 18 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0xe30	0xffffffff		 14 15 16 17 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
++[2Tx] 0xe34	0xffffffff		 17 17 17 17 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
++[2Tx] 0xe38	0xffffffff		 13 14 15 16 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
++[3Tx] 0xed8	0xffffffff		 16 16 16 16 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
++[3Tx] 0xedc	0xffffffff		 12 13 14 15 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
++[1Tx] 0xe3c	0xffffffff		 18 18 18 18 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0xe40	0xffffffff		 14 15 16 17 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
++[1Tx] 0xe44	0xffffffff		 17 17 12 13 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
++[2Tx] 0xe48	0xffffffff		 15 16 17 17 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
++[2Tx] 0xe4c	0xffffffff		 11 12 13 14 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
++[3Tx] 0xee0	0xffffffff		 16 16 16 16 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
++[3Tx] 0xee4	0xffffffff		 12 13 14 15 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
++[3Tx] 0xee8	0x0000ffff		 10 10 10 11 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
++#[END]#
++#[2.4G][C]#
++[1Tx] 0x1820	0xffffffff		 18 18 18 18 // TXAGC codeword (H-byte->L-byte)={11M 5.5M 2M 1M}
++[1Tx] 0x1824	0xffffffff		 18 18 18 18 // TXAGC codeword (H-byte->L-byte)={18M 12M 9M 6M}
++[1Tx] 0x1828	0xffffffff		 15 16 17 18 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
++[1Tx] 0x182c	0xffffffff		 18 18 18 18 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0x1830	0xffffffff		 14 15 16 17 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
++[2Tx] 0x1834	0xffffffff		 17 17 17 17 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
++[2Tx] 0x1838	0xffffffff		 13 14 15 16 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
++[3Tx] 0x18d8	0xffffffff		 16 16 16 16 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
++[3Tx] 0x18dc	0xffffffff		 12 13 14 15 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
++[1Tx] 0x183c	0xffffffff		 18 18 18 18 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0x1840	0xffffffff		 14 15 16 17 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
++[1Tx] 0x1844	0xffffffff		 17 17 12 13 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
++[2Tx] 0x1848	0xffffffff		 15 16 17 17 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
++[2Tx] 0x184c	0xffffffff		 11 12 13 14 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
++[3Tx] 0x18e0	0xffffffff		 16 16 16 16 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
++[3Tx] 0x18e4	0xffffffff		 12 13 14 15 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
++[3Tx] 0x18e8	0x0000ffff		 10 10 10 11 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
++#[END]#
++#[2.4G][D]#
++[1Tx] 0x1a20	0xffffffff		 18 18 18 18 // TXAGC codeword (H-byte->L-byte)={11M 5.5M 2M 1M}
++[1Tx] 0x1a24	0xffffffff		 18 18 18 18 // TXAGC codeword (H-byte->L-byte)={18M 12M 9M 6M}
++[1Tx] 0x1a28	0xffffffff		 15 16 17 18 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
++[1Tx] 0x1a2c	0xffffffff		 18 18 18 18 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0x1a30	0xffffffff		 14 15 16 17 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
++[2Tx] 0x1a34	0xffffffff		 17 17 17 17 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
++[2Tx] 0x1a38	0xffffffff		 13 14 15 16 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
++[3Tx] 0x1ad8	0xffffffff		 16 16 16 16 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
++[3Tx] 0x1adc	0xffffffff		 12 13 14 15 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
++[1Tx] 0x1a3c	0xffffffff		 18 18 18 18 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0x1a40	0xffffffff		 14 15 16 17 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
++[1Tx] 0x1a44	0xffffffff		 17 17 12 13 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
++[2Tx] 0x1a48	0xffffffff		 15 16 17 17 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
++[2Tx] 0x1a4c	0xffffffff		 11 12 13 14 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
++[3Tx] 0x1ae0	0xffffffff		 16 16 16 16 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
++[3Tx] 0x1ae4	0xffffffff		 12 13 14 15 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
++[3Tx] 0x1ae8	0x0000ffff		 10 10 10 11 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
++#[END]#
++#[5G][A]#
++[1Tx] 0xc24	0xffffffff		 18 18 18 18 // TXAGC codeword (H-byte->L-byte)={8M 12M 9M 6M}
++[1Tx] 0xc28	0xffffffff		 15 16 17 18 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
++[1Tx] 0xc2c	0xffffffff		 18 18 18 18 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0xc30	0xffffffff		 14 15 16 17 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
++[2Tx] 0xc34	0xffffffff		 17 17 17 17 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
++[2Tx] 0xc38	0xffffffff		 13 14 15 16 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
++[3Tx] 0xcd8	0xffffffff		 16 16 16 16 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
++[3Tx] 0xcdc	0xffffffff		 12 13 14 15 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
++[1Tx] 0xc3c	0xffffffff		 18 18 18 18 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0xc40	0xffffffff		 14 15 16 17 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
++[1Tx] 0xc44	0xffffffff		 17 17 12 13 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
++[2Tx] 0xc48	0xffffffff		 15 16 17 17 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
++[2Tx] 0xc4c	0xffffffff		 11 12 13 14 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
++[3Tx] 0xce0	0xffffffff		 16 16 16 16 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
++[3Tx] 0xce4	0xffffffff		 12 13 14 15 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
++[3Tx] 0xce8	0x0000ffff		 10 10 10 11 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
++#[END]#
++#[5G][B]#
++[1Tx] 0xe24	0xffffffff		 18 18 18 18 // TXAGC codeword (H-byte->L-byte)={8M 12M 9M 6M}
++[1Tx] 0xe28	0xffffffff		 15 16 17 18 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
++[1Tx] 0xe2c	0xffffffff		 18 18 18 18 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0xe30	0xffffffff		 14 15 16 17 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
++[2Tx] 0xe34	0xffffffff		 17 17 17 17 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
++[2Tx] 0xe38	0xffffffff		 13 14 15 16 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
++[3Tx] 0xed8	0xffffffff		 16 16 16 16 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
++[3Tx] 0xedc	0xffffffff		 12 13 14 15 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
++[1Tx] 0xe3c	0xffffffff		 18 18 18 18 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0xe40	0xffffffff		 14 15 16 17 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
++[1Tx] 0xe44	0xffffffff		 17 17 12 13 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
++[2Tx] 0xe48	0xffffffff		 15 16 17 17 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
++[2Tx] 0xe4c	0xffffffff		 11 12 13 14 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
++[3Tx] 0xee0	0xffffffff		 16 16 16 16 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
++[3Tx] 0xee4	0xffffffff		 12 13 14 15 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
++[3Tx] 0xee8	0x0000ffff		 10 10 10 11 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
++#[END]#
++#[5G][C]#
++[1Tx] 0x1824	0xffffffff		 18 18 18 18 // TXAGC codeword (H-byte->L-byte)={8M 12M 9M 6M}
++[1Tx] 0x1828	0xffffffff		 15 16 17 18 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
++[1Tx] 0x182c	0xffffffff		 18 18 18 18 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0x1830	0xffffffff		 14 15 16 17 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
++[2Tx] 0x1834	0xffffffff		 17 17 17 17 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
++[2Tx] 0x1838	0xffffffff		 13 14 15 16 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
++[3Tx] 0x18d8	0xffffffff		 16 16 16 16 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
++[3Tx] 0x18dc	0xffffffff		 12 13 14 15 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
++[1Tx] 0x183c	0xffffffff		 18 18 18 18 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0x1840	0xffffffff		 14 15 16 17 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
++[1Tx] 0x1844	0xffffffff		 17 17 12 13 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
++[2Tx] 0x1848	0xffffffff		 15 16 17 17 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
++[2Tx] 0x184c	0xffffffff		 11 12 13 14 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
++[3Tx] 0x18e0	0xffffffff		 16 16 16 16 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
++[3Tx] 0x18e4	0xffffffff		 12 13 14 15 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
++[3Tx] 0x18e8	0x0000ffff		 10 10 10 11 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
++#[END]#
++#[5G][D]#
++[1Tx] 0x1a24	0xffffffff		 18 18 18 18 // TXAGC codeword (H-byte->L-byte)={8M 12M 9M 6M}
++[1Tx] 0x1a28	0xffffffff		 15 16 17 18 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
++[1Tx] 0x1a2c	0xffffffff		 18 18 18 18 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0x1a30	0xffffffff		 14 15 16 17 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
++[2Tx] 0x1a34	0xffffffff		 17 17 17 17 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
++[2Tx] 0x1a38	0xffffffff		 13 14 15 16 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
++[3Tx] 0x1ad8	0xffffffff		 16 16 16 16 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
++[3Tx] 0x1adc	0xffffffff		 12 13 14 15 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
++[1Tx] 0x1a3c	0xffffffff		 18 18 18 18 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0x1a40	0xffffffff		 14 15 16 17 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
++[1Tx] 0x1a44	0xffffffff		 17 17 12 13 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
++[2Tx] 0x1a48	0xffffffff		 15 16 17 17 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
++[2Tx] 0x1a4c	0xffffffff		 11 12 13 14 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
++[3Tx] 0x1ae0	0xffffffff		 16 16 16 16 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
++[3Tx] 0x1ae4	0xffffffff		 12 13 14 15 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
++[3Tx] 0x1ae8	0x0000ffff		 10 10 10 11 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
++#[END]#
++0xffff 0xffff
+--- /dev/null
++++ b/driver/rtl8192cd/WlanHAL/Data/8814A/PHY_REG_PG_8814Amp_Type5.txt
+@@ -0,0 +1,152 @@
++//rtl8814a version = RL6302_MAC_PHY_Parameter_v075_20150526
++//RL6302_MAC_PHY_Parameter_v054_20141124
++#[v1][Exact]#
++#[2.4G][A]#
++[1Tx] 0xc20	0xffffffff	 	 24 24 24 24 // TXAGC codeword (H-byte->L-byte)={11M 5.5M 2M 1M}
++[1Tx] 0xc24	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)={18M 12M 9M 6M}
++[1Tx] 0xc28	0xffffffff		 22 23 23 23 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
++[1Tx] 0xc2c	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0xc30	0xffffffff		 21 22 23 23 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
++[2Tx] 0xc34	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
++[2Tx] 0xc38	0xffffffff		 20 21 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
++[3Tx] 0xcd8	0xffffffff		 21 21 21 21 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
++[3Tx] 0xcdc	0xffffffff		 19 20 21 21 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
++[1Tx] 0xc3c	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0xc40	0xffffffff		 21 22 23 23 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
++[1Tx] 0xc44	0xffffffff		 22 22 20 20 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
++[2Tx] 0xc48	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
++[2Tx] 0xc4c	0xffffffff		 19 19 20 21 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
++[3Tx] 0xce0	0xffffffff		 21 21 21 21 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
++[3Tx] 0xce4	0xffffffff		 19 20 21 21 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
++[3Tx] 0xce8	0x0000ffff		 10 10 18 18  // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
++#[END]#
++#[2.4G][B]#
++[1Tx] 0xe20	0xffffffff		 24 24 24 24 // TXAGC codeword (H-byte->L-byte)={11M 5.5M 2M 1M}
++[1Tx] 0xe24	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)={18M 12M 9M 6M}
++[1Tx] 0xe28	0xffffffff		 22 23 23 23 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
++[1Tx] 0xe2c	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0xe30	0xffffffff		 21 22 23 23 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
++[2Tx] 0xe34	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
++[2Tx] 0xe38	0xffffffff		 20 21 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
++[3Tx] 0xed8	0xffffffff		 21 21 21 21 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
++[3Tx] 0xedc	0xffffffff		 19 20 21 21 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
++[1Tx] 0xe3c	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0xe40	0xffffffff		 21 22 23 23 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
++[1Tx] 0xe44	0xffffffff		 22 22 20 20 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
++[2Tx] 0xe48	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
++[2Tx] 0xe4c	0xffffffff		 19 19 20 21 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
++[3Tx] 0xee0	0xffffffff		 21 21 21 21 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
++[3Tx] 0xee4	0xffffffff		 19 20 21 21 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
++[3Tx] 0xee8	0x0000ffff		 10 10 18 18 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
++#[END]#
++#[2.4G][C]#
++[1Tx] 0x1820	0xffffffff		 24 24 24 24 // TXAGC codeword (H-byte->L-byte)={11M 5.5M 2M 1M}
++[1Tx] 0x1824	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)={18M 12M 9M 6M}
++[1Tx] 0x1828	0xffffffff		 22 23 23 23 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
++[1Tx] 0x182c	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0x1830	0xffffffff		 21 22 23 23 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
++[2Tx] 0x1834	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
++[2Tx] 0x1838	0xffffffff		 20 21 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
++[3Tx] 0x18d8	0xffffffff		 21 21 21 21 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
++[3Tx] 0x18dc	0xffffffff		 19 20 21 21 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
++[1Tx] 0x183c	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0x1840	0xffffffff		 21 22 23 23 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
++[1Tx] 0x1844	0xffffffff		 22 22 20 20 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
++[2Tx] 0x1848	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
++[2Tx] 0x184c	0xffffffff		 19 19 20 21 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
++[3Tx] 0x18e0	0xffffffff		 21 21 21 21 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
++[3Tx] 0x18e4	0xffffffff		 19 20 21 21 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
++[3Tx] 0x18e8	0x0000ffff		 10 10 18 18 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
++#[END]#
++#[2.4G][D]#
++[1Tx] 0x1a20	0xffffffff		 24 24 24 24 // TXAGC codeword (H-byte->L-byte)={11M 5.5M 2M 1M}
++[1Tx] 0x1a24	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)={18M 12M 9M 6M}
++[1Tx] 0x1a28	0xffffffff		 22 23 23 23 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
++[1Tx] 0x1a2c	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0x1a30	0xffffffff		 21 22 23 23 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
++[2Tx] 0x1a34	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
++[2Tx] 0x1a38	0xffffffff		 20 21 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
++[3Tx] 0x1ad8	0xffffffff		 21 21 21 21 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
++[3Tx] 0x1adc	0xffffffff		 19 20 21 21 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
++[1Tx] 0x1a3c	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0x1a40	0xffffffff		 21 22 23 23 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
++[1Tx] 0x1a44	0xffffffff		 22 22 20 20 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
++[2Tx] 0x1a48	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
++[2Tx] 0x1a4c	0xffffffff		 19 19 20 21 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
++[3Tx] 0x1ae0	0xffffffff		 21 21 21 21 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
++[3Tx] 0x1ae4	0xffffffff		 19 20 21 21 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
++[3Tx] 0x1ae8	0x0000ffff		 10 10 18 18 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
++#[END]#
++#[5G][A]#
++[1Tx] 0xc24	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)={8M 12M 9M 6M}
++[1Tx] 0xc28	0xffffffff		 22 23 23 23 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
++[1Tx] 0xc2c	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0xc30	0xffffffff		 21 22 23 23 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
++[2Tx] 0xc34	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
++[2Tx] 0xc38	0xffffffff		 20 21 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
++[3Tx] 0xcd8	0xffffffff		 21 21 21 21 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
++[3Tx] 0xcdc	0xffffffff		 19 20 21 21 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
++[1Tx] 0xc3c	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0xc40	0xffffffff		 21 22 23 23 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
++[1Tx] 0xc44	0xffffffff		 22 22 19 20 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
++[2Tx] 0xc48	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
++[2Tx] 0xc4c	0xffffffff		 18 19 20 21 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
++[3Tx] 0xce0	0xffffffff		 21 21 21 21 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
++[3Tx] 0xce4	0xffffffff		 19 20 21 21 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
++[3Tx] 0xce8	0x0000ffff		 10 10 17 18// TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
++#[END]#                                  
++#[5G][B]#
++[1Tx] 0xe24	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)={8M 12M 9M 6M}
++[1Tx] 0xe28	0xffffffff		 22 23 23 23 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
++[1Tx] 0xe2c	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0xe30	0xffffffff		 21 22 23 23 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
++[2Tx] 0xe34	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
++[2Tx] 0xe38	0xffffffff		 20 21 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
++[3Tx] 0xed8	0xffffffff		 21 21 21 21 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
++[3Tx] 0xedc	0xffffffff		 19 20 21 21 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
++[1Tx] 0xe3c	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0xe40	0xffffffff		 21 22 23 23 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
++[1Tx] 0xe44	0xffffffff		 22 22 19 20 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
++[2Tx] 0xe48	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
++[2Tx] 0xe4c	0xffffffff		 18 19 20 21 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
++[3Tx] 0xee0	0xffffffff		 21 21 21 21 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
++[3Tx] 0xee4	0xffffffff		 19 20 21 21 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
++[3Tx] 0xee8	0x0000ffff		 10 10 17 18 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
++#[END]#                                  
++#[5G][C]#
++[1Tx] 0x1824	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)={8M 12M 9M 6M}
++[1Tx] 0x1828	0xffffffff		 22 23 23 23 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
++[1Tx] 0x182c	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0x1830	0xffffffff		 21 22 23 23 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
++[2Tx] 0x1834	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
++[2Tx] 0x1838	0xffffffff		 20 21 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
++[3Tx] 0x18d8	0xffffffff		 21 21 21 21 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
++[3Tx] 0x18dc	0xffffffff		 19 20 21 21 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
++[1Tx] 0x183c	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0x1840	0xffffffff		 21 22 23 23 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
++[1Tx] 0x1844	0xffffffff		 22 22 19 20 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
++[2Tx] 0x1848	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
++[2Tx] 0x184c	0xffffffff		 18 19 20 21 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
++[3Tx] 0x18e0	0xffffffff		 21 21 21 21 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
++[3Tx] 0x18e4	0xffffffff		 19 20 21 21 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
++[3Tx] 0x18e8	0x0000ffff		 10 10 17 18// TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
++#[END]#                                  
++#[5G][D]#
++[1Tx] 0x1a24	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)={8M 12M 9M 6M}
++[1Tx] 0x1a28	0xffffffff		 22 23 23 23 // TXAGC codeword (H-byte->L-byte)={54M 48M 36M 24M}
++[1Tx] 0x1a2c	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)=HT_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0x1a30	0xffffffff		 21 22 23 23 // TXAGC codeword (H-byte->L-byte)=HT_{MCS7 MCS6 MCS5 MCS4}
++[2Tx] 0x1a34	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS11 MCS10 MCS9 MCS8}
++[2Tx] 0x1a38	0xffffffff		 20 21 22 22 // TXAGC codeword (H-byte->L-byte)=HT_{MCS15 MCS14 MCS13 MCS12}
++[3Tx] 0x1ad8	0xffffffff		 21 21 21 21 // TXAGC codeword (H-byte->L-byte)=HT_{MCS19 MCS18 MCS17 MCS16}
++[3Tx] 0x1adc	0xffffffff		 19 20 21 21 // TXAGC codeword (H-byte->L-byte)=HT_{MCS23 MCS22 MCS21 MCS20}
++[1Tx] 0x1a3c	0xffffffff		 23 23 23 23 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS3 MCS2 MCS1 MCS0}
++[1Tx] 0x1a40	0xffffffff		 21 22 23 23 // TXAGC codeword (H-byte->L-byte)=VHT1SS_{MCS7 MCS6 MCS5 MCS4}
++[1Tx] 0x1a44	0xffffffff		 22 22 19 20 // TXAGC codeword (H-byte->L-byte)={VHT2SS{MCS1 MCS0} VHT1SS_{MC9 MCS8}}
++[2Tx] 0x1a48	0xffffffff		 22 22 22 22 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS5 MCS4 MCS3 MCS2}
++[2Tx] 0x1a4c	0xffffffff		 18 19 20 21 // TXAGC codeword (H-byte->L-byte)=VHT2SS_{MCS9 MCS8 MCS7 MCS6}
++[3Tx] 0x1ae0	0xffffffff		 21 21 21 21 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS3 MCS2 MCS1 MCS0}
++[3Tx] 0x1ae4	0xffffffff		 19 20 21 21 // TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS7 MCS6 MCS5 MCS4}
++[3Tx] 0x1ae8	0x0000ffff		 10 10 17 18// TXAGC codeword (H-byte->L-byte)=VHT3SS_{MCS9 MCS8}
++#[END]#                                  
++0xffff 0xffff
+--- /dev/null
++++ b/driver/rtl8192cd/WlanHAL/Data/8814A/TXPWR_LMT_8814Amp_Type0.txt
+@@ -0,0 +1,555 @@
++// Format:							
++//							
++// 		Note: The order of the tables MUST match the definition in WLAN driver.
++//							
++//		Power Limit Table Parameter Definition					
++//		Band:			2.4G/5G		
++//		Bandwidth:		20/40/80/160 MHZ			
++//		RF Path:		1/2/3/4 Transmit RF			
++//		Rate Section:	CCK/OFDM/HT/VHT				
++//		Regulation: 	FCC/ETSI/MKK				
++//							
++//		Description:					
++//		1. IF in 1T test
++//		2. power is real dBm.					
++//		3. // is for comment.					
++//							
++// 		NA is non-release channle.					
++//							
++//							
++//Table 1: ===========================================							
++//							
++##	2.4G, 20M, 1T, CCK, //(1M;2M;5.5M;11M)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	17	17	17	
++CH02	17	17	17	
++CH03	17	17	17	
++CH04	17	17	17	
++CH05	17	17	17	
++CH06	17	17	17	
++CH07	17	17	17	
++CH08	17	17	17	
++CH09	17	17	17	
++CH10	17	17	17	
++CH11	17	17	17	
++CH12	NA	17	17	
++CH13	NA	17	17	
++CH14	NA	NA	17	
++##	END						
++//							
++//Table 2: ===========================================							
++//							
++##	2.4G, 20M, 1T, OFDM, //(6M;9M;12M;18M;24M;36M;48M;54M)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	17	17	17	
++CH02	17	17	17	
++CH03	17	17	17	
++CH04	17	17	17	
++CH05	17	17	17	
++CH06	17	17	17	
++CH07	17	17	17	
++CH08	17	17	17	
++CH09	17	17	17	
++CH10	17	17	17	
++CH11	17	17	17	
++CH12	NA	17	17	
++CH13	NA	17	17	
++CH14	NA	NA	NA	
++##	END						
++//							
++//Table 3: ===========================================							
++//							
++##	2.4G, 20M, 1T, HT, //(MCS0~MCS7)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	17	17	17	
++CH02	17	17	17	
++CH03	17	17	17	
++CH04	17	17	17	
++CH05	17	17	17	
++CH06	17	17	17	
++CH07	17	17	17	
++CH08	17	17	17	
++CH09	17	17	17	
++CH10	17	17	17	
++CH11	17	17	17	
++CH12	NA	17	17	
++CH13	NA	17	17	
++CH14	NA	NA	NA	
++##	END						
++//							
++//Table 4: ===========================================							
++//							
++##	2.4G, 20M, 2T, HT, //(MCS8~MCS15)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	17	17	17	
++CH02	17	17	17	
++CH03	17	17	17	
++CH04	17	17	17	
++CH05	17	17	17	
++CH06	17	17	17	
++CH07	17	17	17	
++CH08	17	17	17	
++CH09	17	17	17	
++CH10	17	17	17	
++CH11	17	17	17	
++CH12	NA	17	17	
++CH13	NA	17	17	
++CH14	NA	NA	NA	
++##	END       						
++//							
++//Table 5: ===========================================							
++//							
++##	2.4G, 20M, 3T, HT, //(MCS16~MCS23)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	17	17	17	
++CH02	17	17	17	
++CH03	17	17	17	
++CH04	17	17	17	
++CH05	17	17	17	
++CH06	17	17	17	
++CH07	17	17	17	
++CH08	17	17	17	
++CH09	17	17	17	
++CH10	17	17	17	
++CH11	17	17	17	
++CH12	NA	17	17	
++CH13	NA	17	17	
++CH14	NA	NA	NA	
++##	END       						
++//							
++//Table 6: ===========================================							
++//							
++##	2.4G, 20M, 4T, HT, //(MCS24~MCS31)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	17	17	17	
++CH02	17	17	17	
++CH03	17	17	17	
++CH04	17	17	17	
++CH05	17	17	17	
++CH06	17	17	17	
++CH07	17	17	17	
++CH08	17	17	17	
++CH09	17	17	17	
++CH10	17	17	17	
++CH11	17	17	17	
++CH12	NA	17	17	
++CH13	NA	17	17	
++CH14	NA	NA	NA	
++##	END       						
++//                							
++//Table 7: ===========================================							
++//                							
++##	2.4G, 40M, 1T, HT, //(MCS0~MCS7)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	NA	NA	NA	
++CH02	NA	NA	NA	
++CH03	17	17	17	
++CH04	17	17	17	
++CH05	17	17	17	
++CH06	17	17	17	
++CH07	17	17	17	
++CH08	17	17	17	
++CH09	17	17	17	
++CH10	17	17	17	
++CH11	17	17	17	
++CH12	NA	17	17	
++CH13	NA	17	17	
++CH14	NA	NA	NA	
++##	END						
++//							
++//Table 8: ===========================================							
++//							
++##	2.4G, 40M, 2T, HT, //(MCS8~MCS15)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	NA	NA	NA	
++CH02	NA	NA	NA	
++CH03	17	17	17	
++CH04	17	17	17	
++CH05	17	17	17	
++CH06	17	17	17	
++CH07	17	17	17	
++CH08	17	17	17	
++CH09	17	17	17	
++CH10	17	17	17	
++CH11	17	17	17	
++CH12	NA	17	17	
++CH13	NA	17	17	
++CH14	NA	NA	NA	
++##	END						
++//							
++//Table 9: ===========================================							
++//							
++##	2.4G, 40M, 3T, HT, //(MCS16~MCS23)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	NA	NA	NA	
++CH02	NA	NA	NA	
++CH03	17	17	17	
++CH04	17	17	17	
++CH05	17	17	17	
++CH06	17	17	17	
++CH07	17	17	17	
++CH08	17	17	17	
++CH09	17	17	17	
++CH10	17	17	17	
++CH11	17	17	17	
++CH12	NA	17	17	
++CH13	NA	17	17	
++CH14	NA	NA	NA	
++##	END						
++//							
++//Table 10: ===========================================							
++//							
++##	2.4G, 40M, 4T, HT, //(MCS24~MCS31)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	NA	NA	NA	
++CH02	NA	NA	NA	
++CH03	17	17	17	
++CH04	17	17	17	
++CH05	17	17	17	
++CH06	17	17	17	
++CH07	17	17	17	
++CH08	17	17	17	
++CH09	17	17	17	
++CH10	17	17	17	
++CH11	17	17	17	
++CH12	NA	17	17	
++CH13	NA	17	17	
++CH14	NA	NA	NA	
++##	END						
++//							
++//Table 11: ===========================================							
++//							
++##	5G, 20M, 1T, OFDM, //(6M;9M;12M;18M;24M;36M;48M;54M)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH36	17	17	17	
++CH40	17	17	17	
++CH44	17	17	17	
++CH48	17	17	17	
++//5G Band 2       	  						
++CH52	17	17	17	
++CH56	17	17	17	
++CH60	17	17	17	
++CH64	17	17	17	
++//5G Band 3           							
++CH100	17	17	17	
++CH104	17	17	17	
++CH108	17	17	17	
++CH112	17	17	17	
++CH116	17	17	17	
++CH120	17	17	17	
++CH124	17	17	17	
++CH128	17	17	17	
++CH132	17	17	17	
++CH136 17	17	17	
++CH140 17	17	17	
++//5G Band 4       	  						
++CH149	17	17	NA	
++CH153	17	17	NA	
++CH157	17	17	NA	
++CH161	17	17	NA	
++CH165	17	17	NA	
++##	END						
++//							
++//Table 12: ======================================							
++//							
++##	5G, 20M, 1T, HT, //(MCS0~MCS7)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH36	17	17	17		
++CH40	17	17	17		
++CH44	17	17	17		
++CH48	17	17	17		
++//5G Band 2       		  			 
++CH52	17	17	17		
++CH56	17	17	17		
++CH60	17	17	17		
++CH64	17	17	17		
++//5G Band 3       		  			 
++CH100	17	17	17		
++CH104	17	17	17		
++CH108	17	17	17		
++CH112	17	17	17		
++CH116	17	17	17		
++CH120	17	17	17		
++CH124	17	17	17		
++CH128	17	17	17		
++CH132	17	17	17		
++CH136 17	17	17		
++CH140 17	17	17		
++//5G Band 4       		  			 
++CH149	17	17	NA		
++CH153	17	17	NA		
++CH157	17	17	NA		
++CH161	17	17	NA		
++CH165	17	17	NA		
++##	END						
++//							
++//Table 13: ===========================================							
++//							
++##	5G, 20M, 2T, HT, //(MCS8~MCS15)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH36	17	17	17		
++CH40	17	17	17		
++CH44	17	17	17		
++CH48	17	17	17		
++//5G Band 2       		  			
++CH52	17	17	17		
++CH56	17	17	17		
++CH60	17	17	17		
++CH64	17	17	17		
++//5G Band 3       		  			
++CH100	17	17	17		
++CH104	17	17	17		
++CH108	17	17	17		
++CH112	17	17	17		
++CH116	17	17	17		
++CH120	17	17	17		
++CH124	17	17	17		
++CH128	17	17	17		
++CH132	17	17	17		
++CH136 17	17	17		
++CH140 17	17	17		
++//5G Band 4       		  			
++CH149	17	17	NA		
++CH153	17	17	NA		
++CH157	17	17	NA		
++CH161	17	17	NA		
++CH165	17	17	NA		
++##	END                       						
++//							
++//Table 14: ===========================================							
++//							
++##	5G, 20M, 3T, HT, //(MCS16~MCS23)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH36	17	17	17		
++CH40	17	17	17		
++CH44	17	17	17		
++CH48	17	17	17		
++//5G Band 2       		  			
++CH52	17	17	17		
++CH56	17	17	17		
++CH60	17	17	17		
++CH64	17	17	17		
++//5G Band 3       		  			
++CH100	17	17	17		
++CH104	17	17	17		
++CH108	17	17	17		
++CH112	17	17	17		
++CH116	17	17	17		
++CH120	17	17	17		
++CH124	17	17	17		
++CH128	17	17	17		
++CH132	17	17	17		
++CH136 17	17	17		
++CH140 17	17	17		
++//5G Band 4       		  			
++CH149	17	17	NA		
++CH153	17	17	NA		
++CH157	17	17	NA		
++CH161	17	17	NA		
++CH165	17	17	NA		
++##	END                       						
++//							
++//Table 15: ===========================================							
++//							
++##	5G, 20M, 4T, HT, //(MCS24~MCS31)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH36	17	17	17		
++CH40	17	17	17		
++CH44	17	17	17		
++CH48	17	17	17		
++//5G Band 2       		  			
++CH52	17	17	17		
++CH56	17	17	17		
++CH60	17	17	17		
++CH64	17	17	17		
++//5G Band 3       		  			
++CH100	17	17	17		
++CH104	17	17	17		
++CH108	17	17	17		
++CH112	17	17	17		
++CH116	17	17	17		
++CH120	17	17	17		
++CH124	17	17	17		
++CH128	17	17	17		
++CH132	17	17	17		
++CH136 17	17	17		
++CH140 17	17	17		
++//5G Band 4       		  			
++CH149	17	17	NA		
++CH153	17	17	NA		
++CH157	17	17	NA		
++CH161	17	17	NA		
++CH165	17	17	NA		
++##	END                       						
++//                							
++//Table 16: ===========================================							
++//                							
++##	5G, 40M, 1T, HT, //(MCS0~MCS7)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH38	17	17	17	
++CH46	17	17	17	
++//5G Band 2       	  						
++CH54	17	17	17	
++CH62	17	17	17	
++//5G Band 3       							
++CH102	17	17	17	
++CH110	17	17	17	
++CH118	17	17	17	
++CH126	17	17	17	
++CH134	17	17	17	
++//5G Band 4         							
++CH151	17	17	NA	
++CH159	17	17	NA	
++##	END       						
++//                							
++//Table 17: ===========================================							
++//							
++##	5G, 40M, 2T, HT, //(MCS8~MCS15)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH38	17	17	17	
++CH46	17	17	17	
++//5G Band 2       	  						
++CH54	17	17	17	
++CH62	17	17	17	
++//5G Band 3       	  						
++CH102	17	17	17	
++CH110	17	17	17	
++CH118	17	17	17	
++CH126	17	17	17	
++CH134	17	17	17	
++//5G Band 4       	  						
++CH151	17	17	NA	
++CH159	17	17	NA	
++##	END						
++//                							
++//Table 18: ===========================================							
++//							
++##	5G, 40M, 3T, HT, //(MCS16~MCS23)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH38	17	17	17	
++CH46	17	17	17	
++//5G Band 2       	  						
++CH54	17	17	17	
++CH62	17	17	17	
++//5G Band 3       	  						
++CH102	17	17	17	
++CH110	17	17	17	
++CH118	17	17	17	
++CH126	17	17	17	
++CH134	17	17	17	
++//5G Band 4       	  						
++CH151	17	17	NA	
++CH159	17	17	NA	
++##	END						
++//                							
++//Table 19: ===========================================							
++//							
++##	5G, 40M, 4T, HT, //(MCS24~MCS31)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH38	17	17	17	
++CH46	17	17	17	
++//5G Band 2       	  						
++CH54	17	17	17	
++CH62	17	17	17	
++//5G Band 3       	  						
++CH102	17	17	17	
++CH110	17	17	17	
++CH118	17	17	17	
++CH126	17	17	17	
++CH134	17	17	17	
++//5G Band 4       	  						
++CH151	17	17	NA	
++CH159	17	17	NA	
++##	END						
++//                							
++//Table 20: ===========================================							
++//							
++##	5G, 80M, 1T, VHT, //(MCS0~MCS9)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH42	17	17	17	
++//5G Band 2       	  						
++CH58	17	17	17
++//5G Band 3       	  						
++CH106	17	17	17	
++CH122	17	17	17
++//5G Band 4       	  						
++CH155	17	17	NA	
++##	END						
++//                							
++//Table 21: ===========================================							
++//							
++##	5G, 80M, 2T, VHT, //(MCS0~MCS9)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1       							
++CH42	17	17	17	
++//5G Band 2       	  						
++CH58	17	17	17	
++//5G Band 3       	  						
++CH106	17	17	17	
++CH122	17	17	17	
++//5G Band 4       	  						
++CH155	17	17	NA	
++##	END						
++//                							
++//Table 22: ===========================================							
++//							
++##	5G, 80M, 3T, VHT, //(MCS0~MCS9)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1       							
++CH42	17	17	17	
++//5G Band 2       	  						
++CH58	17	17	17	
++//5G Band 3       	  						
++CH106	17	17	17	
++CH122	17	17	17	
++//5G Band 4       	  						
++CH155	17	17	NA	
++##	END						
++//                							
++//Table 23: ===========================================							
++//							
++##	5G, 80M, 4T, VHT, //(MCS0~MCS9)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1       							
++CH42	17	17	17	
++//5G Band 2       	  						
++CH58	17	17	17	
++//5G Band 3       	  						
++CH106	17	17	17	
++CH122	17	17	17	
++//5G Band 4       	  						
++CH155	17	17	NA	
++##	END						
+--- /dev/null
++++ b/driver/rtl8192cd/WlanHAL/Data/8814A/TXPWR_LMT_8814Amp_Type2.txt
+@@ -0,0 +1,556 @@
++//RL6302_MAC_PHY_Parameter_v046_20141008
++// Format:							
++//							
++// 		Note: The order of the tables MUST match the definition in WLAN driver.
++//							
++//		Power Limit Table Parameter Definition					
++//		Band:			2.4G/5G		
++//		Bandwidth:		20/40/80/160 MHZ			
++//		RF Path:		1/2/3/4 Transmit RF			
++//		Rate Section:	CCK/OFDM/HT/VHT				
++//		Regulation: 	FCC/ETSI/MKK				
++//							
++//		Description:					
++//		1. IF in 1T test
++//		2. power is real dBm.					
++//		3. // is for comment.					
++//							
++// 		NA is non-release channle.					
++//							
++//							
++//Table 1: ===========================================							
++//							
++##	2.4G, 20M, 1T, CCK, //(1M;2M;5.5M;11M)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	21	30	30	
++CH02	24	30	30	
++CH03	24	30	30	
++CH04	24	30	30	
++CH05	24	30	30	
++CH06	24	30	30	
++CH07	24	30	30	
++CH08	24	30	30	
++CH09	24	30	30	
++CH10	24	30	30	
++CH11	21	30	30	
++CH12	NA	30	30	
++CH13	NA	30	30	
++CH14	NA	NA	30	
++##	END						
++//							
++//Table 2: ===========================================							
++//							
++##	2.4G, 20M, 1T, OFDM, //(6M;9M;12M;18M;24M;36M;48M;54M)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	17	30	30	
++CH02	23	30	30	
++CH03	23	30	30	
++CH04	23	30	30	
++CH05	23	30	30	
++CH06	23	30	30	
++CH07	23	30	30	
++CH08	23	30	30	
++CH09	23	30	30	
++CH10	23	30	30	
++CH11	17	30	30	
++CH12	NA	30	30	
++CH13	NA	30	30	
++CH14	NA	NA	NA	
++##	END						
++//							
++//Table 3: ===========================================							
++//							
++##	2.4G, 20M, 1T, HT, //(MCS0~MCS7)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	17	30	30	
++CH02	23	30	30	
++CH03	23	30	30	
++CH04	23	30	30	
++CH05	23	30	30	
++CH06	23	30	30	
++CH07	23	30	30	
++CH08	23	30	30	
++CH09	23	30	30	
++CH10	23	30	30	
++CH11	17	30	30	
++CH12	NA	30	30	
++CH13	NA	30	30	
++CH14	NA	NA	NA	
++##	END						
++//							
++//Table 4: ===========================================							
++//							
++##	2.4G, 20M, 2T, HT, //(MCS8~MCS15)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	17	30	30	
++CH02	23	30	30	
++CH03	23	30	30	
++CH04	23	30	30	
++CH05	23	30	30	
++CH06	23	30	30	
++CH07	23	30	30	
++CH08	23	30	30	
++CH09	23	30	30	
++CH10	23	30	30	
++CH11	17	30	30	
++CH12	NA	30	30	
++CH13	NA	30	30	
++CH14	NA	NA	NA	
++##	END       						
++//							
++//Table 5: ===========================================							
++//							
++##	2.4G, 20M, 3T, HT, //(MCS16~MCS23)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	17	30	30	
++CH02	23	30	30	
++CH03	23	30	30	
++CH04	23	30	30	
++CH05	23	30	30	
++CH06	23	30	30	
++CH07	23	30	30	
++CH08	23	30	30	
++CH09	23	30	30	
++CH10	23	30	30	
++CH11	17	30	30	
++CH12	NA	30	30	
++CH13	NA	30	30	
++CH14	NA	NA	NA	
++##	END       						
++//							
++//Table 6: ===========================================							
++//							
++##	2.4G, 20M, 4T, HT, //(MCS24~MCS31)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	17	30	30	
++CH02	23	30	30	
++CH03	23	30	30	
++CH04	23	30	30	
++CH05	23	30	30	
++CH06	23	30	30	
++CH07	23	30	30	
++CH08	23	30	30	
++CH09	23	30	30	
++CH10	23	30	30	
++CH11	17	30	30	
++CH12	NA	30	30	
++CH13	NA	30	30	
++CH14	NA	NA	NA	
++##	END       						
++//                							
++//Table 7: ===========================================							
++//                							
++##	2.4G, 40M, 1T, HT, //(MCS0~MCS7)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	NA	NA	NA	
++CH02	NA	NA	NA	
++CH03	14	30	30	
++CH04	18	30	30	
++CH05	18	30	30	
++CH06	18	30	30	
++CH07	18	30	30	
++CH08	18	30	30	
++CH09	18	30	30	
++CH10	18	30	30	
++CH11	14	30	30	
++CH12	NA	30	30	
++CH13	NA	30	30	
++CH14	NA	NA	NA	
++##	END						
++//							
++//Table 8: ===========================================							
++//							
++##	2.4G, 40M, 2T, HT, //(MCS8~MCS15)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	NA	NA	NA	
++CH02	NA	NA	NA	
++CH03	14	30	30	
++CH04	18	30	30	
++CH05	18	30	30	
++CH06	18	30	30	
++CH07	18	30	30	
++CH08	18	30	30	
++CH09	18	30	30	
++CH10	18	30	30	
++CH11	14	30	30	
++CH12	NA	30	30	
++CH13	NA	30	30	
++CH14	NA	NA	NA	
++##	END						
++//							
++//Table 9: ===========================================							
++//							
++##	2.4G, 40M, 3T, HT, //(MCS16~MCS23)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	NA	NA	NA	
++CH02	NA	NA	NA	
++CH03	14	30	30	
++CH04	18	30	30	
++CH05	18	30	30	
++CH06	18	30	30	
++CH07	18	30	30	
++CH08	18	30	30	
++CH09	18	30	30	
++CH10	18	30	30	
++CH11	14	30	30	
++CH12	NA	30	30	
++CH13	NA	30	30	
++CH14	NA	NA	NA	
++##	END						
++//							
++//Table 10: ===========================================							
++//							
++##	2.4G, 40M, 4T, HT, //(MCS24~MCS31)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	NA	NA	NA	
++CH02	NA	NA	NA	
++CH03	14	30	30	
++CH04	18	30	30	
++CH05	18	30	30	
++CH06	18	30	30	
++CH07	18	30	30	
++CH08	18	30	30	
++CH09	18	30	30	
++CH10	18	30	30	
++CH11	14	30	30	
++CH12	NA	30	30	
++CH13	NA	30	30	
++CH14	NA	NA	NA	
++##	END						
++//							
++//Table 11: ===========================================							
++//							
++##	5G, 20M, 1T, OFDM, //(6M;9M;12M;18M;24M;36M;48M;54M)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH36	22	16	16	
++CH40	22	16	16	
++CH44	22	16	16	
++CH48	22	16	16	
++//5G Band 2       	  						
++CH52	22	16	16	
++CH56	22	16	16	
++CH60	22	16	16	
++CH64	22	16	16	
++//5G Band 3           							
++CH100	22	16	16	
++CH104	22	16	16	
++CH108	22	16	16	
++CH112	22	16	16	
++CH116	22	16	16	
++CH120	22	16	16	
++CH124	22	16	16	
++CH128	22	16	16	
++CH132	22	16	16	
++CH136	22	16	16	
++CH140	22	16	16	
++//5G Band 4       	  						
++CH149	22	16	NA	
++CH153	22	16	NA	
++CH157	22	16	NA	
++CH161	22	16	NA	
++CH165	22	16	NA	
++##	END						
++//							
++//Table 12: ======================================							
++//							
++##	5G, 20M, 1T, HT, //(MCS0~MCS7)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH36	22	16	16	
++CH40	22	16	16	
++CH44	22	16	16	
++CH48	22	16	16	
++//5G Band 2 				  			 
++CH52	22	16	16	
++CH56	22	16	16	
++CH60	22	16	16	
++CH64	22	16	16	
++//5G Band 3 				  			 
++CH100	22	16	16	
++CH104	22	16	16	
++CH108	22	16	16	
++CH112	22	16	16	
++CH116	22	16	16	
++CH120	22	16	16	
++CH124	22	16	16	
++CH128	22	16	16	
++CH132	22	16	16	
++CH136	22	16	16	
++CH140	22	16	16	
++//5G Band 4 				  			 
++CH149	22	16	NA	
++CH153	22	16	NA	
++CH157	22	16	NA	
++CH161	22	16	NA	
++CH165	22	16	NA	
++##	END						
++//							
++//Table 13: ===========================================							
++//							
++##	5G, 20M, 2T, HT, //(MCS8~MCS15)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH36	22	15	15	
++CH40	22	15	15	
++CH44	22	15	15	
++CH48	22	15	15	
++//5G Band 2 				  			
++CH52	22	15	15	
++CH56	22	15	15	
++CH60	22	15	15	
++CH64	22	15	15	
++//5G Band 3 				  			
++CH100	22	15	15	
++CH104	22	15	15	
++CH108	22	15	15	
++CH112	22	15	15	
++CH116	22	15	15	
++CH120	22	15	15	
++CH124	22	15	15	
++CH128	22	15	15	
++CH132	22	15	15	
++CH136	22	15	15	
++CH140	22	15	15	
++//5G Band 4 				  			
++CH149	22	15	NA	
++CH153	22	15	NA	
++CH157	22	15	NA	
++CH161	22	15	NA	
++CH165	22	15	NA	
++##	END                       						
++//							
++//Table 14: ===========================================							
++//							
++##	5G, 20M, 3T, HT, //(MCS16~MCS23)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH36	22	14	14	
++CH40	22	14	14	
++CH44	22	14	14	
++CH48	22	14	14	
++//5G Band 2 				  			
++CH52	22	14	14	
++CH56	22	14	14	
++CH60	22	14	14	
++CH64	22	14	14	
++//5G Band 3 				  			
++CH100	22	14	14	
++CH104	22	14	14	
++CH108	22	14	14	
++CH112	22	14	14	
++CH116	22	14	14	
++CH120	22	14	14	
++CH124	22	14	14	
++CH128	22	14	14	
++CH132	22	14	14	
++CH136	22	14	14	
++CH140	22	14	14	
++//5G Band 4 				  			
++CH149	22	14	NA	
++CH153	22	14	NA	
++CH157	22	14	NA	
++CH161	22	14	NA	
++CH165	22	14	NA	
++##	END                       						
++//							
++//Table 15: ===========================================							
++//							
++##	5G, 20M, 4T, HT, //(MCS24~MCS31)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH36	22	13	13	
++CH40	22	13	13	
++CH44	22	13	13	
++CH48	22	13	13	
++//5G Band 2 				  			
++CH52	22	13	13	
++CH56	22	13	13	
++CH60	22	13	13	
++CH64	22	13	13	
++//5G Band 3 				  			
++CH100	22	13	13	
++CH104	22	13	13	
++CH108	22	13	13	
++CH112	22	13	13	
++CH116	22	13	13	
++CH120	22	13	13	
++CH124	22	13	13	
++CH128	22	13	13	
++CH132	22	13	13	
++CH136	22	13	13	
++CH140	22	13	13	
++//5G Band 4 				  			
++CH149	22	13	NA	
++CH153	22	13	NA	
++CH157	22	13	NA	
++CH161	22	13	NA	
++CH165	22	13	NA	
++##	END                       						
++//                							
++//Table 16: ===========================================							
++//                							
++##	5G, 40M, 1T, HT, //(MCS0~MCS7)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH38	22	16	16	
++CH46	22	16	16	
++//5G Band 2       	  						
++CH54	22	16	16	
++CH62	22	16	16	
++//5G Band 3       							
++CH102	22	16	16	
++CH110	22	16	16	
++CH118	22	16	16	
++CH126	22	16	16	
++CH134	22	16	16	
++//5G Band 4         							
++CH151	22	16	NA	
++CH159	22	16	NA	
++##	END       						
++//                							
++//Table 17: ===========================================							
++//							
++##	5G, 40M, 2T, HT, //(MCS8~MCS15)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH38	22	15	15	
++CH46	22	15	15	
++//5G Band 2       	  						
++CH54	22	15	15	
++CH62	22	15	15	
++//5G Band 3       	  						
++CH102	22	15	15	
++CH110	22	15	15	
++CH118	22	15	15	
++CH126	22	15	15	
++CH134	22	15	15	
++//5G Band 4       	  						
++CH151	22	15	NA	
++CH159	22	15	NA	
++##	END						
++//                							
++//Table 18: ===========================================							
++//							
++##	5G, 40M, 3T, HT, //(MCS16~MCS23)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH38	22	14	14	
++CH46	22	14	14	
++//5G Band 2       	  						
++CH54	22	14	14	
++CH62	22	14	14	
++//5G Band 3       	  						
++CH102	22	14	14	
++CH110	22	14	14	
++CH118	22	14	14	
++CH126	22	14	14	
++CH134	22	14	14	
++//5G Band 4       	  						
++CH151	22	14	NA	
++CH159	22	14	NA	
++##	END						
++//                							
++//Table 19: ===========================================							
++//							
++##	5G, 40M, 4T, HT, //(MCS24~MCS31)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH38	22	13	13	
++CH46	22	13	13	
++//5G Band 2       	  						
++CH54	22	13	13	
++CH62	22	13	13	
++//5G Band 3       	  						
++CH102	22	13	13	
++CH110	22	13	13	
++CH118	22	13	13	
++CH126	22	13	13	
++CH134	22	13	13	
++//5G Band 4       	  						
++CH151	22	13	NA	
++CH159	22	13	NA	
++##	END						
++//                							
++//Table 20: ===========================================							
++//							
++##	5G, 80M, 1T, VHT, //(MCS0~MCS9)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH42	22	16	16	
++//5G Band 2       	  						
++CH58	22	16	16	
++//5G Band 3       	  						
++CH106	22	16	16	
++CH122	22	16	16	
++//5G Band 4       	  						
++CH155	22	16	NA	
++##	END						
++//                							
++//Table 21: ===========================================							
++//							
++##	5G, 80M, 2T, VHT, //(MCS0~MCS9)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1       							
++CH42	22	15	15	
++//5G Band 2       	  						
++CH58	22	15	15	
++//5G Band 3       	  						
++CH106	22	15	15	
++CH122	22	15	15	
++//5G Band 4       	  						
++CH155	22	15	NA	
++##	END						
++//                							
++//Table 22: ===========================================							
++//							
++##	5G, 80M, 3T, VHT, //(MCS0~MCS9)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1       							
++CH42	22	14	14	
++//5G Band 2       	  						
++CH58	22	14	14	
++//5G Band 3       	  						
++CH106	22	14	14	
++CH122	22	14	14	
++//5G Band 4       	  						
++CH155	22	14	NA	
++##	END						
++//                							
++//Table 23: ===========================================							
++//							
++##	5G, 80M, 4T, VHT, //(MCS0~MCS9)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1       							
++CH42	22	13	13	
++//5G Band 2       	  						
++CH58	22	13	13	
++//5G Band 3       	  						
++CH106	22	13	13	
++CH122	22	13	13	
++//5G Band 4       	  						
++CH155	22	13	NA	
++##	END						
+--- /dev/null
++++ b/driver/rtl8192cd/WlanHAL/Data/8814A/TXPWR_LMT_8814Amp_Type3.txt
+@@ -0,0 +1,555 @@
++// Format:							
++//							
++// 		Note: The order of the tables MUST match the definition in WLAN driver.
++//							
++//		Power Limit Table Parameter Definition					
++//		Band:			2.4G/5G		
++//		Bandwidth:		20/40/80/160 MHZ			
++//		RF Path:		1/2/3/4 Transmit RF			
++//		Rate Section:	CCK/OFDM/HT/VHT				
++//		Regulation: 	FCC/ETSI/MKK				
++//							
++//		Description:					
++//		1. IF in 1T test
++//		2. power is real dBm.					
++//		3. // is for comment.					
++//							
++// 		NA is non-release channle.					
++//							
++//							
++//Table 1: ===========================================							
++//							
++##	2.4G, 20M, 1T, CCK, //(1M;2M;5.5M;11M)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	23	20	20	
++CH02	23	20	20	
++CH03	23	20	20	
++CH04	23	20	20	
++CH05	23	20	20	
++CH06	23	20	20	
++CH07	23	20	20	
++CH08	23	20	20	
++CH09	23	20	20	
++CH10	23	20	20	
++CH11	23	20	20	
++CH12	NA	20	20	
++CH13	NA	20	20	
++CH14	NA	NA	20	
++##	END						
++//							
++//Table 2: ===========================================							
++//							
++##	2.4G, 20M, 1T, OFDM, //(6M;9M;12M;18M;24M;36M;48M;54M)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	23	20	20	
++CH02	23	20	20	
++CH03	23	20	20	
++CH04	23	20	20	
++CH05	23	20	20	
++CH06	23	20	20	
++CH07	23	20	20	
++CH08	23	20	20	
++CH09	23	20	20	
++CH10	23	20	20	
++CH11	23	20	20	
++CH12	NA	20	20	
++CH13	NA	20	20	
++CH14	NA	NA	NA	
++##	END						
++//							
++//Table 3: ===========================================							
++//							
++##	2.4G, 20M, 1T, HT, //(MCS0~MCS7)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	23	20	20	
++CH02	23	20	20	
++CH03	23	20	20	
++CH04	23	20	20	
++CH05	23	20	20	
++CH06	23	20	20	
++CH07	23	20	20	
++CH08	23	20	20	
++CH09	23	20	20	
++CH10	23	20	20	
++CH11	23	20	20	
++CH12	NA	20	20	
++CH13	NA	20	20	
++CH14	NA	NA	NA	
++##	END						
++//							
++//Table 4: ===========================================							
++//							
++##	2.4G, 20M, 2T, HT, //(MCS8~MCS15)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	23	20	20	
++CH02	23	20	20	
++CH03	23	20	20	
++CH04	23	20	20	
++CH05	23	20	20	
++CH06	23	20	20	
++CH07	23	20	20	
++CH08	23	20	20	
++CH09	23	20	20	
++CH10	23	20	20	
++CH11	23	20	20	
++CH12	NA	20	20	
++CH13	NA	20	20	
++CH14	NA	NA	NA	
++##	END       						
++//							
++//Table 5: ===========================================							
++//							
++##	2.4G, 20M, 3T, HT, //(MCS16~MCS23)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	23	20	20	
++CH02	23	20	20	
++CH03	23	20	20	
++CH04	23	20	20	
++CH05	23	20	20	
++CH06	23	20	20	
++CH07	23	20	20	
++CH08	23	20	20	
++CH09	23	20	20	
++CH10	23	20	20	
++CH11	23	20	20	
++CH12	NA	20	20	
++CH13	NA	20	20	
++CH14	NA	NA	NA	
++##	END       						
++//							
++//Table 6: ===========================================							
++//							
++##	2.4G, 20M, 4T, HT, //(MCS24~MCS31)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	23	20	20	
++CH02	23	20	20	
++CH03	23	20	20	
++CH04	23	20	20	
++CH05	23	20	20	
++CH06	23	20	20	
++CH07	23	20	20	
++CH08	23	20	20	
++CH09	23	20	20	
++CH10	23	20	20	
++CH11	23	20	20	
++CH12	NA	20	20	
++CH13	NA	20	20	
++CH14	NA	NA	NA	
++##	END       						
++//                							
++//Table 7: ===========================================							
++//                							
++##	2.4G, 40M, 1T, HT, //(MCS0~MCS7)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	NA	NA	NA	
++CH02	NA	NA	NA	
++CH03	23	20	20	
++CH04	23	20	20	
++CH05	23	20	20	
++CH06	23	20	20	
++CH07	23	20	20	
++CH08	23	20	20	
++CH09	23	20	20	
++CH10	23	20	20	
++CH11	23	20	20	
++CH12	NA	20	20	
++CH13	NA	20	20	
++CH14	NA	NA	NA	
++##	END						
++//							
++//Table 8: ===========================================							
++//							
++##	2.4G, 40M, 2T, HT, //(MCS8~MCS15)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	NA	NA	NA	
++CH02	NA	NA	NA	
++CH03	23	20	20	
++CH04	23	20	20	
++CH05	23	20	20	
++CH06	23	20	20	
++CH07	23	20	20	
++CH08	23	20	20	
++CH09	23	20	20	
++CH10	23	20	20	
++CH11	23	20	20	
++CH12	NA	20	20	
++CH13	NA	20	20	
++CH14	NA	NA	NA	
++##	END						
++//							
++//Table 9: ===========================================							
++//							
++##	2.4G, 40M, 3T, HT, //(MCS16~MCS23)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	NA	NA	NA	
++CH02	NA	NA	NA	
++CH03	23	20	20	
++CH04	23	20	20	
++CH05	23	20	20	
++CH06	23	20	20	
++CH07	23	20	20	
++CH08	23	20	20	
++CH09	23	20	20	
++CH10	23	20	20	
++CH11	23	20	20	
++CH12	NA	20	20	
++CH13	NA	20	20	
++CH14	NA	NA	NA	
++##	END						
++//							
++//Table 10: ===========================================							
++//							
++##	2.4G, 40M, 4T, HT, //(MCS24~MCS31)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	NA	NA	NA	
++CH02	NA	NA	NA	
++CH03	23	20	20	
++CH04	23	20	20	
++CH05	23	20	20	
++CH06	23	20	20	
++CH07	23	20	20	
++CH08	23	20	20	
++CH09	23	20	20	
++CH10	23	20	20	
++CH11	23	20	20	
++CH12	NA	20	20	
++CH13	NA	20	20	
++CH14	NA	NA	NA	
++##	END						
++//							
++//Table 11: ===========================================							
++//							
++##	5G, 20M, 1T, OFDM, //(6M;9M;12M;18M;24M;36M;48M;54M)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH36	23	20	20	
++CH40	23	20	20	
++CH44	23	20	20	
++CH48	23	20	20	
++//5G Band 2      	  						
++CH52	23	20	20	
++CH56	23	20	20	
++CH60	23	20	20	
++CH64	23	20	20	
++//5G Band 3          							
++CH100	23	20	20	
++CH104	23	20	20	
++CH108	23	20	20	
++CH112	23	20	20	
++CH116	23	20	20	
++CH120	23	20	20	
++CH124	23	20	20	
++CH128	23	20	20	
++CH132	23	20	20	
++CH136	23	20	20	
++CH140	23	20	20	
++//5G Band 4      	  						
++CH149	23	20	NA	
++CH153	23	20	NA	
++CH157	23	20	NA	
++CH161	23	20	NA	
++CH165	23	20	NA	
++##	END						
++//							
++//Table 12: ======================================							
++//							
++##	5G, 20M, 1T, HT, //(MCS0~MCS7)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH36	23	20	20	
++CH40	23	20	20	
++CH44	23	20	20	
++CH48	23	20	20	
++//5G Band 2 				  			 
++CH52	23	20	20	
++CH56	23	20	20	
++CH60	23	20	20	
++CH64	23	20	20	
++//5G Band 3 				  			 
++CH100	23	20	20	
++CH104	23	20	20	
++CH108	23	20	20	
++CH112	23	20	20	
++CH116	23	20	20	
++CH120	23	20	20	
++CH124	23	20	20	
++CH128	23	20	20	
++CH132	23	20	20	
++CH136	23	20	20	
++CH140	23	20	20	
++//5G Band 4 				  			 
++CH149	23	20	NA	
++CH153	23	20	NA	
++CH157	23	20	NA	
++CH161	23	20	NA	
++CH165	23	20	NA	
++##	END						
++//							
++//Table 13: ===========================================							
++//							
++##	5G, 20M, 2T, HT, //(MCS8~MCS15)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH36	23	20	20	
++CH40	23	20	20	
++CH44	23	20	20	
++CH48	23	20	20	
++//5G Band 2 				  			
++CH52	23	20	20	
++CH56	23	20	20	
++CH60	23	20	20	
++CH64	23	20	20	
++//5G Band 3 				  			
++CH100	23	20	20	
++CH104	23	20	20	
++CH108	23	20	20	
++CH112	23	20	20	
++CH116	23	20	20	
++CH120	23	20	20	
++CH124	23	20	20	
++CH128	23	20	20	
++CH132	23	20	20	
++CH136	23	20	20	
++CH140	23	20	20	
++//5G Band 4 				  			
++CH149	23	20	NA	
++CH153	23	20	NA	
++CH157	23	20	NA	
++CH161	23	20	NA	
++CH165	23	20	NA	
++##	END                       						
++//							
++//Table 14: ===========================================							
++//							
++##	5G, 20M, 3T, HT, //(MCS16~MCS23)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH36	23	20	20	
++CH40	23	20	20	
++CH44	23	20	20	
++CH48	23	20	20	
++//5G Band 2 				  			
++CH52	23	20	20	
++CH56	23	20	20	
++CH60	23	20	20	
++CH64	23	20	20	
++//5G Band 3 				  			
++CH100	23	20	20	
++CH104	23	20	20	
++CH108	23	20	20	
++CH112	23	20	20	
++CH116	23	20	20	
++CH120	23	20	20	
++CH124	23	20	20	
++CH128	23	20	20	
++CH132	23	20	20	
++CH136	23	20	20	
++CH140	23	20	20	
++//5G Band 4 				  			
++CH149	23	20	NA	
++CH153	23	20	NA	
++CH157	23	20	NA	
++CH161	23	20	NA	
++CH165	23	20	NA	
++##	END                       						
++//							
++//Table 15: ===========================================							
++//							
++##	5G, 20M, 4T, HT, //(MCS24~MCS31)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH36	23	20	20	
++CH40	23	20	20	
++CH44	23	20	20	
++CH48	23	20	20	
++//5G Band 2 				  			
++CH52	23	20	20	
++CH56	23	20	20	
++CH60	23	20	20	
++CH64	23	20	20	
++//5G Band 3 				  			
++CH100	23	20	20	
++CH104	23	20	20	
++CH108	23	20	20	
++CH112	23	20	20	
++CH116	23	20	20	
++CH120	23	20	20	
++CH124	23	20	20	
++CH128	23	20	20	
++CH132	23	20	20	
++CH136	23	20	20	
++CH140	23	20	20	
++//5G Band 4 				  			
++CH149	23	20	NA	
++CH153	23	20	NA	
++CH157	23	20	NA	
++CH161	23	20	NA	
++CH165	23	20	NA	
++##	END                       						
++//                							
++//Table 16: ===========================================							
++//                							
++##	5G, 40M, 1T, HT, //(MCS0~MCS7)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH38	23	20	20	
++CH46	23	20	20	
++//5G Band 2       	  						
++CH54	23	20	20	
++CH62	23	20	20	
++//5G Band 3       							
++CH102	23	20	20	
++CH110	23	20	20	
++CH118	23	20	20	
++CH126	23	20	20	
++CH134	23	20	20	
++//5G Band 4         							
++CH151	23	20	NA	
++CH159	23	20	NA	
++##	END       						
++//                							
++//Table 17: ===========================================							
++//							
++##	5G, 40M, 2T, HT, //(MCS8~MCS15)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH38	23	20	20	
++CH46	23	20	20	
++//5G Band 2       	  						
++CH54	23	20	20	
++CH62	23	20	20	
++//5G Band 3       	  						
++CH102	23	20	20	
++CH110	23	20	20	
++CH118	23	20	20	
++CH126	23	20	20	
++CH134	23	20	20	
++//5G Band 4       	  						
++CH151	23	20	NA	
++CH159	23	20	NA	
++##	END						
++//                							
++//Table 18: ===========================================							
++//							
++##	5G, 40M, 3T, HT, //(MCS16~MCS23)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH38	23	20	20	
++CH46	23	20	20	
++//5G Band 2       	  						
++CH54	23	20	20	
++CH62	23	20	20	
++//5G Band 3       	  						
++CH102	23	20	20	
++CH110	23	20	20	
++CH118	23	20	20	
++CH126	23	20	20	
++CH134	23	20	20	
++//5G Band 4       	  						
++CH151	23	20	NA	
++CH159	23	20	NA	
++##	END						
++//                							
++//Table 19: ===========================================							
++//							
++##	5G, 40M, 4T, HT, //(MCS24~MCS31)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH38	23	20	20	
++CH46	23	20	20	
++//5G Band 2       	  						
++CH54	23	20	20	
++CH62	23	20	20	
++//5G Band 3       	  						
++CH102	23	20	20	
++CH110	23	20	20	
++CH118	23	20	20	
++CH126	23	20	20	
++CH134	23	20	20	
++//5G Band 4       	  						
++CH151	23	20	NA	
++CH159	23	20	NA	
++##	END						
++//                							
++//Table 20: ===========================================							
++//							
++##	5G, 80M, 1T, VHT, //(MCS0~MCS9)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH42	23	20	20	
++//5G Band 2       	  						
++CH58	23	20	20	
++//5G Band 3       	  						
++CH106	23	20	20	
++CH122	23	20	20	
++//5G Band 4       	  						
++CH155	23	20	NA	
++##	END						
++//                							
++//Table 21: ===========================================							
++//							
++##	5G, 80M, 2T, VHT, //(MCS0~MCS9)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1       							
++CH42	23	20	20
++//5G Band 2       	  						
++CH58	23	20	20
++//5G Band 3       	  						
++CH106	23	20	20
++CH122	23	20	20
++//5G Band 4       	  						
++CH155	23	20	NA	   
++##	END						
++//                							
++//Table 22: ===========================================							
++//							
++##	5G, 80M, 3T, VHT, //(MCS0~MCS9)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1       							
++CH42	23	20	20
++//5G Band 2       	  						
++CH58	23	20	20
++//5G Band 3       	  						
++CH106	23	20	20
++CH122	23	20	20
++//5G Band 4       	  						
++CH155	23	20	NA	   
++##	END						
++//                							
++//Table 23: ===========================================							
++//							
++##	5G, 80M, 4T, VHT, //(MCS0~MCS9)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1       							
++CH42	23	20	20
++//5G Band 2       	  						
++CH58	23	20	20
++//5G Band 3       	  						
++CH106	23	20	20
++CH122	23	20	20
++//5G Band 4       	  						
++CH155	23	20	NA	   
++##	END						
+--- /dev/null
++++ b/driver/rtl8192cd/WlanHAL/Data/8814A/TXPWR_LMT_8814Amp_Type4.txt
+@@ -0,0 +1,556 @@
++//RL6302_MAC_PHY_Parameter_v054_20141124
++// Format:							
++//							
++// 		Note: The order of the tables MUST match the definition in WLAN driver.
++//							
++//		Power Limit Table Parameter Definition					
++//		Band:			2.4G/5G		
++//		Bandwidth:		20/40/80/160 MHZ			
++//		RF Path:		1/2/3/4 Transmit RF			
++//		Rate Section:	CCK/OFDM/HT/VHT				
++//		Regulation: 	FCC/ETSI/MKK				
++//							
++//		Description:					
++//		1. IF in 1T test
++//		2. power is real dBm.					
++//		3. // is for comment.					
++//							
++// 		NA is non-release channle.					
++//							
++//							
++//Table 1: ===========================================							
++//							
++##	2.4G, 20M, 1T, CCK, //(1M;2M;5.5M;11M)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	18	18	18			
++CH02	18	18	18		
++CH03	18	18	18		
++CH04	18	18	18		
++CH05	18	18	18		
++CH06	18	18	18		
++CH07	18	18	18		
++CH08	18	18	18		
++CH09	18	18	18		
++CH10	18	18	18		
++CH11	18	18	18		
++CH12	NA	18	18		
++CH13	NA	18	18		
++CH14	NA	NA	18		
++##	END						
++//							
++//Table 2: ===========================================							
++//							
++##	2.4G, 20M, 1T, OFDM, //(6M;9M;12M;18M;24M;36M;48M;54M)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	18	18	18		
++CH02	18	18	18	
++CH03	18	18	18	
++CH04	18	18	18	
++CH05	18	18	18	
++CH06	18	18	18	
++CH07	18	18	18	
++CH08	18	18	18	
++CH09	18	18	18	
++CH10	18	18	18	
++CH11	18	18	18	
++CH12	NA	18	18	
++CH13	NA	18	18	
++CH14	NA	NA	NA	
++##	END						
++//							
++//Table 3: ===========================================							
++//							
++##	2.4G, 20M, 1T, HT, //(MCS0~MCS7)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	18	18	18	
++CH02	18	18	18	
++CH03	18	18	18	
++CH04	18	18	18	
++CH05	18	18	18	
++CH06	18	18	18	
++CH07	18	18	18	
++CH08	18	18	18	
++CH09	18	18	18	
++CH10	18	18	18	
++CH11	18	18	18	
++CH12	NA	18	18	
++CH13	NA	18	18	
++CH14	NA	NA	NA	
++##	END						
++//							
++//Table 4: ===========================================							
++//							
++##	2.4G, 20M, 2T, HT, //(MCS8~MCS15)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	18	18	18	
++CH02	18	18	18	
++CH03	18	18	18	
++CH04	18	18	18	
++CH05	18	18	18	
++CH06	18	18	18	
++CH07	18	18	18	
++CH08	18	18	18	
++CH09	18	18	18	
++CH10	18	18	18	
++CH11	18	18	18	
++CH12	NA	18	18	
++CH13	NA	18	18	
++CH14	NA	NA	NA	
++##	END       						
++//							
++//Table 5: ===========================================							
++//							
++##	2.4G, 20M, 3T, HT, //(MCS16~MCS23)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	18	18	18	
++CH02	18	18	18	
++CH03	18	18	18	
++CH04	18	18	18	
++CH05	18	18	18	
++CH06	18	18	18	
++CH07	18	18	18	
++CH08	18	18	18	
++CH09	18	18	18	
++CH10	18	18	18	
++CH11	18	18	18	
++CH12	NA	18	18	
++CH13	NA	18	18	
++CH14	NA	NA	NA	
++##	END       						
++//							
++//Table 6: ===========================================							
++//							
++##	2.4G, 20M, 4T, HT, //(MCS24~MCS31)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	18	18	18	
++CH02	18	18	18	
++CH03	18	18	18	
++CH04	18	18	18	
++CH05	18	18	18	
++CH06	18	18	18	
++CH07	18	18	18	
++CH08	18	18	18	
++CH09	18	18	18	
++CH10	18	18	18	
++CH11	18	18	18	
++CH12	NA	18	18	
++CH13	NA	18	18	
++CH14	NA	NA	NA	
++##	END       						
++//                							
++//Table 7: ===========================================							
++//                							
++##	2.4G, 40M, 1T, HT, //(MCS0~MCS7)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	NA	NA	NA	
++CH02	NA	NA	NA	
++CH03	18	18	18	
++CH04	18	18	18	
++CH05	18	18	18	
++CH06	18	18	18	
++CH07	18	18	18	
++CH08	18	18	18	
++CH09	18	18	18	
++CH10	18	18	18	
++CH11	18	18	18	
++CH12	NA	18	18	
++CH13	NA	18	18	
++CH14	NA	NA	NA	
++##	END						
++//							
++//Table 8: ===========================================							
++//							
++##	2.4G, 40M, 2T, HT, //(MCS8~MCS15)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	NA	NA	NA	
++CH02	NA	NA	NA	
++CH03	18	18	18	
++CH04	18	18	18	
++CH05	18	18	18	
++CH06	18	18	18	
++CH07	18	18	18	
++CH08	18	18	18	
++CH09	18	18	18	
++CH10	18	18	18	
++CH11	18	18	18	
++CH12	NA	18	18	
++CH13	NA	18	18	
++CH14	NA	NA	NA	
++##	END						
++//							
++//Table 9: ===========================================							
++//							
++##	2.4G, 40M, 3T, HT, //(MCS16~MCS23)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	NA	NA	NA	
++CH02	NA	NA	NA	
++CH03	18	18	18	
++CH04	18	18	18	
++CH05	18	18	18	
++CH06	18	18	18	
++CH07	18	18	18	
++CH08	18	18	18	
++CH09	18	18	18	
++CH10	18	18	18	
++CH11	18	18	18	
++CH12	NA	18	18	
++CH13	NA	18	18	
++CH14	NA	NA	NA	
++##	END						
++//							
++//Table 10: ===========================================							
++//							
++##	2.4G, 40M, 4T, HT, //(MCS24~MCS31)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	NA	NA	NA	
++CH02	NA	NA	NA	
++CH03	18	18	18	
++CH04	18	18	18	
++CH05	18	18	18	
++CH06	18	18	18	
++CH07	18	18	18	
++CH08	18	18	18	
++CH09	18	18	18	
++CH10	18	18	18	
++CH11	18	18	18	
++CH12	NA	18	18	
++CH13	NA	18	18	
++CH14	NA	NA	NA	
++##	END						
++//							
++//Table 11: ===========================================							
++//							
++##	5G, 20M, 1T, OFDM, //(6M;9M;12M;18M;24M;36M;48M;54M)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH36	18	18	18	
++CH40	18	18	18	
++CH44	18	18	18	
++CH48	18	18	18	
++//5G Band 2       	  						
++CH52	18	18	18	
++CH56	18	18	18	
++CH60	18	18	18	
++CH64	18	18	18	
++//5G Band 3          							
++CH100	18	18	18	
++CH104	18	18	18	
++CH108	18	18	18	
++CH112	18	18	18	
++CH116	18	18	18	
++CH120	18	18	18	
++CH124	18	18	18	
++CH128	18	18	18	
++CH132	18	18	18	
++CH136	18	18	18	
++CH140	18	18	18	
++//5G Band 4        	  						
++CH149	18	18	NA	
++CH153	18	18	NA	
++CH157	18	18	NA	
++CH161	18	18	NA	
++CH165	18	18	NA	
++##	END						
++//							
++//Table 12: ======================================							
++//							
++##	5G, 20M, 1T, HT, //(MCS0~MCS7)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH36	18	18	18	
++CH40	18	18	18	
++CH44	18	18	18	
++CH48	18	18	18	
++//5G Band 2     		  			 
++CH52	18	18	18	
++CH56	18	18	18	
++CH60	18	18	18	
++CH64	18	18	18	
++//5G Band 3     		  			 
++CH100	18	18	18	
++CH104	18	18	18	
++CH108	18	18	18	
++CH112	18	18	18	
++CH116	18	18	18	
++CH120	18	18	18	
++CH124	18	18	18	
++CH128	18	18	18	
++CH132	18	18	18	
++CH136	18	18	18	
++CH140	18	18	18	
++//5G Band 4     		  			 
++CH149	18	18	NA	
++CH153	18	18	NA	
++CH157	18	18	NA	
++CH161	18	18	NA	
++CH165	18	18	NA	
++##	END						
++//							
++//Table 13: ===========================================							
++//							
++##	5G, 20M, 2T, HT, //(MCS8~MCS15)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH36	18	18	18	
++CH40	18	18	18	
++CH44	18	18	18	
++CH48	18	18	18	
++//5G Band 2     		  			
++CH52	18	18	18	
++CH56	18	18	18	
++CH60	18	18	18	
++CH64	18	18	18	
++//5G Band 3     		  			
++CH100	18	18	18	
++CH104	18	18	18	
++CH108	18	18	18	
++CH112	18	18	18	
++CH116	18	18	18	
++CH120	18	18	18	
++CH124	18	18	18	
++CH128	18	18	18	
++CH132	18	18	18	
++CH136	18	18	18	
++CH140	18	18	18	
++//5G Band 4     		  			
++CH149	18	18	NA	
++CH153	18	18	NA	
++CH157	18	18	NA	
++CH161	18	18	NA	
++CH165	18	18	NA	
++##	END                       						
++//							
++//Table 14: ===========================================							
++//							
++##	5G, 20M, 3T, HT, //(MCS16~MCS23)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH36	18	18	18	
++CH40	18	18	18	
++CH44	18	18	18	
++CH48	18	18	18	
++//5G Band 2     		  			
++CH52	18	18	18	
++CH56	18	18	18	
++CH60	18	18	18	
++CH64	18	18	18	
++//5G Band 3     		  			
++CH100	18	18	18	
++CH104	18	18	18	
++CH108	18	18	18	
++CH112	18	18	18	
++CH116	18	18	18	
++CH120	18	18	18	
++CH124	18	18	18	
++CH128	18	18	18	
++CH132	18	18	18	
++CH136	18	18	18	
++CH140	18	18	18	
++//5G Band 4     		  			
++CH149	18	18	NA	
++CH153	18	18	NA	
++CH157	18	18	NA	
++CH161	18	18	NA	
++CH165	18	18	NA	
++##	END                       						
++//							
++//Table 15: ===========================================							
++//							
++##	5G, 20M, 4T, HT, //(MCS24~MCS31)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH36	18	18	18	
++CH40	18	18	18	
++CH44	18	18	18	
++CH48	18	18	18	
++//5G Band 2     		  			
++CH52	18	18	18	
++CH56	18	18	18	
++CH60	18	18	18	
++CH64	18	18	18	
++//5G Band 3     		  			
++CH100	18	18	18	
++CH104	18	18	18	
++CH108	18	18	18	
++CH112	18	18	18	
++CH116	18	18	18	
++CH120	18	18	18	
++CH124	18	18	18	
++CH128	18	18	18	
++CH132	18	18	18	
++CH136	18	18	18	
++CH140	18	18	18	
++//5G Band 4     		  			
++CH149	18	18	NA	
++CH153	18	18	NA	
++CH157	18	18	NA	
++CH161	18	18	NA	
++CH165	18	18	NA	
++##	END                       						
++//                							
++//Table 16: ===========================================							
++//                							
++##	5G, 40M, 1T, HT, //(MCS0~MCS7)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH38	18	18	18	
++CH46	18	18	18	
++//5G Band 2        	  						
++CH54	18	18	18	
++CH62	18	18	18	
++//5G Band 3        							
++CH102	18	18	18	
++CH110	18	18	18	
++CH118	18	18	18	
++CH126	18	18	18	
++CH134	18	18	18	
++//5G Band 4          							
++CH151	18	18	NA	
++CH159	18	18	NA	
++##	END       						
++//                							
++//Table 17: ===========================================							
++//							
++##	5G, 40M, 2T, HT, //(MCS8~MCS15)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH38	18	18	18	
++CH46	18	18	18	
++//5G Band 2        	  						
++CH54	18	18	18	
++CH62	18	18	18	
++//5G Band 3        	  						
++CH102	18	18	18	
++CH110	18	18	18	
++CH118	18	18	18	
++CH126	18	18	18	
++CH134	18	18	18	
++//5G Band 4        	  						
++CH151	18	18	NA	
++CH159	18	18	NA	
++##	END						
++//                							
++//Table 18: ===========================================							
++//							
++##	5G, 40M, 3T, HT, //(MCS16~MCS23)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH38	18	18	18	
++CH46	18	18	18	
++//5G Band 2        	  						
++CH54	18	18	18	
++CH62	18	18	18	
++//5G Band 3        	  						
++CH102	18	18	18	
++CH110	18	18	18	
++CH118	18	18	18	
++CH126	18	18	18	
++CH134	18	18	18	
++//5G Band 4       	  						
++CH151	18	18	NA	
++CH159	18	18	NA	
++##	END						
++//                							
++//Table 19: ===========================================							
++//							
++##	5G, 40M, 4T, HT, //(MCS24~MCS31)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH38	18	18	18	
++CH46	18	18	18	
++//5G Band 2        	  						
++CH54	18	18	18	
++CH62	18	18	18	
++//5G Band 3        	  						
++CH102	18	18	18	
++CH110	18	18	18	
++CH118	18	18	18	
++CH126	18	18	18	
++CH134	18	18	18	
++//5G Band 4        	  						
++CH151	18	18	NA	
++CH159	18	18	NA	
++##	END						
++//                							
++//Table 20: ===========================================							
++//							
++##	5G, 80M, 1T, VHT, //(MCS0~MCS9)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH42	18	18	18	
++//5G Band 2        	  						
++CH58	18	18	18
++//5G Band 3        	  						
++CH106	18	18	18
++CH122	18	18	18
++//5G Band 4        	  						
++CH155	18	18	NA
++##	END						
++//                							
++//Table 21: ===========================================							
++//							
++##	5G, 80M, 2T, VHT, //(MCS0~MCS9)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1       							
++CH42	18	18	18
++//5G Band 2     	  						
++CH58	18	18	18
++//5G Band 3      	  						
++CH106	18	18	18
++CH122	18	18	18
++//5G Band 4      	  						
++CH155	18	18	NA
++##	END						
++//                							
++//Table 22: ===========================================							
++//							
++##	5G, 80M, 3T, VHT, //(MCS0~MCS9)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1 							
++CH42	18	18	18
++//5G Band 2      						
++CH58	18	18	18
++//5G Band 3      						
++CH106	18	18	18
++CH122	18	18	18
++//5G Band 4      						
++CH155	18	18	NA
++##	END						
++//                							
++//Table 23: ===========================================							
++//							
++##	5G, 80M, 4T, VHT, //(MCS0~MCS9)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1 							
++CH42	18	18	18
++//5G Band 2      						
++CH58	18	18	18
++//5G Band 3      						
++CH106	18	18	18
++CH122	18	18	18
++//5G Band 4      						
++CH155	18	18	NA
++##	END						
+--- /dev/null
++++ b/driver/rtl8192cd/WlanHAL/Data/8814A/TXPWR_LMT_8814Amp_Type5.txt
+@@ -0,0 +1,555 @@
++// Format:							
++//							
++// 		Note: The order of the tables MUST match the definition in WLAN driver.
++//							
++//		Power Limit Table Parameter Definition					
++//		Band:			2.4G/5G		
++//		Bandwidth:		20/40/80/160 MHZ			
++//		RF Path:		1/2/3/4 Transmit RF			
++//		Rate Section:	CCK/OFDM/HT/VHT				
++//		Regulation: 	FCC/ETSI/MKK				
++//							
++//		Description:					
++//		1. IF in 1T test
++//		2. power is real dBm.					
++//		3. // is for comment.					
++//							
++// 		NA is non-release channle.					
++//							
++//							
++//Table 1: ===========================================							
++//							
++##	2.4G, 20M, 1T, CCK, //(1M;2M;5.5M;11M)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	23	20	20	
++CH02	23	20	20	
++CH03	23	20	20	
++CH04	23	20	20	
++CH05	23	20	20	
++CH06	23	20	20	
++CH07	23	20	20	
++CH08	23	20	20	
++CH09	23	20	20	
++CH10	23	20	20	
++CH11	23	20	20	
++CH12	NA	20	20	
++CH13	NA	20	20	
++CH14	NA	NA	20	
++##	END						
++//							
++//Table 2: ===========================================							
++//							
++##	2.4G, 20M, 1T, OFDM, //(6M;9M;12M;18M;24M;36M;48M;54M)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	23	20	20	
++CH02	23	20	20	
++CH03	23	20	20	
++CH04	23	20	20	
++CH05	23	20	20	
++CH06	23	20	20	
++CH07	23	20	20	
++CH08	23	20	20	
++CH09	23	20	20	
++CH10	23	20	20	
++CH11	23	20	20	
++CH12	NA	20	20	
++CH13	NA	20	20	
++CH14	NA	NA	NA	
++##	END						
++//							
++//Table 3: ===========================================							
++//							
++##	2.4G, 20M, 1T, HT, //(MCS0~MCS7)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	23	20	20	
++CH02	23	20	20	
++CH03	23	20	20	
++CH04	23	20	20	
++CH05	23	20	20	
++CH06	23	20	20	
++CH07	23	20	20	
++CH08	23	20	20	
++CH09	23	20	20	
++CH10	23	20	20	
++CH11	23	20	20	
++CH12	NA	20	20	
++CH13	NA	20	20	
++CH14	NA	NA	NA	
++##	END						
++//							
++//Table 4: ===========================================							
++//							
++##	2.4G, 20M, 2T, HT, //(MCS8~MCS15)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	23	20	20	
++CH02	23	20	20	
++CH03	23	20	20	
++CH04	23	20	20	
++CH05	23	20	20	
++CH06	23	20	20	
++CH07	23	20	20	
++CH08	23	20	20	
++CH09	23	20	20	
++CH10	23	20	20	
++CH11	23	20	20	
++CH12	NA	20	20	
++CH13	NA	20	20	
++CH14	NA	NA	NA	
++##	END       						
++//							
++//Table 5: ===========================================							
++//							
++##	2.4G, 20M, 3T, HT, //(MCS16~MCS23)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	23	20	20	
++CH02	23	20	20	
++CH03	23	20	20	
++CH04	23	20	20	
++CH05	23	20	20	
++CH06	23	20	20	
++CH07	23	20	20	
++CH08	23	20	20	
++CH09	23	20	20	
++CH10	23	20	20	
++CH11	23	20	20	
++CH12	NA	20	20	
++CH13	NA	20	20	
++CH14	NA	NA	NA	
++##	END       						
++//							
++//Table 6: ===========================================							
++//							
++##	2.4G, 20M, 4T, HT, //(MCS24~MCS31)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	23	20	20	
++CH02	23	20	20	
++CH03	23	20	20	
++CH04	23	20	20	
++CH05	23	20	20	
++CH06	23	20	20	
++CH07	23	20	20	
++CH08	23	20	20	
++CH09	23	20	20	
++CH10	23	20	20	
++CH11	23	20	20	
++CH12	NA	20	20	
++CH13	NA	20	20	
++CH14	NA	NA	NA	
++##	END       						
++//                							
++//Table 7: ===========================================							
++//                							
++##	2.4G, 40M, 1T, HT, //(MCS0~MCS7)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	NA	NA	NA	
++CH02	NA	NA	NA	
++CH03	23	20	20	
++CH04	23	20	20	
++CH05	23	20	20	
++CH06	23	20	20	
++CH07	23	20	20	
++CH08	23	20	20	
++CH09	23	20	20	
++CH10	23	20	20	
++CH11	23	20	20	
++CH12	NA	20	20	
++CH13	NA	20	20	
++CH14	NA	NA	NA	
++##	END						
++//							
++//Table 8: ===========================================							
++//							
++##	2.4G, 40M, 2T, HT, //(MCS8~MCS15)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	NA	NA	NA	
++CH02	NA	NA	NA	
++CH03	23	20	20	
++CH04	23	20	20	
++CH05	23	20	20	
++CH06	23	20	20	
++CH07	23	20	20	
++CH08	23	20	20	
++CH09	23	20	20	
++CH10	23	20	20	
++CH11	23	20	20	
++CH12	NA	20	20	
++CH13	NA	20	20	
++CH14	NA	NA	NA	
++##	END						
++//							
++//Table 9: ===========================================							
++//							
++##	2.4G, 40M, 3T, HT, //(MCS16~MCS23)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	NA	NA	NA	
++CH02	NA	NA	NA	
++CH03	23	20	20	
++CH04	23	20	20	
++CH05	23	20	20	
++CH06	23	20	20	
++CH07	23	20	20	
++CH08	23	20	20	
++CH09	23	20	20	
++CH10	23	20	20	
++CH11	23	20	20	
++CH12	NA	20	20	
++CH13	NA	20	20	
++CH14	NA	NA	NA	
++##	END						
++//							
++//Table 10: ===========================================							
++//							
++##	2.4G, 40M, 4T, HT, //(MCS24~MCS31)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++CH01	NA	NA	NA	
++CH02	NA	NA	NA	
++CH03	23	20	20	
++CH04	23	20	20	
++CH05	23	20	20	
++CH06	23	20	20	
++CH07	23	20	20	
++CH08	23	20	20	
++CH09	23	20	20	
++CH10	23	20	20	
++CH11	23	20	20	
++CH12	NA	20	20	
++CH13	NA	20	20	
++CH14	NA	NA	NA	
++##	END						
++//							
++//Table 11: ===========================================							
++//							
++##	5G, 20M, 1T, OFDM, //(6M;9M;12M;18M;24M;36M;48M;54M)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH36	23	20	20	
++CH40	23	20	20	
++CH44	23	20	20	
++CH48	23	20	20	
++//5G Band 2       	  						
++CH52	23	20	20	
++CH56	23	20	20	
++CH60	23	20	20	
++CH64	23	20	20	
++//5G Band 3           							
++CH100	23	20	20	
++CH104	23	20	20	
++CH108	23	20	20	
++CH112	23	20	20	
++CH116	23	20	20	
++CH120	23	20	20	
++CH124	23	20	20	
++CH128	23	20	20	
++CH132	23	20	20	
++CH136	23	20	20	
++CH140	23	20	20	
++//5G Band 4       	  						
++CH149	23	20	NA	
++CH153	23	20	NA	
++CH157	23	20	NA	
++CH161	23	20	NA	
++CH165	23	20	NA	
++##	END						
++//							
++//Table 12: ======================================							
++//							
++##	5G, 20M, 1T, HT, //(MCS0~MCS7)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH36	23	20	20	
++CH40	23	20	20	
++CH44	23	20	20	
++CH48	23	20	20	
++//5G Band 2 				  			 
++CH52	23	20	20	
++CH56	23	20	20	
++CH60	23	20	20	
++CH64	23	20	20	
++//5G Band 3 				  			 
++CH100	23	20	20	
++CH104	23	20	20	
++CH108	23	20	20	
++CH112	23	20	20	
++CH116	23	20	20	
++CH120	23	20	20	
++CH124	23	20	20	
++CH128	23	20	20	
++CH132	23	20	20	
++CH136	23	20	20	
++CH140	23	20	20	
++//5G Band 4 				  			 
++CH149	23	20	NA	
++CH153	23	20	NA	
++CH157	23	20	NA	
++CH161	23	20	NA	
++CH165	23	20	NA	
++##	END						
++//							
++//Table 13: ===========================================							
++//							
++##	5G, 20M, 2T, HT, //(MCS8~MCS15)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH36	23	20	20	
++CH40	23	20	20	
++CH44	23	20	20	
++CH48	23	20	20	
++//5G Band 2 				  			
++CH52	23	20	20	
++CH56	23	20	20	
++CH60	23	20	20	
++CH64	23	20	20	
++//5G Band 3 				  			
++CH100	23	20	20	
++CH104	23	20	20	
++CH108	23	20	20	
++CH112	23	20	20	
++CH116	23	20	20	
++CH120	23	20	20	
++CH124	23	20	20	
++CH128	23	20	20	
++CH132	23	20	20	
++CH136	23	20	20	
++CH140	23	20	20	
++//5G Band 4 				  			
++CH149	23	20	NA	
++CH153	23	20	NA	
++CH157	23	20	NA	
++CH161	23	20	NA	
++CH165	23	20	NA	
++##	END                       						
++//							
++//Table 14: ===========================================							
++//							
++##	5G, 20M, 3T, HT, //(MCS16~MCS23)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH36	23	20	20	
++CH40	23	20	20	
++CH44	23	20	20	
++CH48	23	20	20	
++//5G Band 2 				  			
++CH52	23	20	20	
++CH56	23	20	20	
++CH60	23	20	20	
++CH64	23	20	20	
++//5G Band 3 				  			
++CH100	23	20	20	
++CH104	23	20	20	
++CH108	23	20	20	
++CH112	23	20	20	
++CH116	23	20	20	
++CH120	23	20	20	
++CH124	23	20	20	
++CH128	23	20	20	
++CH132	23	20	20	
++CH136	23	20	20	
++CH140	23	20	20	
++//5G Band 4 				  			
++CH149	23	20	NA	
++CH153	23	20	NA	
++CH157	23	20	NA	
++CH161	23	20	NA	
++CH165	23	20	NA	
++##	END                       						
++//							
++//Table 15: ===========================================							
++//							
++##	5G, 20M, 4T, HT, //(MCS24~MCS31)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH36	23	20	20	
++CH40	23	20	20	
++CH44	23	20	20	
++CH48	23	20	20	
++//5G Band 2 				  			
++CH52	23	20	20	
++CH56	23	20	20	
++CH60	23	20	20	
++CH64	23	20	20	
++//5G Band 3 				  			
++CH100	23	20	20	
++CH104	23	20	20	
++CH108	23	20	20	
++CH112	23	20	20	
++CH116	23	20	20	
++CH120	23	20	20	
++CH124	23	20	20	
++CH128	23	20	20	
++CH132	23	20	20	
++CH136	23	20	20	
++CH140	23	20	20	
++//5G Band 4 				  			
++CH149	23	20	NA	
++CH153	23	20	NA	
++CH157	23	20	NA	
++CH161	23	20	NA	
++CH165	23	20	NA	
++##	END                       						
++//                							
++//Table 16: ===========================================							
++//                							
++##	5G, 40M, 1T, HT, //(MCS0~MCS7)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH38	23	20	20	
++CH46	23	20	20	
++//5G Band 2       	  						
++CH54	23	20	20	
++CH62	23	20	20	
++//5G Band 3       							
++CH102	23	20	20	
++CH110	23	20	20	
++CH118	23	20	20	
++CH126	23	20	20	
++CH134	23	20	20	
++//5G Band 4         							
++CH151	23	20	NA	
++CH159	23	20	NA	
++##	END       						
++//                							
++//Table 17: ===========================================							
++//							
++##	5G, 40M, 2T, HT, //(MCS8~MCS15)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH38	23	20	20	
++CH46	23	20	20	
++//5G Band 2       	  						
++CH54	23	20	20	
++CH62	23	20	20	
++//5G Band 3       	  						
++CH102	23	20	20	
++CH110	23	20	20	
++CH118	23	20	20	
++CH126	23	20	20	
++CH134	23	20	20	
++//5G Band 4       	  						
++CH151	23	20	NA	
++CH159	23	20	NA	
++##	END						
++//                							
++//Table 18: ===========================================							
++//							
++##	5G, 40M, 3T, HT, //(MCS16~MCS23)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH38	23	20	20	
++CH46	23	20	20	
++//5G Band 2       	  						
++CH54	23	20	20	
++CH62	23	20	20	
++//5G Band 3       	  						
++CH102	23	20	20	
++CH110	23	20	20	
++CH118	23	20	20	
++CH126	23	20	20	
++CH134	23	20	20	
++//5G Band 4       	  						
++CH151	23	20	NA	
++CH159	23	20	NA	
++##	END						
++//                							
++//Table 19: ===========================================							
++//							
++##	5G, 40M, 4T, HT, //(MCS24~MCS31)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH38	23	20	20	
++CH46	23	20	20	
++//5G Band 2       	  						
++CH54	23	20	20	
++CH62	23	20	20	
++//5G Band 3       	  						
++CH102	23	20	20	
++CH110	23	20	20	
++CH118	23	20	20	
++CH126	23	20	20	
++CH134	23	20	20	
++//5G Band 4       	  						
++CH151	23	20	NA	
++CH159	23	20	NA	
++##	END						
++//                							
++//Table 20: ===========================================							
++//							
++##	5G, 80M, 1T, VHT, //(MCS0~MCS9)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1							
++CH42	23	20	20	
++//5G Band 2       	  						
++CH58	23	20	20	
++//5G Band 3       	  						
++CH106	23	20	20	
++CH122	23	20	20	
++//5G Band 4       	  						
++CH155	23	20	NA	
++##	END						
++//                							
++//Table 21: ===========================================							
++//							
++##	5G, 80M, 2T, VHT, //(MCS0~MCS9)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1       							
++CH42	23	20	20
++//5G Band 2       	  						
++CH58	23	20	20
++//5G Band 3       	  						
++CH106	23	20	20
++CH122	23	20	20
++//5G Band 4       	  						
++CH155	23	20	NA	   
++##	END						
++//                							
++//Table 22: ===========================================							
++//							
++##	5G, 80M, 3T, VHT, //(MCS0~MCS9)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1       							
++CH42	23	20	20
++//5G Band 2       	  						
++CH58	23	20	20
++//5G Band 3       	  						
++CH106	23	20	20
++CH122	23	20	20
++//5G Band 4       	  						
++CH155	23	20	NA	   
++##	END						
++//                							
++//Table 23: ===========================================							
++//							
++##	5G, 80M, 4T, VHT, //(MCS0~MCS9)						
++##	START
++##	#3#	FCC	ETSI	MKK	
++//5G Band 1       							
++CH42	23	20	20
++//5G Band 2       	  						
++CH58	23	20	20
++//5G Band 3       	  						
++CH106	23	20	20
++CH122	23	20	20
++//5G Band 4       	  						
++CH155	23	20	NA	   
++##	END						
+--- a/driver/rtl8192cd/WlanHAL/RTL88XX/Hal88XXGen.c
++++ b/driver/rtl8192cd/WlanHAL/RTL88XX/Hal88XXGen.c
+@@ -1122,21 +1122,40 @@ GetHwReg88XX(
+ #if IS_RTL8814A_SERIES
+ 		if ( IS_HARDWARE_TYPE_8814A(Adapter) ) {
+ 			if (IS_HAL_TEST_CHIP(Adapter)) {
+-                printk("[%s][PHY_REG_PG_8814A]\n",__FUNCTION__);
++                panic_printk("[%s][PHY_REG_PG_8814A]\n",__FUNCTION__);
+                 *((pu4Byte)(val)) = (u4Byte)data_PHY_REG_PG_8814A_start;
+ 			} else { // mp chip
+ #if CFG_HAL_HIGH_POWER_EXT_PA			
+-				if(HAL_RFE_TYPE == 3){
+-					printk("[%s][PHY_REG_PG_8814Amp_hp]\n",__FUNCTION__);
+-					*((pu4Byte)(val)) = (u4Byte)(data_PHY_REG_PG_8814Amp_hp_start);
++				if(HAL_VAR_use_ext_pa){
++					if(HAL_RFE_TYPE == 2){
++						panic_printk("[%s][PHY_REG_PG_8814Amp_Type2]\n",__FUNCTION__);
++						*((pu4Byte)(val)) = (u4Byte)(data_PHY_REG_PG_8814Amp_Type2_start);
++					}else if(HAL_RFE_TYPE == 3){
++						panic_printk("[%s][PHY_REG_PG_8814Amp_Type3]\n",__FUNCTION__);
++						*((pu4Byte)(val)) = (u4Byte)(data_PHY_REG_PG_8814Amp_Type3_start);
++					}else if(HAL_RFE_TYPE == 4){
++						panic_printk("[%s][PHY_REG_PG_8814Amp_Type4]\n",__FUNCTION__);
++						*((pu4Byte)(val)) = (u4Byte)(data_PHY_REG_PG_8814Amp_Type4_start);
++					}else if(HAL_RFE_TYPE == 5){
++						panic_printk("[%s][PHY_REG_PG_8814Amp_Type5]\n",__FUNCTION__);
++						*((pu4Byte)(val)) = (u4Byte)(data_PHY_REG_PG_8814Amp_Type5_start);
++					}else {
++						panic_printk("[%s][PHY_REG_PG_8814Amp]\n",__FUNCTION__);
++						*((pu4Byte)(val)) = (u4Byte)(data_PHY_REG_PG_8814Amp_start);
++					}
+ 				}else
+ #endif				
+ 				{
+-					printk("[%s][PHY_REG_PG_8814Amp]\n",__FUNCTION__);
++					if(HAL_RFE_TYPE == 0){
++						panic_printk("[%s][PHY_REG_PG_8814Amp_Type0]\n",__FUNCTION__);
++						*((pu4Byte)(val)) = (u4Byte)data_PHY_REG_PG_8814Amp_Type0_start;
++					}else{
++						panic_printk("[%s][PHY_REG_PG_8814Amp]\n",__FUNCTION__);
+ 					*((pu4Byte)(val)) = (u4Byte)data_PHY_REG_PG_8814Amp_start;
+ 				}
+ 			}
+ 		}
++		}
+ #endif
+ 	}
+ 	break;
+@@ -1195,17 +1214,36 @@ GetHwReg88XX(
+ 				*((pu4Byte)(val)) = (u4Byte)(data_PHY_REG_PG_8814A_end - data_PHY_REG_PG_8814A_start);
+ 			} else { // mp chip
+ #if CFG_HAL_HIGH_POWER_EXT_PA				
+-				if(HAL_RFE_TYPE == 3){
+-					printk("[%s][size PHY_REG_PG_8814Amp_hp]\n",__FUNCTION__);
+-					*((pu4Byte)(val)) = (u4Byte)(data_PHY_REG_PG_8814Amp_hp_end - data_PHY_REG_PG_8814Amp_hp_start);
++				if(HAL_VAR_use_ext_pa){
++					if(HAL_RFE_TYPE == 2){
++						printk("[%s][size PHY_REG_PG_8814Amp_Type2]\n",__FUNCTION__);
++						*((pu4Byte)(val)) = (u4Byte)(data_PHY_REG_PG_8814Amp_Type2_end - data_PHY_REG_PG_8814Amp_Type2_start);
++					}else if(HAL_RFE_TYPE == 3){
++						printk("[%s][size PHY_REG_PG_8814Amp_Type3]\n",__FUNCTION__);
++						*((pu4Byte)(val)) = (u4Byte)(data_PHY_REG_PG_8814Amp_Type3_end - data_PHY_REG_PG_8814Amp_Type3_start);
++					}else if(HAL_RFE_TYPE == 4){
++						printk("[%s][size PHY_REG_PG_8814Amp_Type4]\n",__FUNCTION__);
++						*((pu4Byte)(val)) = (u4Byte)(data_PHY_REG_PG_8814Amp_Type4_end - data_PHY_REG_PG_8814Amp_Type4_start);
++					}else if(HAL_RFE_TYPE == 5){
++						printk("[%s][size PHY_REG_PG_8814Amp_Type5]\n",__FUNCTION__);
++						*((pu4Byte)(val)) = (u4Byte)(data_PHY_REG_PG_8814Amp_Type5_end - data_PHY_REG_PG_8814Amp_Type5_start);
++					}else {
++						printk("[%s][size PHY_REG_PG_8814Amp]\n",__FUNCTION__);
++						*((pu4Byte)(val)) = (u4Byte)(data_PHY_REG_PG_8814Amp_end - data_PHY_REG_PG_8814Amp_start);
++					}
+ 				}else
+ #endif				
+ 				{
++					if(HAL_RFE_TYPE == 0){
++						printk("[%s][size PHY_REG_PG_8814Amp_Type0]\n",__FUNCTION__);
++						*((pu4Byte)(val)) = (u4Byte)(data_PHY_REG_PG_8814Amp_Type0_end - data_PHY_REG_PG_8814Amp_Type0_start);
++					}else{
+ 					printk("[%s][size PHY_REG_PG_8814Amp]\n",__FUNCTION__);
+ 					*((pu4Byte)(val)) = (u4Byte)(data_PHY_REG_PG_8814Amp_end - data_PHY_REG_PG_8814Amp_start);
+ 				}
+             }
+ 		}
++		}
+ #endif
+ 
+ 	}
+@@ -1288,8 +1326,36 @@ GetHwReg88XX(
+ #ifdef TXPWR_LMT_8814A
+ #if IS_RTL8814A_SERIES
+ 		if ( IS_HARDWARE_TYPE_8814A(Adapter) ) {
++#if CFG_HAL_HIGH_POWER_EXT_PA			
++			if(HAL_VAR_use_ext_pa){
++				if(HAL_RFE_TYPE == 2){
++					panic_printk("[%s][TXPWR_LMT_8814Amp_Type2]\n",__FUNCTION__);
++					*((pu4Byte)(val)) = (u4Byte)data_TXPWR_LMT_8814Amp_Type2_start;
++				}else if(HAL_RFE_TYPE == 3){
++					panic_printk("[%s][TXPWR_LMT_8814Amp_Type3]\n",__FUNCTION__);
++					*((pu4Byte)(val)) = (u4Byte)data_TXPWR_LMT_8814Amp_Type3_start;
++				}else if(HAL_RFE_TYPE == 4){
++					panic_printk("[%s][TXPWR_LMT_8814Amp_Type4]\n",__FUNCTION__);
++					*((pu4Byte)(val)) = (u4Byte)data_TXPWR_LMT_8814Amp_Type4_start;
++				}else if(HAL_RFE_TYPE == 5){
++					panic_printk("[%s][TXPWR_LMT_8814Amp_Type5]\n",__FUNCTION__);
++					*((pu4Byte)(val)) = (u4Byte)data_TXPWR_LMT_8814Amp_Type5_start;
++				}else {
++					panic_printk("[%s][TXPWR_LMT_8814Amp]\n",__FUNCTION__);
++					*((pu4Byte)(val)) = (u4Byte)data_TXPWR_LMT_8814Amp_start;
++				}
++			}else
++#endif				
++			{
++				if(HAL_RFE_TYPE == 0){
++					panic_printk("[%s][TXPWR_LMT_8814Amp_Type0]\n",__FUNCTION__);
++					*((pu4Byte)(val)) = (u4Byte)data_TXPWR_LMT_8814Amp_Type0_start;
++				}else{
++					panic_printk("[%s][TXPWR_LMT_8814Amp]\n",__FUNCTION__);
+ 			*((pu4Byte)(val)) = (u4Byte)data_TXPWR_LMT_8814Amp_start;
+ 		}
++			}			
++		}
+ #endif
+ #endif
+ 	}
+@@ -1330,8 +1396,36 @@ GetHwReg88XX(
+ #ifdef TXPWR_LMT_8814A
+ #if IS_RTL8814A_SERIES
+ 		if ( IS_HARDWARE_TYPE_8814A(Adapter) ) {
++#if CFG_HAL_HIGH_POWER_EXT_PA			
++			if(HAL_VAR_use_ext_pa){
++				if(HAL_RFE_TYPE == 2){
++					printk("[%s][size TXPWR_LMT_8814Amp_Type2]\n",__FUNCTION__);
++					*((pu4Byte)(val)) = (u4Byte)(data_TXPWR_LMT_8814Amp_Type2_end - data_TXPWR_LMT_8814Amp_Type2_start);
++				}else if(HAL_RFE_TYPE == 3){
++					printk("[%s][size TXPWR_LMT_8814Amp_Type3]\n",__FUNCTION__);
++					*((pu4Byte)(val)) = (u4Byte)(data_TXPWR_LMT_8814Amp_Type3_end - data_TXPWR_LMT_8814Amp_Type3_start);
++				}else if(HAL_RFE_TYPE == 4){
++					printk("[%s][size TXPWR_LMT_8814Amp_Type4]\n",__FUNCTION__);
++					*((pu4Byte)(val)) = (u4Byte)(data_TXPWR_LMT_8814Amp_Type4_end - data_TXPWR_LMT_8814Amp_Type4_start);
++				}else if(HAL_RFE_TYPE == 5){
++					printk("[%s][size TXPWR_LMT_8814Amp_Type5]\n",__FUNCTION__);
++					*((pu4Byte)(val)) = (u4Byte)(data_TXPWR_LMT_8814Amp_Type5_end - data_TXPWR_LMT_8814Amp_Type5_start);
++				}else {
++					printk("[%s][size TXPWR_LMT_8814Amp]\n",__FUNCTION__);
+ 			*((pu4Byte)(val)) = (u4Byte)(data_TXPWR_LMT_8814Amp_end - data_TXPWR_LMT_8814Amp_start);
+ 		}
++			}else
++#endif				
++			{
++				if(HAL_RFE_TYPE == 0){
++					printk("[%s][size TXPWR_LMT_8814Amp_Type0]\n",__FUNCTION__);
++					*((pu4Byte)(val)) = (u4Byte)(data_TXPWR_LMT_8814Amp_Type0_end - data_TXPWR_LMT_8814Amp_Type0_start);
++				}else{
++					printk("[%s][size TXPWR_LMT_8814Amp]\n",__FUNCTION__);
++					*((pu4Byte)(val)) = (u4Byte)(data_TXPWR_LMT_8814Amp_end - data_TXPWR_LMT_8814Amp_start);
++				}
++			}
++		}
+ #endif
+ #endif
+ 	}
+--- a/driver/rtl8192cd/WlanHAL/RTL88XX/Hal88XXPhyCfg.c
++++ b/driver/rtl8192cd/WlanHAL/RTL88XX/Hal88XXPhyCfg.c
+@@ -796,6 +796,7 @@ void TxPG_CCK_8814
+ 		for(rate=TX_AGC_CCK_1M;rate<=TX_AGC_CCK_11M;rate++){
+ 			//printk("CurrentTxAgcCCK[%d][%d]=%x + %x = ",path,rate,Adapter->pshare->phw->CurrentTxAgcCCK[path][rate],(unsigned char)*(pTxAgcOffset+rate));
+ 			Adapter->pshare->phw->CurrentTxAgcCCK[path][rate] += (unsigned char)*(pTxAgcOffset+rate);
++			Adapter->pshare->phw->CurrentTxAgcCCK[path][rate] = HAL_POWER_RANGE_CHECK(Adapter->pshare->phw->CurrentTxAgcCCK[path][rate]);
+             PHYSetTxPower88XX(Adapter, rate, rate, path, Adapter->pshare->phw->CurrentTxAgcCCK[path][rate]);
+ 			//printk("CurrentTxAgcCCK[%d][%d]=%x\n",path,rate,Adapter->pshare->phw->CurrentTxAgcCCK[path][rate]);
+ 		}
+@@ -829,6 +830,7 @@ void TxPG_OFDM_8814
+ 		for(rate=TX_AGC_OFDM_6M;rate<=TX_AGC_OFDM_54M;rate++){
+ 			//printk("CurrentTxAgcOFDM[%d][%d]=%x + %x = ",path,rate-TX_AGC_OFDM_6M,Adapter->pshare->phw->CurrentTxAgcOFDM[path][rate-TX_AGC_OFDM_6M],(unsigned char)*(pTxAgcOffset+rate-TX_AGC_OFDM_6M));
+ 			Adapter->pshare->phw->CurrentTxAgcOFDM[path][rate-TX_AGC_OFDM_6M] += (unsigned char)*(pTxAgcOffset+rate-TX_AGC_OFDM_6M);
++			Adapter->pshare->phw->CurrentTxAgcOFDM[path][rate-TX_AGC_OFDM_6M] = HAL_POWER_RANGE_CHECK(Adapter->pshare->phw->CurrentTxAgcOFDM[path][rate-TX_AGC_OFDM_6M]);
+             PHYSetTxPower88XX(Adapter, rate, rate, path, Adapter->pshare->phw->CurrentTxAgcOFDM[path][rate-TX_AGC_OFDM_6M]);
+ 			//printk("CurrentTxAgcOFDM[%d][%d]=%x\n",path,rate-TX_AGC_OFDM_6M,Adapter->pshare->phw->CurrentTxAgcOFDM[path][rate-TX_AGC_OFDM_6M]);
+ 		}
+@@ -844,6 +846,7 @@ void TxPG_OFDM_8814
+ 		for(rate=TX_AGC_HT_NSS1_MCS0;rate<=TX_AGC_HT_NSS3_MCS23;rate++){
+ 			//printk("CurrentTxAgcMCS[%d][%d]=%x + %x = ",path,rate-TX_AGC_HT_NSS1_MCS0,Adapter->pshare->phw->CurrentTxAgcMCS[path][rate-TX_AGC_HT_NSS1_MCS0],(unsigned char)*(pTxAgcOffset+rate-TX_AGC_HT_NSS1_MCS0));
+ 			Adapter->pshare->phw->CurrentTxAgcMCS[path][rate-TX_AGC_HT_NSS1_MCS0] += (unsigned char)*(pTxAgcOffset+rate-TX_AGC_HT_NSS1_MCS0);
++			Adapter->pshare->phw->CurrentTxAgcMCS[path][rate-TX_AGC_HT_NSS1_MCS0] = HAL_POWER_RANGE_CHECK(Adapter->pshare->phw->CurrentTxAgcMCS[path][rate-TX_AGC_HT_NSS1_MCS0]);
+             PHYSetTxPower88XX(Adapter, rate, rate, path, Adapter->pshare->phw->CurrentTxAgcMCS[path][rate-TX_AGC_HT_NSS1_MCS0]);			
+ 			//printk("CurrentTxAgcMCS[%d][%d]=%x\n",path,rate-TX_AGC_HT_NSS1_MCS0,Adapter->pshare->phw->CurrentTxAgcMCS[path][rate-TX_AGC_HT_NSS1_MCS0]);
+ 		}
+@@ -864,6 +867,7 @@ void TxPG_OFDM_8814
+ 				Adapter->pshare->phw->CurrentTxAgcVHT[path][rate-TX_AGC_VHT_NSS1_MCS0] -= (unsigned char)*(pTxAgcOffset+rate-TX_AGC_VHT_NSS1_MCS0);
+ 			else
+ 				Adapter->pshare->phw->CurrentTxAgcVHT[path][rate-TX_AGC_VHT_NSS1_MCS0] += (unsigned char)*(pTxAgcOffset+rate-TX_AGC_VHT_NSS1_MCS0);			
++			Adapter->pshare->phw->CurrentTxAgcVHT[path][rate-TX_AGC_VHT_NSS1_MCS0] = HAL_POWER_RANGE_CHECK(Adapter->pshare->phw->CurrentTxAgcVHT[path][rate-TX_AGC_VHT_NSS1_MCS0]);
+             PHYSetTxPower88XX(Adapter, rate, rate, path, Adapter->pshare->phw->CurrentTxAgcVHT[path][rate-TX_AGC_VHT_NSS1_MCS0]);			
+ 			//printk("CurrentTxAgcVHT[%d][%d]=%x\n",path,rate-TX_AGC_VHT_NSS1_MCS0,Adapter->pshare->phw->CurrentTxAgcVHT[path][rate-TX_AGC_VHT_NSS1_MCS0]);
+ 		}
+@@ -2506,10 +2510,6 @@ PHYSetCCKTxPower88XX_AC(
+     u1Byte HAL_VAR_pwrlevelCCK_X[4] = {HAL_VAR_pwrlevelCCK_A(channel - 1), HAL_VAR_pwrlevelCCK_B(channel - 1), 			
+ 		HAL_VAR_pwrlevelCCK_C(channel - 1), HAL_VAR_pwrlevelCCK_D(channel - 1)
+ 		};
+-#if CFG_HAL_POWER_PERCENT_ADJUSTMENT
+-	s1Byte pwrdiff_percent = HAL_PwrPercent2PwrLevel(HAL_VAR_power_percent);
+-	u1Byte path, rate;
+-#endif
+ 
+ 	if (channel > 0)
+ 		ch_idx = (channel - 1);
+@@ -2688,16 +2688,6 @@ PHYSetCCKTxPower88XX_AC(
+         }  
+ 	}
+ 
+-#if CFG_HAL_POWER_PERCENT_ADJUSTMENT
+-	for(path=0;path<4;path++){
+-		for(rate=TX_AGC_CCK_1M;rate<=TX_AGC_CCK_11M;rate++){
+-			if (Adapter->pshare->phw->CurrentTxAgcCCK[path][rate])
+-				Adapter->pshare->phw->CurrentTxAgcCCK[path][rate] += pwrdiff_percent;
+-		}
+-	}
+-#endif
+-
+-
+ #if IS_RTL8814A_SERIES	
+ 		if(IS_HARDWARE_TYPE_8814A(Adapter)){
+ 			TxPG_CCK_8814(Adapter);
+@@ -2739,10 +2729,6 @@ PHYSetOFDMTxPower88XX_AC(
+ {
+ 	u1Byte ch_idx = 0, no_cali_data = 0;
+ 	u1Byte phy_band = 0;
+-#if CFG_HAL_POWER_PERCENT_ADJUSTMENT
+-	s1Byte pwrdiff_percent = HAL_PwrPercent2PwrLevel(HAL_VAR_power_percent);
+-	u1Byte path, rate;
+-#endif
+ 
+ 	if (channel > 0)
+ 		ch_idx = (channel - 1);
+@@ -2939,39 +2925,6 @@ PHYSetOFDMTxPower88XX_AC(
+ 
+ 
+ 	if (!no_cali_data) {
+-#if CFG_HAL_POWER_PERCENT_ADJUSTMENT
+-		for(path=0;path<4;path++){
+-			for(rate=TX_AGC_OFDM_6M;rate<=TX_AGC_OFDM_54M;rate++){
+-				if (Adapter->pshare->phw->CurrentTxAgcOFDM[path][rate-TX_AGC_OFDM_6M])
+-					Adapter->pshare->phw->CurrentTxAgcOFDM[path][rate-TX_AGC_OFDM_6M] += pwrdiff_percent;
+-			}
+-			for(rate=TX_AGC_HT_NSS1_MCS0;rate<=TX_AGC_HT_NSS1_MCS7;rate++){
+-				if (Adapter->pshare->phw->CurrentTxAgcMCS[path][rate-TX_AGC_HT_NSS1_MCS0])
+-					Adapter->pshare->phw->CurrentTxAgcMCS[path][rate-TX_AGC_HT_NSS1_MCS0] += pwrdiff_percent;
+-			}		
+-			for(rate=TX_AGC_HT_NSS2_MCS8;rate<=TX_AGC_HT_NSS2_MCS15;rate++){
+-				if (Adapter->pshare->phw->CurrentTxAgcMCS[path][rate-TX_AGC_HT_NSS1_MCS0])
+-					Adapter->pshare->phw->CurrentTxAgcMCS[path][rate-TX_AGC_HT_NSS1_MCS0] += pwrdiff_percent;
+-			}
+-			for(rate=TX_AGC_HT_NSS3_MCS16;rate<=TX_AGC_HT_NSS3_MCS23;rate++){
+-				if (Adapter->pshare->phw->CurrentTxAgcMCS[path][rate-TX_AGC_HT_NSS1_MCS0])
+-					Adapter->pshare->phw->CurrentTxAgcMCS[path][rate-TX_AGC_HT_NSS1_MCS0] += pwrdiff_percent;
+-			}
+-			for(rate=TX_AGC_VHT_NSS1_MCS0;rate<=TX_AGC_VHT_NSS1_MCS9;rate++){
+-				if (Adapter->pshare->phw->CurrentTxAgcVHT[path][rate-TX_AGC_VHT_NSS1_MCS0])
+-					Adapter->pshare->phw->CurrentTxAgcVHT[path][rate-TX_AGC_VHT_NSS1_MCS0] += pwrdiff_percent;
+-			}			
+-			for(rate=TX_AGC_VHT_NSS2_MCS0;rate<=TX_AGC_VHT_NSS2_MCS9;rate++){
+-				if (Adapter->pshare->phw->CurrentTxAgcVHT[path][rate-TX_AGC_VHT_NSS1_MCS0])
+-					Adapter->pshare->phw->CurrentTxAgcVHT[path][rate-TX_AGC_VHT_NSS1_MCS0] += pwrdiff_percent;
+-			}
+-			for(rate=TX_AGC_VHT_NSS3_MCS0;rate<=TX_AGC_VHT_NSS3_MCS9;rate++){
+-				if (Adapter->pshare->phw->CurrentTxAgcVHT[path][rate-TX_AGC_VHT_NSS1_MCS0])
+-					Adapter->pshare->phw->CurrentTxAgcVHT[path][rate-TX_AGC_VHT_NSS1_MCS0] += pwrdiff_percent;
+-			}
+-		}
+-#endif
+-
+ #if IS_RTL8814A_SERIES	
+ 		if(IS_HARDWARE_TYPE_8814A(Adapter)){
+ 			TxPG_OFDM_8814(Adapter);
+@@ -3305,6 +3258,8 @@ CalOFDMTxPower5G_88XX_AC(
+         // PATH i, OFDM
+         if(bPathXEn[i]) {
+             pwr_40_1s =  HAL_VAR_pwrlevel5GHT40_1S_X[i];
++            if(pwr_40_1s == 0)
++                pwr_40_1s = 0x12;
+             diff_ofdm_1t = (HAL_VAR_pwrdiff_5G_20BW1S_OFDM1T_X[i] & 0x0f);
+             diff_ofdm_1t = convert_diff_88XX_AC(diff_ofdm_1t);
+             tmp_TPI = pwr_40_1s + diff_ofdm_1t;
+@@ -3329,6 +3284,8 @@ CalOFDMTxPower5G_88XX_AC(
+                 //PATH i, BW20-1S
+                 
+                 pwr_40_1s = HAL_VAR_pwrlevel5GHT40_1S_X[i];
++                if(pwr_40_1s == 0)
++                    pwr_40_1s = 0x12;
+ 				//printk("[%s]pwr_40_1s=%x\n",__FUNCTION__,pwr_40_1s);
+                 diff_bw20_1s = ((HAL_VAR_pwrdiff_5G_20BW1S_OFDM1T_X[i] & 0xf0) >> 4);				
+ 				//printk("[%s]diff_bw20_1s=%x\n",__FUNCTION__,diff_bw20_1s);
+@@ -3387,6 +3344,8 @@ CalOFDMTxPower5G_88XX_AC(
+             if(bPathXEn[i]) {
+                 //PATH i, BW40-1S
+                 pwr_40_1s = HAL_VAR_pwrlevel5GHT40_1S_X_40M[i];
++                if(pwr_40_1s == 0)
++                    pwr_40_1s = 0x12;
+                 tmp_TPI = pwr_40_1s ;
+                 writeVal = (tmp_TPI << 24) | (tmp_TPI << 16) | (tmp_TPI << 8) | tmp_TPI;
+ #if IS_RTL8814A_SERIES
+@@ -3442,6 +3401,8 @@ CalOFDMTxPower5G_88XX_AC(
+                 //PATH X, BW80-1S
+                 pwr_40_1s = (HAL_VAR_pwrlevel5GHT40_1S_X_A[i] +
+                              HAL_VAR_pwrlevel5GHT40_1S_X_B[i]) / 2  ;
++                if(pwr_40_1s == 0)
++                    pwr_40_1s = 0x12;
+                 diff_bw80_1s = ((HAL_VAR_pwrdiff_5G_80BW1S_160BW1S_X[i] & 0xf0) >> 4);
+                 diff_bw80_1s = convert_diff_88XX_AC(diff_bw80_1s);
+                 tmp_TPI = pwr_40_1s + diff_bw80_1s;
+@@ -3605,6 +3566,8 @@ CalOFDMTxPower2G_88XX_AC(
+         // PATH X, OFDM
+         if(bPathXEn[i]) {
+             pwr_40_1s = HAL_VAR_pwrlevelHT40_1S_X[i];
++            if(pwr_40_1s == 0)
++                pwr_40_1s = 0x12;
+             diff_ofdm_1t = (HAL_VAR_pwrdiff_20BW1S_OFDM1T_X[i] & 0x0f);
+             diff_ofdm_1t = convert_diff_88XX_AC(diff_ofdm_1t);
+             tmp_TPI = pwr_40_1s + diff_ofdm_1t;
+@@ -3627,6 +3590,8 @@ CalOFDMTxPower2G_88XX_AC(
+             if(bPathXEn[i]) {   
+                 //PATH A, BW20-1S
+                 pwr_40_1s = HAL_VAR_pwrlevelHT40_1S_X[i];
++                if(pwr_40_1s == 0)
++                    pwr_40_1s = 0x12;
+                 diff_bw20_1s = ((HAL_VAR_pwrdiff_20BW1S_OFDM1T_X[i] & 0xf0) >> 4);
+                 diff_bw20_1s = convert_diff_88XX_AC(diff_bw20_1s);
+                 tmp_TPI = pwr_40_1s + diff_bw20_1s;
+@@ -3680,6 +3645,8 @@ CalOFDMTxPower2G_88XX_AC(
+             if(bPathXEn[i]) {
+                 //PATH A, BW40-1S
+                 pwr_40_1s = HAL_VAR_pwrlevelHT40_1S_X_40M[i];
++                if(pwr_40_1s == 0)
++                    pwr_40_1s = 0x12;
+                 tmp_TPI = pwr_40_1s ;
+                 writeVal = (tmp_TPI << 24) | (tmp_TPI << 16) | (tmp_TPI << 8) | tmp_TPI;
+ #if IS_RTL8814A_SERIES
+--- a/driver/rtl8192cd/WlanHAL/RTL88XX/RTL8814A/Hal8814ADef.h
++++ b/driver/rtl8192cd/WlanHAL/RTL88XX/RTL8814A/Hal8814ADef.h
+@@ -74,6 +74,7 @@ extern u1Byte *data_PHY_REG_8814Amp_star
+ //extern u1Byte *data_PHY_REG_1T_8814A_start, *data_PHY_REG_1T_8814A_end;
+ extern u1Byte *data_PHY_REG_MP_8814Amp_start, *data_PHY_REG_MP_8814Amp_end;
+ extern u1Byte *data_PHY_REG_PG_8814Amp_start, *data_PHY_REG_PG_8814Amp_end;
++extern u1Byte *data_PHY_REG_PG_8814Amp_Type0_start, *data_PHY_REG_PG_8814Amp_Type0_end;
+ extern u1Byte *data_RadioA_8814Amp_start,     *data_RadioA_8814Amp_end;
+ extern u1Byte *data_RadioB_8814Amp_start,     *data_RadioB_8814Amp_end;
+ extern u1Byte *data_RadioC_8814Amp_start,     *data_RadioC_8814Amp_end;
+@@ -84,7 +85,10 @@ extern u1Byte *data_RadioD_8814Amp_start
+ #if CFG_HAL_HIGH_POWER_EXT_PA
+ extern u1Byte *data_AGC_TAB_8814Amp_hp_start,    *data_AGC_TAB_8814Amp_hp_end;
+ extern u1Byte *data_PHY_REG_8814Amp_hp_start,    *data_PHY_REG_8814Amp_hp_end;
+-extern u1Byte *data_PHY_REG_PG_8814Amp_hp_start, *data_PHY_REG_PG_8814Amp_hp_end;
++extern u1Byte *data_PHY_REG_PG_8814Amp_Type2_start, *data_PHY_REG_PG_8814Amp_Type2_end;
++extern u1Byte *data_PHY_REG_PG_8814Amp_Type3_start, *data_PHY_REG_PG_8814Amp_Type3_end;
++extern u1Byte *data_PHY_REG_PG_8814Amp_Type4_start, *data_PHY_REG_PG_8814Amp_Type4_end;
++extern u1Byte *data_PHY_REG_PG_8814Amp_Type5_start, *data_PHY_REG_PG_8814Amp_Type5_end;
+ extern u1Byte *data_RadioA_8814Amp_hp_start,     *data_RadioA_8814Amp_hp_end;
+ extern u1Byte *data_RadioB_8814Amp_hp_start,     *data_RadioB_8814Amp_hp_end;
+ extern u1Byte *data_RadioC_8814Amp_hp_start,     *data_RadioC_8814Amp_hp_end;
+@@ -100,6 +104,13 @@ extern u1Byte *data_TxPowerTrack_AP_8814
+ 
+ #ifdef TXPWR_LMT_8814A
+ extern unsigned char *data_TXPWR_LMT_8814Amp_start, *data_TXPWR_LMT_8814Amp_end;
++extern unsigned char *data_TXPWR_LMT_8814Amp_Type0_start, *data_TXPWR_LMT_8814Amp_Type0_end;
++#if CFG_HAL_HIGH_POWER_EXT_PA
++extern unsigned char *data_TXPWR_LMT_8814Amp_Type2_start, *data_TXPWR_LMT_8814Amp_Type2_end;
++extern unsigned char *data_TXPWR_LMT_8814Amp_Type3_start, *data_TXPWR_LMT_8814Amp_Type3_end;
++extern unsigned char *data_TXPWR_LMT_8814Amp_Type4_start, *data_TXPWR_LMT_8814Amp_Type4_end;
++extern unsigned char *data_TXPWR_LMT_8814Amp_Type5_start, *data_TXPWR_LMT_8814Amp_Type5_end;
++#endif
+ #endif
+ 
+ 
+--- a/driver/rtl8192cd/WlanHAL/RTL88XX/RTL8814A/Hal8814AGen.c
++++ b/driver/rtl8192cd/WlanHAL/RTL88XX/RTL8814A/Hal8814AGen.c
+@@ -94,6 +94,18 @@ VAR_MAPPING(TxPowerTrack_AP_8814A, TxPow
+ #ifdef TXPWR_LMT_8814A
+ #include "../../../data_TXPWR_LMT_8814Amp.c"
+ VAR_MAPPING(TXPWR_LMT_8814Amp,TXPWR_LMT_8814Amp);
++#include "../../../data_TXPWR_LMT_8814Amp_Type0.c"
++VAR_MAPPING(TXPWR_LMT_8814Amp_Type0,TXPWR_LMT_8814Amp_Type0);
++#if CFG_HAL_HIGH_POWER_EXT_PA
++#include "../../../data_TXPWR_LMT_8814Amp_Type2.c"
++VAR_MAPPING(TXPWR_LMT_8814Amp_Type2,TXPWR_LMT_8814Amp_Type2);
++#include "../../../data_TXPWR_LMT_8814Amp_Type3.c"
++VAR_MAPPING(TXPWR_LMT_8814Amp_Type3,TXPWR_LMT_8814Amp_Type3);
++#include "../../../data_TXPWR_LMT_8814Amp_Type4.c"
++VAR_MAPPING(TXPWR_LMT_8814Amp_Type4,TXPWR_LMT_8814Amp_Type4);
++#include "../../../data_TXPWR_LMT_8814Amp_Type5.c"
++VAR_MAPPING(TXPWR_LMT_8814Amp_Type5,TXPWR_LMT_8814Amp_Type5);
++#endif
+ #endif
+ 
+ //3 MACDM
+@@ -118,6 +130,7 @@ VAR_MAPPING(MACDM_state_criteria_8814A,
+ #include "data_PHY_REG_8814Amp.c"
+ #include "data_PHY_REG_MP_8814Amp.c"
+ #include "data_PHY_REG_PG_8814Amp.c"
++#include "data_PHY_REG_PG_8814Amp_Type0.c"
+ #include "data_RadioA_8814Amp.c"
+ #include "data_RadioB_8814Amp.c"
+ #include "data_RadioC_8814Amp.c"
+@@ -128,7 +141,10 @@ VAR_MAPPING(MACDM_state_criteria_8814A,
+ #if CFG_HAL_HIGH_POWER_EXT_PA
+ #include "data_AGC_TAB_8814Amp_hp.c"
+ #include "data_PHY_REG_8814Amp_hp.c"
+-#include "data_PHY_REG_PG_8814Amp_hp.c"
++#include "data_PHY_REG_PG_8814Amp_Type2.c"
++#include "data_PHY_REG_PG_8814Amp_Type3.c"
++#include "data_PHY_REG_PG_8814Amp_Type4.c"
++#include "data_PHY_REG_PG_8814Amp_Type5.c"
+ #include "data_RadioA_8814Amp_hp.c"
+ #include "data_RadioB_8814Amp_hp.c"
+ #include "data_RadioC_8814Amp_hp.c"
+@@ -143,6 +159,7 @@ VAR_MAPPING(AGC_TAB_8814Amp, AGC_TAB_881
+ VAR_MAPPING(MAC_REG_8814Amp, MAC_REG_8814Amp);
+ VAR_MAPPING(PHY_REG_8814Amp, PHY_REG_8814Amp);
+ VAR_MAPPING(PHY_REG_PG_8814Amp, PHY_REG_PG_8814Amp);
++VAR_MAPPING(PHY_REG_PG_8814Amp_Type0, PHY_REG_PG_8814Amp_Type0);
+ VAR_MAPPING(PHY_REG_MP_8814Amp, PHY_REG_MP_8814Amp);
+ VAR_MAPPING(RadioA_8814Amp, RadioA_8814Amp);
+ VAR_MAPPING(RadioB_8814Amp, RadioB_8814Amp);
+@@ -154,7 +171,10 @@ VAR_MAPPING(rtl8814AfwMP, rtl8814AfwMP);
+ #if CFG_HAL_HIGH_POWER_EXT_PA
+ VAR_MAPPING(AGC_TAB_8814Amp_hp, AGC_TAB_8814Amp_hp);
+ VAR_MAPPING(PHY_REG_8814Amp_hp, PHY_REG_8814Amp_hp);
+-VAR_MAPPING(PHY_REG_PG_8814Amp_hp, PHY_REG_PG_8814Amp_hp);
++VAR_MAPPING(PHY_REG_PG_8814Amp_Type2, PHY_REG_PG_8814Amp_Type2);
++VAR_MAPPING(PHY_REG_PG_8814Amp_Type3, PHY_REG_PG_8814Amp_Type3);
++VAR_MAPPING(PHY_REG_PG_8814Amp_Type4, PHY_REG_PG_8814Amp_Type4);
++VAR_MAPPING(PHY_REG_PG_8814Amp_Type5, PHY_REG_PG_8814Amp_Type5);
+ VAR_MAPPING(RadioA_8814Amp_hp, RadioA_8814Amp_hp);
+ VAR_MAPPING(RadioB_8814Amp_hp, RadioB_8814Amp_hp);
+ VAR_MAPPING(RadioC_8814Amp_hp, RadioC_8814Amp_hp);
+--- a/driver/rtl8192cd/config.mk
++++ b/driver/rtl8192cd/config.mk
+@@ -72,7 +72,7 @@ CONFIG_MP_PSD_SUPPORT :=n
+ CONFIG_RTL_P2P_SUPPORT :=n
+ CONFIG_RTL_MESH_SUPPORT :=n
+ CONFIG_RTL_WLAN_DOS_FILTER :=n
+-CONFIG_TXPWR_LMT :=n
++CONFIG_TXPWR_LMT :=y
+ CONFIG_RTL_WPS2_SUPPORT :=y
+ 
+ # Select WLan PHY Clock Source, 40MHz/25MHz. For WLan module, we use 40MHz usually

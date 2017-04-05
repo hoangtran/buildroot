@@ -1,0 +1,26 @@
+diff --git a/driver/rtl8192cd/8192cd_rx.c b/driver/rtl8192cd/8192cd_rx.c
+index 95264ab..5e8dab6 100644
+--- a/driver/rtl8192cd/8192cd_rx.c
++++ b/driver/rtl8192cd/8192cd_rx.c
+@@ -7151,7 +7151,7 @@ static struct rx_frinfo *defrag_frame_main(struct rtl8192cd_priv *priv, struct r
+ 	{
+ 		status = _RSON_CLS2_;
+ 		priv->ext_stats.rx_data_drops++;
+-		DEBUG_ERR("RX DROP: class 2 error!\n");
++		DEBUG_WARN("RX DROP: class 2 error!\n");
+ 		goto data_defrag_error;
+ 	}
+ 	else if (!(pstat->state & WIFI_ASOC_STATE))
+diff --git a/driver/rtl8192cd/8192cd_tx.c b/driver/rtl8192cd/8192cd_tx.c
+index 3ea4dc1..d3ecef4 100644
+--- a/driver/rtl8192cd/8192cd_tx.c
++++ b/driver/rtl8192cd/8192cd_tx.c
+@@ -1061,7 +1061,7 @@ int rtl8192cd_tx_slowPath(struct rtl8192cd_priv *priv, struct sk_buff *skb, stru
+ 		(*((UINT16 *)((UINT8 *)skb->data + ETH_ALEN*2)) != htons(0x888e)) &&
+ 		(!(OPMODE & WIFI_ADHOC_STATE)))
+ 	{
+-		DEBUG_ERR("TX DROP: control port not authorized!\n");
++		DEBUG_WARN("TX DROP: control port not authorized!\n");
+ 		rtl8192cd_tx_xmitSkbFail(priv, skb, dev, wdsDev, txcfg);
+ 		goto stop_proc;
+ 	}

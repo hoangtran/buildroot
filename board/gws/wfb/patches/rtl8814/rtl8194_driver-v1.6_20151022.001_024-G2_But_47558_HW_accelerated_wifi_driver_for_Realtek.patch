@@ -1,0 +1,37 @@
+From a502a97dad53c17974c6a243d5c68c6634f31cf3 Mon Sep 17 00:00:00 2001
+From: Allan Dickow <allan.dickow@greenwavesystems.com>
+Date: Wed, 16 Mar 2016 15:18:09 +0100
+Subject: [PATCH 2/3] ref: G2-But-47558-HW-accelerated-wifi-driver-for-Realtek
+
+---
+ driver/rtl8192cd/8192cd_osdep.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
+
+diff --git a/driver/rtl8192cd/8192cd_osdep.c b/driver/rtl8192cd/8192cd_osdep.c
+index fa4fc14..50bc0ed 100644
+--- a/driver/rtl8192cd/8192cd_osdep.c
++++ b/driver/rtl8192cd/8192cd_osdep.c
+@@ -8285,10 +8285,6 @@ int rtl8192cd_close(struct net_device *dev)
+ 	}
+ #endif
+ 
+-#ifdef CONFIG_CS75XX_RTL8192CD_HW_ACCEL_WIRELESS
+-        cs_hw_accel_wireless_unregister(dev);
+-#endif 
+-
+ #ifdef RTK_NL80211//survey_dump
+ 	/*
+ 	priv->rtk->tx_time = 0;
+@@ -8706,6 +8702,9 @@ int rtl8192cd_close(struct net_device *dev)
+ 	RESTORE_INT(flags);
+ 	SMP_UNLOCK(flags);
+ 
++#ifdef CONFIG_CS75XX_RTL8192CD_HW_ACCEL_WIRELESS
++        cs_hw_accel_wireless_unregister(dev);
++#endif 
+ #if 0//def  CONFIG_WLAN_HAL
+ #if defined( MBSSID) || defined(UNIVERSAL_REPEATER)
+         if (IS_ROOT_INTERFACE(priv))
+-- 
+1.9.1
+

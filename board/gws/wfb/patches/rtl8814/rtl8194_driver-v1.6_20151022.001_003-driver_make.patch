@@ -1,0 +1,24 @@
+--- a/driver/rtl8192cd/platform.mk	2015-03-10 10:18:42.000000000 +0100
++++ b/driver/rtl8192cd/platform.mk	2015-07-21 10:57:16.880437716 +0200
+@@ -2,7 +2,7 @@
+ ############################## Chose your Platform ####################################v
+ # _PC_ , _BRLADLIGHT_ , _PUMA6_ , _MNDSPEED_ , _POWERPC_, _ARM_BALONG_, ARM_QUALCOMM_9x15
+ 
+-CONFIG_PLATFORM := _PC_
++CONFIG_PLATFORM := _CORTINA_
+ 
+ ifeq ($(CONFIG_PLATFORM),_PC_)
+ 	EXTRA_CFLAGS += -D_PC_  
+@@ -103,6 +103,12 @@
+    RTL8192CD_NUM_VWLAN := 1
+ endif
+ 
++ifeq ($(CONFIG_PLATFORM),_CORTINA_)
++       EXTRA_CFLAGS += -D_LITTLE_ENDIAN_
++       EXTRA_CFLAGS += -DSMP_SYNC
++       EXTRA_CFLAGS += -DCONFIG_PCI
++endif
++
+ ifeq ($(src), )
+ 	src=$(PWD)
+ endif

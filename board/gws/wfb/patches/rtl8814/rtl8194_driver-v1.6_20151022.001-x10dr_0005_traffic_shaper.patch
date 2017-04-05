@@ -1,0 +1,249 @@
+diff --git a/driver/rtl8192cd/8192cd.h b/driver/rtl8192cd/8192cd.h
+index 7d5cdbf..46fa967 100755
+--- a/driver/rtl8192cd/8192cd.h
++++ b/driver/rtl8192cd/8192cd.h
+@@ -210,6 +210,17 @@ typedef signed long long	INT64;
+ #define USB_RA_MASK				0x1e0fffff		// disable MCS 12, 11, 10, 9, 8
+ #endif
+ 
++/*
++ * GWS traffic shaper default limits. Adjustable using set_mib
++ */
++#define GWS_INGRESS_RATE_MAX 600000000
++#define GWS_INGRESS_RATE_MIN 30000000
++#define GWS_INGRESS_RATE_STEP 10000000
++#define GWS_PACKET_LOOKBACK_CNT 1000
++#define GWS_RATE_RESET_TIMER_MS 5000
++#define GWS_ACCEPTABLE_PACKET_DROP_CNT_UPPER 500
++#define GWS_ACCEPTABLE_PACKET_DROP_CNT_LOWER 200
++
+ #ifdef RTK_BR_EXT
+ #define NAT25_FILTER_ETH_NUM  20
+ #define NAT25_FILTER_IPPROTO_NUM  30
+@@ -3717,6 +3728,7 @@ typedef struct guestmac {
+ #endif
+ 
+ 
++
+ typedef struct rtl8192cd_priv {
+ #if defined(__ECOS) && defined(CONFIG_SDIO_HCI)
+ 	wifi_link_status_cb_func_t	*link_status_cb_func; // for client mode
+@@ -4595,6 +4607,11 @@ typedef struct rtl8192cd_priv {
+ 	int simple_config_could_fix;
+ #endif
+ 	unsigned char take_over_hidden;
++
++	unsigned long gws_pkt_cnt;
++	unsigned long gws_prev_tx_drops;
++	struct timer_list gws_check_drop_rate_timer;
++
+ } RTL8192CD_PRIV, *PRTL8192CD_PRIV;
+ 
+ struct rtl8192cd_chr_priv {
+diff --git a/driver/rtl8192cd/8192cd_ioctl.c b/driver/rtl8192cd/8192cd_ioctl.c
+index 4d16373..dd13738 100644
+--- a/driver/rtl8192cd/8192cd_ioctl.c
++++ b/driver/rtl8192cd/8192cd_ioctl.c
+@@ -1157,6 +1157,13 @@ static struct iwpriv_arg mib_table[] = {
+ 	{"max_handle_xmitbuf",    INT_T,      _OFFSET(miscEntry.max_handle_xmitbuf), _SIZE(miscEntry.max_handle_xmitbuf), 1},
+ 	{"max_handle_recvbuf",    INT_T,      _OFFSET(miscEntry.max_handle_recvbuf), _SIZE(miscEntry.max_handle_recvbuf), 2},
+ #endif
++	{"gws_ingress_rate_max", INT_T, _OFFSET(miscEntry.gws_ingress_rate_max), _SIZE(miscEntry.gws_ingress_rate_max), GWS_INGRESS_RATE_MAX},
++	{"gws_ingress_rate_min", INT_T, _OFFSET(miscEntry.gws_ingress_rate_min), _SIZE(miscEntry.gws_ingress_rate_min), GWS_INGRESS_RATE_MIN},
++	{"gws_ingress_rate_step", INT_T, _OFFSET(miscEntry.gws_ingress_rate_step), _SIZE(miscEntry.gws_ingress_rate_step), GWS_INGRESS_RATE_STEP},
++	{"gws_packet_lookback_cnt", INT_T, _OFFSET(miscEntry.gws_packet_lookback_cnt), _SIZE(miscEntry.gws_packet_lookback_cnt), GWS_PACKET_LOOKBACK_CNT},
++	{"gws_packet_drop_cnt_lower", INT_T, _OFFSET(miscEntry.gws_packet_drop_cnt_lower), _SIZE(miscEntry.gws_packet_drop_cnt_lower), GWS_ACCEPTABLE_PACKET_DROP_CNT_LOWER},
++	{"gws_packet_drop_cnt_upper", INT_T, _OFFSET(miscEntry.gws_packet_drop_cnt_upper), _SIZE(miscEntry.gws_packet_drop_cnt_upper), GWS_ACCEPTABLE_PACKET_DROP_CNT_UPPER},
++	{"gws_current_ingress_rate_limit", INT_T, _OFFSET(miscEntry.gws_current_ingress_rate_limit), _SIZE(miscEntry.gws_current_ingress_rate_limit), GWS_INGRESS_RATE_MAX},
+ 	//struct Dot11QosEntry
+ #ifdef WIFI_WMM
+ 	{"qos_enable",	INT_T,		_OFFSET(dot11QosEntry.dot11QosEnable), _SIZE(dot11QosEntry.dot11QosEnable), 0},
+diff --git a/driver/rtl8192cd/8192cd_mib.c b/driver/rtl8192cd/8192cd_mib.c
+index adf10f8..f247312 100755
+--- a/driver/rtl8192cd/8192cd_mib.c
++++ b/driver/rtl8192cd/8192cd_mib.c
+@@ -131,7 +131,14 @@ struct mib_val dot11_mib_table[]={
+ 	{ {2, 1, 1, 15, 1, -1}, "dot11LedType", MIB_TYPE_PRIV,PRIV_OFFSET(dot11OperationEntry.ledtype), PRIV_SIZE(dot11OperationEntry.ledtype)},						
+ 	{ {2, 1, 1, 16, 1, -1}, "dot11OperationMode", MIB_TYPE_PRIV,PRIV_OFFSET(dot11OperationEntry.opmode), PRIV_SIZE(dot11OperationEntry.opmode)},	
+ 	{ {2, 1, 1, 17, 1, -1}, "dot11BroadCastSSID", MIB_TYPE_PRIV,PRIV_OFFSET(miscEntry.show_hidden_bss), PRIV_SIZE(miscEntry.show_hidden_bss)},
+-	{ {2, 1, 1, 18, 1, -1}, "dot11GuestAccess", MIB_TYPE_PRIV,PRIV_OFFSET(dot11OperationEntry.guest_access), PRIV_SIZE(dot11OperationEntry.guest_access)},	
++	{ {2, 1, 1, 18, 1, -1}, "dot11GuestAccess", MIB_TYPE_PRIV,PRIV_OFFSET(dot11OperationEntry.guest_access), PRIV_SIZE(dot11OperationEntry.guest_access)},
++	{ {2, 1, 1, 19, 1, -1}, "gws_ingress_rate_max", MIB_TYPE_PRIV,PRIV_OFFSET(miscEntry.gws_ingress_rate_max), PRIV_SIZE(miscEntry.gws_ingress_rate_max)},
++	{ {2, 1, 1, 20, 1, -1}, "gws_ingress_rate_min", MIB_TYPE_PRIV,PRIV_OFFSET(miscEntry.gws_ingress_rate_min), PRIV_SIZE(miscEntry.gws_ingress_rate_min)},
++	{ {2, 1, 1, 21, 1, -1}, "gws_ingress_rate_step", MIB_TYPE_PRIV,PRIV_OFFSET(miscEntry.gws_ingress_rate_step), PRIV_SIZE(miscEntry.gws_ingress_rate_step)},
++	{ {2, 1, 1, 22, 1, -1}, "gws_packet_lookback_cnt", MIB_TYPE_PRIV,PRIV_OFFSET(miscEntry.gws_packet_lookback_cnt), PRIV_SIZE(miscEntry.gws_packet_lookback_cnt)},
++	{ {2, 1, 1, 23, 1, -1}, "gws_packet_drop_cnt_lower", MIB_TYPE_PRIV,PRIV_OFFSET(miscEntry.gws_packet_drop_cnt_lower), PRIV_SIZE(miscEntry.gws_packet_drop_cnt_lower)},
++	{ {2, 1, 1, 24, 1, -1}, "gws_packet_drop_cnt_upper", MIB_TYPE_PRIV,PRIV_OFFSET(miscEntry.gws_packet_drop_cnt_upper), PRIV_SIZE(miscEntry.gws_packet_drop_cnt_upper)},
++	{ {2, 1, 1, 25, 1, -1}, "gws_current_ingress_rate_limit", MIB_TYPE_PRIV,PRIV_OFFSET(miscEntry.gws_current_ingress_rate_limit), PRIV_SIZE(miscEntry.gws_current_ingress_rate_limit)},
+ 
+ 	//dot11CountersTable
+ 	{ {2, 2, 1, 1, 1, -1}, "dot11TransmittedFragmentCount", MIB_TYPE_SNMP, SNMP_OFFSET(dot11TransmittedFragmentCount), SNMP_SIZE(dot11TransmittedFragmentCount)},
+diff --git a/driver/rtl8192cd/8192cd_osdep.c b/driver/rtl8192cd/8192cd_osdep.c
+index 87769c8..4e24105 100644
+--- a/driver/rtl8192cd/8192cd_osdep.c
++++ b/driver/rtl8192cd/8192cd_osdep.c
+@@ -7455,6 +7455,8 @@ priv->drv_state |= DRV_STATE_OPEN;      // set driver as has been opened, david
+ #endif
+ #endif
+ 
++	gws_ingress_rate_limiter_init(priv);
++
+ #ifdef MULTI_MAC_CLONE
+ 	for (i=0; i<MAX_MAC_CLONE_NUM; i++) {
+ 	    if (priv->pshare->mclone_sta[i].isTimerInit == 0) {// if it is used, do not re-init
+@@ -8690,6 +8692,8 @@ int rtl8192cd_close(struct net_device *dev)
+ #endif
+ 	}
+ 
++	gws_ingress_rate_limiter_close(priv);
++
+ 	RESTORE_INT(flags);
+ 	SMP_UNLOCK(flags);
+ 	rtl8192cd_stop_sw(priv);
+diff --git a/driver/rtl8192cd/8192cd_proc.c b/driver/rtl8192cd/8192cd_proc.c
+index eea2f06..9736f9f 100755
+--- a/driver/rtl8192cd/8192cd_proc.c
++++ b/driver/rtl8192cd/8192cd_proc.c
+@@ -3731,6 +3731,13 @@ static int rtl8192cd_proc_mib_misc(char *buf, char **start, off_t offset,
+ 	}
+ #endif	
+ 
++	PRINT_SINGL_ARG("    GWS - max ingress rate:                     ", priv->pmib->miscEntry.gws_ingress_rate_max, "%lu bps");
++	PRINT_SINGL_ARG("    GWS - min ingress rate:                     ", priv->pmib->miscEntry.gws_ingress_rate_min, "%lu bps");
++	PRINT_SINGL_ARG("    GWS - ingress rate step:                    ", priv->pmib->miscEntry.gws_ingress_rate_step, "%lu bps");
++	PRINT_SINGL_ARG("    GWS - current ingress rate limit:           ", priv->pmib->miscEntry.gws_current_ingress_rate_limit, "%lu bps");
++	PRINT_SINGL_ARG("    GWS - packet lookback count:                ", priv->pmib->miscEntry.gws_packet_lookback_cnt, "%lu");
++	PRINT_SINGL_ARG("    GWS - packet lookback drop lower threshold: ", priv->pmib->miscEntry.gws_packet_drop_cnt_lower, "%lu");
++	PRINT_SINGL_ARG("    GWS - packet lookback drop upper threshold: ", priv->pmib->miscEntry.gws_packet_drop_cnt_upper, "%lu");
+ 
+ 	return pos;
+ }
+diff --git a/driver/rtl8192cd/8192cd_tx.c b/driver/rtl8192cd/8192cd_tx.c
+index bab9962..fefc39f 100644
+--- a/driver/rtl8192cd/8192cd_tx.c
++++ b/driver/rtl8192cd/8192cd_tx.c
+@@ -167,7 +167,84 @@ int __rtl8192cd_start_xmit(struct sk_buff*skb, struct net_device *dev, int tx_fg
+ extern struct sk_buff *copy_skb(struct sk_buff *skb);
+ #endif
+ 
++/** Set ingress max rate directly in NE */
++extern int cs_qos_ingress_set_port_param(u8 port_id, u16 burst_size, u32 rate);
+ 
++static inline void gws_set_ingress_rate(struct rtl8192cd_priv *priv, unsigned long rate)
++{
++	priv->pmib->miscEntry.gws_current_ingress_rate_limit = rate;
++	cs_qos_ingress_set_port_param(3, 256, priv->pmib->miscEntry.gws_current_ingress_rate_limit);
++}
++
++static inline void gws_ingress_rate_limiter_inc_rate(struct rtl8192cd_priv *priv)
++{
++	if ((priv->pmib->miscEntry.gws_current_ingress_rate_limit + priv->pmib->miscEntry.gws_ingress_rate_step) <= priv->pmib->miscEntry.gws_ingress_rate_max) {
++		gws_set_ingress_rate(priv, priv->pmib->miscEntry.gws_current_ingress_rate_limit + priv->pmib->miscEntry.gws_ingress_rate_step);
++	}
++}
++
++static inline void gws_ingress_rate_limiter_dec_rate(struct rtl8192cd_priv *priv)
++{
++	if ((priv->pmib->miscEntry.gws_current_ingress_rate_limit - priv->pmib->miscEntry.gws_ingress_rate_step) >= priv->pmib->miscEntry.gws_ingress_rate_min) {
++		gws_set_ingress_rate(priv, priv->pmib->miscEntry.gws_current_ingress_rate_limit - priv->pmib->miscEntry.gws_ingress_rate_step);
++	}
++}
++
++static void gws_ingress_rate_limiter_adjust(struct rtl8192cd_priv *priv)
++{
++	unsigned long drops;
++
++	drops = priv->ext_stats.tx_drops - priv->gws_prev_tx_drops;
++	priv->gws_prev_tx_drops = priv->ext_stats.tx_drops;
++
++	if (drops > priv->pmib->miscEntry.gws_packet_drop_cnt_upper
++		&& priv->pmib->miscEntry.gws_current_ingress_rate_limit > priv->pmib->miscEntry.gws_ingress_rate_min) {
++		gws_ingress_rate_limiter_dec_rate(priv);
++	} else if (drops < priv->pmib->miscEntry.gws_packet_drop_cnt_lower
++	    && priv->pmib->miscEntry.gws_current_ingress_rate_limit < priv->pmib->miscEntry.gws_ingress_rate_max) {
++		gws_ingress_rate_limiter_inc_rate(priv);
++	}
++	mod_timer(&priv->gws_check_drop_rate_timer, jiffies + msecs_to_jiffies(GWS_RATE_RESET_TIMER_MS));
++	DEBUG_WARN("GWS: Set rate = %u\n", priv->pmib->miscEntry.gws_current_ingress_rate_limit);
++}
++
++static void gws_ingress_rate_limiter_xmit_complete(struct rtl8192cd_priv *priv)
++{
++	if (++priv->gws_pkt_cnt >= priv->pmib->miscEntry.gws_packet_lookback_cnt) {
++		priv->gws_pkt_cnt = 0;
++		if (timer_pending(&priv->gws_check_drop_rate_timer)) {
++			del_timer(&priv->gws_check_drop_rate_timer);
++		}
++		gws_ingress_rate_limiter_adjust(priv);
++	}
++}
++
++static void gws_ingress_rate_limiter_timer_callback(unsigned long data)
++{
++	struct rtl8192cd_priv *priv = (struct rtl8192cd_priv*)data;
++	if (priv != NULL) {
++		gws_set_ingress_rate(priv, priv->pmib->miscEntry.gws_ingress_rate_max);
++	}
++}
++
++void gws_ingress_rate_limiter_init(struct rtl8192cd_priv *priv)
++{
++	priv->gws_pkt_cnt = 0;
++	priv->gws_prev_tx_drops = 0;
++	priv->pmib->miscEntry.gws_current_ingress_rate_limit = GWS_INGRESS_RATE_MAX;
++
++	init_timer(&priv->gws_check_drop_rate_timer);
++	priv->gws_check_drop_rate_timer.function = gws_ingress_rate_limiter_timer_callback;
++	priv->gws_check_drop_rate_timer.data = (unsigned long)priv;
++	mod_timer(&priv->gws_check_drop_rate_timer, jiffies + msecs_to_jiffies(GWS_RATE_RESET_TIMER_MS));
++}
++
++void gws_ingress_rate_limiter_close(struct rtl8192cd_priv *priv)
++{
++	if (timer_pending(&priv->gws_check_drop_rate_timer)) {
++		del_timer_sync(&priv->gws_check_drop_rate_timer);
++	}
++}
+ 
+ unsigned int get_tx_rate(struct rtl8192cd_priv *priv, struct stat_info *pstat)
+ {
+@@ -9741,7 +9818,7 @@ free_and_stop:		/* Free current packet and stop TX process */
+ 	rtl_kfree_skb(priv, skb, _SKB_TX_);
+ 
+ stop_proc:			/* Stop process and assume the TX-ed packet is already "processed" (freed or TXed) in previous code. */
+-	
++	gws_ingress_rate_limiter_xmit_complete(priv);
+ #if defined(CONFIG_USB_HCI) || defined(CONFIG_SDIO_HCI)
+ 	rtw_handle_xmit_fail(priv, txcfg);
+ #endif
+diff --git a/driver/rtl8192cd/8192cd_tx.h b/driver/rtl8192cd/8192cd_tx.h
+index a5e859c..351a614 100755
+--- a/driver/rtl8192cd/8192cd_tx.h
++++ b/driver/rtl8192cd/8192cd_tx.h
+@@ -205,5 +205,8 @@ static __inline__ void tx_poll(struct rtl8192cd_priv *priv, int q_num)
+ 
+ #endif //#ifndef WLAN_HAL_INTERNAL_USED
+ 
++void gws_ingress_rate_limiter_init(struct rtl8192cd_priv *priv);
++void gws_ingress_rate_limiter_close(struct rtl8192cd_priv *priv);
++
+ #endif // _8192CD_TX_H_
+ 
+diff --git a/driver/rtl8192cd/ieee802_mib.h b/driver/rtl8192cd/ieee802_mib.h
+index c569819..b902084 100755
+--- a/driver/rtl8192cd/ieee802_mib.h
++++ b/driver/rtl8192cd/ieee802_mib.h
+@@ -581,6 +581,13 @@ struct MiscEntry {
+ 	unsigned int	max_recvbuf_agg;
+ 	unsigned int	max_handle_xmitbuf;
+ 	unsigned int	max_handle_recvbuf;
++	unsigned int    gws_ingress_rate_max;
++	unsigned int    gws_ingress_rate_min;
++	unsigned int    gws_ingress_rate_step;
++	unsigned int    gws_packet_lookback_cnt;
++	unsigned int    gws_packet_drop_cnt_lower;
++	unsigned int    gws_packet_drop_cnt_upper;
++	unsigned int    gws_current_ingress_rate_limit;
+ };
+ 
+ struct ParaRecord {

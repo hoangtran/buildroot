@@ -1,0 +1,84 @@
+diff -Nur --exclude '*.orig' rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/8192cd_debug.h rtl8194_driver_v1.6_20151022.001-new/driver/rtl8192cd/8192cd_debug.h
+--- rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/8192cd_debug.h	2016-12-14 10:29:39.293015633 +0100
++++ rtl8194_driver_v1.6_20151022.001-new/driver/rtl8192cd/8192cd_debug.h	2016-12-14 10:29:22.568899131 +0100
+@@ -242,16 +242,16 @@
+ 
+ #define __DEBUG_ERR(name, fmt, args...) \
+ 	if (rtl8192cd_debug_err&_MODULE_DEFINE) \
+-		printk("%s-"_MODULE_NAME"-err: " fmt, name, ## args);
++		printk(KERN_ERR "%s-"_MODULE_NAME"-err: " fmt, name, ## args);
+ #define __DEBUG_TRACE(name) \
+ 	if (rtl8192cd_debug_trace&_MODULE_DEFINE) \
+-		printk("%s-"_MODULE_NAME"-trace: %s----->\n", name, (char *)__FUNCTION__);
++		printk(KERN_DEBUG "%s-"_MODULE_NAME"-trace: %s----->\n", name, (char *)__FUNCTION__);
+ #define __DEBUG_INFO(name, fmt, args...) \
+ 	if (rtl8192cd_debug_info&_MODULE_DEFINE) \
+-		printk("%s-"_MODULE_NAME"-info: " fmt, name, ## args);
++		printk(KERN_INFO "%s-"_MODULE_NAME"-info: " fmt, name, ## args);
+ #define __DEBUG_WARN(name, fmt, args...) \
+ 	if (rtl8192cd_debug_warn&_MODULE_DEFINE) \
+-		printk("%s-"_MODULE_NAME"-warn: " fmt, name, ## args);
++		printk(KERN_WARNING "%s-"_MODULE_NAME"-warn: " fmt, name, ## args);
+ 
+ #define DEBUG_ERR(fmt, args...)		__DEBUG_ERR(priv->dev->name, fmt, ## args)
+ #define DEBUG_INFO(fmt, args...)	__DEBUG_INFO(priv->dev->name, fmt, ## args)
+diff -Nur --exclude '*.orig' rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/8192cd_psk.c rtl8194_driver_v1.6_20151022.001-new/driver/rtl8192cd/8192cd_psk.c
+--- rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/8192cd_psk.c	2015-11-13 03:18:29.000000000 +0100
++++ rtl8194_driver_v1.6_20151022.001-new/driver/rtl8192cd/8192cd_psk.c	2016-12-14 10:24:05.218688450 +0100
+@@ -4197,7 +4197,7 @@
+ #else
+ 	if (pstat == NULL && id != DOT11_EVENT_WPA_MULTICAST_CIPHER && id != DOT11_EVENT_WPA2_MULTICAST_CIPHER) {
+ #endif
+-		DEBUG_ERR("Invalid mac address: %02x:%02x:%02x:%02x:%02x:%02x\n",
++		DEBUG_INFO("Invalid mac address: %02x:%02x:%02x:%02x:%02x:%02x\n",
+ 				  mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+ 		return -1;
+ 	}
+diff -Nur --exclude '*.orig' rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/8192cd_tx.c rtl8194_driver_v1.6_20151022.001-new/driver/rtl8192cd/8192cd_tx.c
+--- rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/8192cd_tx.c	2016-12-14 10:29:39.333015911 +0100
++++ rtl8194_driver_v1.6_20151022.001-new/driver/rtl8192cd/8192cd_tx.c	2016-12-14 10:28:01.568334876 +0100
+@@ -10852,7 +10852,7 @@
+ 
+ 			if ((pstat == NULL) || (!(pstat->state & WIFI_ASOC_STATE)))
+ 			{
+-				DEBUG_ERR("TX DROP: Non asoc tx request!\n");
++				DEBUG_INFO("TX DROP: Non asoc tx request!\n");
+ 				return FALSE;
+ 			}
+ 
+@@ -11240,8 +11240,6 @@
+ 	if ((check_txdesc(priv, txcfg)) == FALSE) // this will only happen in errorous forwarding
+ 	{
+ 		priv->ext_stats.tx_drops++;
+-        DEBUG_ERR("TX DROP: check_txdesc Fail \n");
+-		// Don't need to print "TX DROP", already print in check_txdesc()
+ 		if (txcfg->fr_type == _SKB_FRAME_TYPE_) {
+ 			rtl_kfree_skb(priv, (struct sk_buff *)txcfg->pframe, _SKB_TX_);
+ 			release_wlanllchdr_to_poll(priv, txcfg->phdr);
+diff -Nur --exclude '*.orig' rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/WlanHAL/RTL88XX/Hal88XXGen.c rtl8194_driver_v1.6_20151022.001-new/driver/rtl8192cd/WlanHAL/RTL88XX/Hal88XXGen.c
+--- rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/WlanHAL/RTL88XX/Hal88XXGen.c	2016-12-14 10:29:39.305015716 +0100
++++ rtl8194_driver_v1.6_20151022.001-new/driver/rtl8192cd/WlanHAL/RTL88XX/Hal88XXGen.c	2016-12-14 10:26:13.591582703 +0100
+@@ -4578,7 +4578,6 @@
+ 		value = HAL_RTL_R32(reg_addr) & BIT(releaseBit);
+ 
+ 		if (WaitReadLimmit++ >= 100) {
+-			printk("Release one packet fail \n");
+ 			RT_TRACE_F(COMP_DBG, DBG_WARNING, ("Release one packet fail \n"));
+ 			return RT_STATUS_FAILURE;
+ 		} else if (value != BIT(releaseBit)) {
+@@ -4794,7 +4793,6 @@
+ 				value = HAL_RTL_R32(REG_PKTBUF_DBG_CTRL) & BIT20;
+ 
+ 				if (WaitReadLimmit++ >= 100) {
+-					printk("Polling Get TXRPT fail \n");
+ 					RT_TRACE_F(COMP_DBG, DBG_WARNING, ("Polling TXRPT fail \n"));
+ 					return RT_STATUS_FAILURE;
+ 				} else if (value != BIT20) {
+@@ -4853,7 +4851,6 @@
+ 	break;
+ 
+ 	default:
+-		printk("Command ID(%d) not Supported\n", variable);
+ 		RT_TRACE_F(COMP_DBG, DBG_WARNING, ("Command ID(%d) not Supported\n", variable));
+ 		return RT_STATUS_FAILURE;
+ 		break;

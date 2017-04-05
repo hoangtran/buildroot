@@ -1,0 +1,60 @@
+diff -Nur --exclude '*.orig' rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/8192cd.h rtl8194_driver_v1.6_20151022.001_patched/driver/rtl8192cd/8192cd.h
+--- rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/8192cd.h	2016-10-13 08:44:07.037466605 +0200
++++ rtl8194_driver_v1.6_20151022.001_patched/driver/rtl8192cd/8192cd.h	2016-10-13 08:42:59.460169999 +0200
+@@ -4375,6 +4375,7 @@
+ #endif
+ 	STA_BITMAP  					force_20_sta;
+ 	STA_BITMAP  					switch_20_sta;
++	unsigned int					force_20_switch_20_started;
+ #endif
+ 
+ 	/*********************************************************************
+diff -Nur --exclude '*.orig' rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/8192cd_sme.c rtl8194_driver_v1.6_20151022.001_patched/driver/rtl8192cd/8192cd_sme.c
+--- rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/8192cd_sme.c	2016-10-13 08:44:07.026466557 +0200
++++ rtl8194_driver_v1.6_20151022.001_patched/driver/rtl8192cd/8192cd_sme.c	2016-10-13 08:42:59.461170003 +0200
+@@ -20482,7 +20482,7 @@
+ 										}	
+ 
+ 										setSTABitMap(&priv->switch_20_sta, pstat->aid);
+-
++										priv->force_20_switch_20_started = 1;
+ 
+ #if defined(CONFIG_RTL_8812_SUPPORT) || defined(CONFIG_WLAN_HAL)
+ 										update_RAMask_to_FW(priv, 1);									
+@@ -20498,7 +20498,7 @@
+ 												(ch != priv->pmib->dot11RFEntry.dot11channel):1) )
+ 												{									
+ 													setSTABitMap(&priv->switch_20_sta, pstat->aid);
+-
++													priv->force_20_switch_20_started = 1;
+ #if defined(CONFIG_RTL_8812_SUPPORT) || defined(CONFIG_WLAN_HAL)
+ 													update_RAMask_to_FW(priv, 1);									
+ #endif
+diff -Nur --exclude '*.orig' rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/8192cd_util.c rtl8194_driver_v1.6_20151022.001_patched/driver/rtl8192cd/8192cd_util.c
+--- rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/8192cd_util.c	2016-10-13 08:44:07.017466517 +0200
++++ rtl8194_driver_v1.6_20151022.001_patched/driver/rtl8192cd/8192cd_util.c	2016-10-13 08:42:59.461170003 +0200
+@@ -309,7 +309,13 @@
+ 
+ __inline__ unsigned int orForce20_Switch20Map(struct rtl8192cd_priv *priv)
+ {
+-    return (orSTABitMap(&priv->force_20_sta) | orSTABitMap(&priv->switch_20_sta));
++	// don't go back to 40M mode for 6300 wrong channel issue
++	if (priv->force_20_switch_20_started) {
++		return priv->force_20_switch_20_started;
++	} else {
++		return (orSTABitMap(&priv->force_20_sta) | orSTABitMap(&priv->switch_20_sta));
++	}
++	//return (orSTABitMap(&priv->force_20_sta) | orSTABitMap(&priv->switch_20_sta));
+ }
+ 
+ /* return 1 or 0*/
+@@ -4672,7 +4678,8 @@
+ 					(priv->pmib->dot11BssType.net_work_type & (WIRELESS_11N|WIRELESS_11G))) {
+ 					if (pstat->ht_cap_buf.ht_cap_info & cpu_to_le16(_HTCAP_40M_INTOLERANT_)) {
+ 						if (OPMODE & WIFI_AP_STATE) {
+-                            setSTABitMap(&priv->force_20_sta, pstat->aid);
++							setSTABitMap(&priv->force_20_sta, pstat->aid);
++							priv->force_20_switch_20_started = 1;
+ #if defined(WIFI_11N_2040_COEXIST_EXT)
+                             clearSTABitMap(&priv->pshare->_40m_staMap, pstat->aid);
+ 

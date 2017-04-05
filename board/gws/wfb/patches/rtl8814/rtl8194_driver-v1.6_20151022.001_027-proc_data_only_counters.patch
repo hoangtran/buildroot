@@ -1,0 +1,163 @@
+From ced10b8c4c1e14d663c6c15aac497d1d60123282 Mon Sep 17 00:00:00 2001
+From: Jacob Pedersen <jacob.pedersen@greenwavereality.com>
+Date: Thu, 28 Apr 2016 13:53:33 +0200
+Subject: [PATCH] Add data only counters
+
+---
+ driver/rtl8192cd/8192cd.h         |  6 ++++++
+ driver/rtl8192cd/8192cd_cfg.h     |  1 +
+ driver/rtl8192cd/8192cd_headers.h |  5 +++++
+ driver/rtl8192cd/8192cd_proc.c    |  8 ++++++++
+ driver/rtl8192cd/8192cd_rx.c      |  4 ++++
+ driver/rtl8192cd/8192cd_tx.c      |  6 ++++++
+ driver/rtl8192cd/8192cd_util.c    | 27 +++++++++++++++++++++++++++
+ 7 files changed, 57 insertions(+)
+
+diff --git a/driver/rtl8192cd/8192cd.h b/driver/rtl8192cd/8192cd.h
+index d22db90..3228360 100755
+--- a/driver/rtl8192cd/8192cd.h
++++ b/driver/rtl8192cd/8192cd.h
+@@ -1666,6 +1666,12 @@ struct extra_stats {
+ 	unsigned long		br_cnt_nosc;
+ 	unsigned long		br_cnt_sc;
+ #endif
++#ifdef DATA_ONLY_STATS
++	unsigned long		tx_data_packets;
++	unsigned long		tx_data_bytes;
++	unsigned long		rx_data_packets;
++	unsigned long		rx_data_bytes;
++#endif
+ };
+ 
+ 
+diff --git a/driver/rtl8192cd/8192cd_cfg.h b/driver/rtl8192cd/8192cd_cfg.h
+index 8df8ed6..8b6370a 100644
+--- a/driver/rtl8192cd/8192cd_cfg.h
++++ b/driver/rtl8192cd/8192cd_cfg.h
+@@ -533,6 +533,7 @@
+ 
+ //Filen
+ //#define SHORTCUT_STATISTIC
++#define DATA_ONLY_STATS
+ 
+ // Tx path finetune
+ #define TXSC_CFG
+diff --git a/driver/rtl8192cd/8192cd_headers.h b/driver/rtl8192cd/8192cd_headers.h
+index e279e53..cc22167 100755
+--- a/driver/rtl8192cd/8192cd_headers.h
++++ b/driver/rtl8192cd/8192cd_headers.h
+@@ -406,6 +406,11 @@ EXTERN UINT8 find_rts_rate(struct rtl8192cd_priv *priv, UINT8 TxRate, bool bErpP
+ 
+ EXTERN void Assert_BB_Reset(struct rtl8192cd_priv *priv);
+ EXTERN void Release_BB_Reset(struct rtl8192cd_priv *priv);
++
++#ifdef DATA_ONLY_STATS
++EXTERN void tx_data_sum_up(struct rtl8192cd_priv *priv, struct sk_buff *pskb);
++EXTERN void rx_data_sum_up(struct rtl8192cd_priv *priv, struct sk_buff *pskb);
++#endif
+ 	
+ #undef EXTERN
+ 
+diff --git a/driver/rtl8192cd/8192cd_proc.c b/driver/rtl8192cd/8192cd_proc.c
+index 0c6ec52..93f438e 100755
+--- a/driver/rtl8192cd/8192cd_proc.c
++++ b/driver/rtl8192cd/8192cd_proc.c
+@@ -4999,6 +4999,10 @@ static int rtl8192cd_proc_stats(char *buf, char **start, off_t offset,
+ 	PRINT_SINGL_ARG("    rx_ht_status:       ", priv->ext_stats.rx_ht_status, "%lu");
+ 	PRINT_SINGL_ARG("    cnt_2s_notx:       ", priv->check_cnt_2s_notx, "%lu");
+ #endif
++#ifdef DATA_ONLY_STATS
++	PRINT_SINGL_ARG("    tx_data_packets:    ", priv->ext_stats.tx_data_packets, "%lu");
++	PRINT_SINGL_ARG("    tx_data_bytes:      ", priv->ext_stats.tx_data_bytes, "%lu");
++#endif	
+ 	
+ 	PRINT_SINGL_ARG("    rx_packets:    ", priv->net_stats.rx_packets, "%lu");
+ 	PRINT_SINGL_ARG("    rx_bytes:      ", priv->net_stats.rx_bytes, "%lu");
+@@ -5010,6 +5014,10 @@ static int rtl8192cd_proc_stats(char *buf, char **start, off_t offset,
+ 	PRINT_SINGL_ARG("    rx_fifoO:      ", priv->ext_stats.rx_fifoO, "%lu");
+ 	PRINT_SINGL_ARG("    rx_rdu:        ", priv->ext_stats.rx_rdu, "%lu");
+ 	PRINT_SINGL_ARG("    rx_reuse:      ", priv->ext_stats.rx_reuse, "%lu");
++#ifdef DATA_ONLY_STATS
++	PRINT_SINGL_ARG("    rx_data_packets:    ", priv->ext_stats.rx_data_packets, "%lu");
++	PRINT_SINGL_ARG("    rx_data_bytes:      ", priv->ext_stats.rx_data_bytes, "%lu");
++#endif	
+ 	PRINT_SINGL_ARG("    beacon_ok:     ", priv->ext_stats.beacon_ok, "%lu");
+ 	PRINT_SINGL_ARG("    beacon_er:     ", priv->ext_stats.beacon_er, "%lu");
+ 	PRINT_SINGL_ARG("    beacon_dma_err:", priv->ext_stats.beacon_dma_err, "%lu");
+diff --git a/driver/rtl8192cd/8192cd_rx.c b/driver/rtl8192cd/8192cd_rx.c
+index 179eec2..60f16c5 100755
+--- a/driver/rtl8192cd/8192cd_rx.c
++++ b/driver/rtl8192cd/8192cd_rx.c
+@@ -1552,6 +1552,10 @@ void rtl_netif_rx(struct rtl8192cd_priv *priv, struct sk_buff *pskb, struct stat
+     static unsigned char* cached_sta_macPtr=NULL;
+     static struct net_device *cached_sta_devPtr=NULL; 
+ 
++#ifdef DATA_ONLY_STATS
++       rx_data_sum_up(priv, pskb);
++#endif
++
+ #ifdef __KERNEL__
+ 	br_port = GET_BR_PORT(priv->dev);
+ #endif
+diff --git a/driver/rtl8192cd/8192cd_tx.c b/driver/rtl8192cd/8192cd_tx.c
+index 75f14f7..b8fbb46 100644
+--- a/driver/rtl8192cd/8192cd_tx.c
++++ b/driver/rtl8192cd/8192cd_tx.c
+@@ -1092,6 +1092,9 @@ int rtl8192cd_tx_slowPath(struct rtl8192cd_priv *priv, struct sk_buff *skb, stru
+ 		goto stop_proc;
+ 	}
+ 	//SMP_LOCK_XMIT(flags);
++#ifdef DATA_ONLY_STATS
++	tx_data_sum_up(priv, skb);
++#endif
+ 	
+ #if defined(CONFIG_USB_HCI) || defined(CONFIG_SDIO_HCI)
+ 	rtw_handle_xmit_fail(priv, txcfg);
+@@ -9384,6 +9387,9 @@ int __rtl8192cd_usb_start_xmit(struct rtl8192cd_priv *priv, struct tx_insn* txcf
+ #else
+ 			tx_sum_up(priv, pstat, txcfg->fr_len+txcfg->hdr_len+txcfg->iv+txcfg->llc+txcfg->mic+txcfg->icv);
+ #endif
++#ifdef DATA_ONLY_STATS
++			tx_data_sum_up(priv, skb);
++#endif
+ 			SNMP_MIB_INC(dot11TransmittedFragmentCount, 1);
+ 			pstat->tx_sc_pkts_lv1++;
+ 
+diff --git a/driver/rtl8192cd/8192cd_util.c b/driver/rtl8192cd/8192cd_util.c
+index 23b187d..2a91a5c 100755
+--- a/driver/rtl8192cd/8192cd_util.c
++++ b/driver/rtl8192cd/8192cd_util.c
+@@ -10214,3 +10214,30 @@ int rtk_sc_during_simple_config_scan(struct rtl8192cd_priv * priv)
+ 
+ 
+ #endif
++
++#ifdef DATA_ONLY_STATS
++void tx_data_sum_up(struct rtl8192cd_priv *priv, struct sk_buff *pskb)
++{
++        int pktlen = pskb->len;
++
++        if (priv) {
++		priv->ext_stats.tx_data_packets++;
++		priv->ext_stats.tx_data_bytes += pktlen;
++        }
++}
++
++void rx_data_sum_up(struct rtl8192cd_priv *priv, struct sk_buff *pskb)
++{
++        int pktlen = pskb->len;
++
++        if ( IS_MCAST(pskb->data) )
++                return;
++			   
++        if (priv) {
++		priv->ext_stats.rx_data_packets++;
++		priv->ext_stats.rx_data_bytes += pktlen;
++        }
++}
++#endif
++
++
+-- 
+2.8.1.210.gb8b4d93
+

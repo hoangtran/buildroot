@@ -1,0 +1,42 @@
+diff -Nur rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/8192cd_sme.c rtl8194_driver_v1.6_20151022.001-new/driver/rtl8192cd/8192cd_sme.c
+--- rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/8192cd_sme.c	2016-05-18 15:01:10.855042810 +0200
++++ rtl8194_driver_v1.6_20151022.001-new/driver/rtl8192cd/8192cd_sme.c	2016-05-18 15:01:06.119017757 +0200
+@@ -8274,8 +8274,10 @@
+ 
+ #ifdef WIFI_SIMPLE_CONFIG
+ /*modify for WPS2DOTX SUPPORT*/
+-	if (pmib->wscEntry.wsc_enable && pmib->wscEntry.beacon_ielen 
+-		&& priv->pmib->dot11StationConfigEntry.dot11AclMode!=ACL_allow) {
++	if ((pmib->wscEntry.wsc_enable && pmib->wscEntry.beacon_ielen) && 
++	    (priv->pmib->dot11StationConfigEntry.dot11AclMode != ACL_allow || 
++	    (priv->pmib->dot11StationConfigEntry.dot11AclMode == ACL_allow && priv->pmib->dot11StationConfigEntry.dot11AclNum > 0)))
++	{
+ 		memcpy(pbuf, pmib->wscEntry.beacon_ie, pmib->wscEntry.beacon_ielen);
+ 		pbuf += pmib->wscEntry.beacon_ielen;
+ 		frlen += pmib->wscEntry.beacon_ielen;
+@@ -10631,8 +10633,10 @@
+ 
+ #ifdef WIFI_SIMPLE_CONFIG
+ /*modify for WPS2DOTX SUPPORT*/
+-	if (pmib->wscEntry.wsc_enable && pmib->wscEntry.assoc_ielen 
+-		&& priv->pmib->dot11StationConfigEntry.dot11AclMode!=ACL_allow) {
++	if ((pmib->wscEntry.wsc_enable && pmib->wscEntry.assoc_ielen) && 
++	    (priv->pmib->dot11StationConfigEntry.dot11AclMode != ACL_allow || 
++	    (priv->pmib->dot11StationConfigEntry.dot11AclMode == ACL_allow && priv->pmib->dot11StationConfigEntry.dot11AclNum > 0)))
++	{
+ 		memcpy(pbuf, pmib->wscEntry.assoc_ie, pmib->wscEntry.assoc_ielen);
+ 		pbuf += pmib->wscEntry.assoc_ielen;
+ 		txinsn.fr_len += pmib->wscEntry.assoc_ielen;
+@@ -11180,8 +11184,10 @@
+ #endif
+ #ifdef WIFI_SIMPLE_CONFIG
+ 	{
+-		if (!priv->pshare->rf_ft_var.NDSi_support
+-		&& priv->pmib->dot11StationConfigEntry.dot11AclMode!=ACL_allow){
++		if ((!priv->pshare->rf_ft_var.NDSi_support) &&
++		    (priv->pmib->dot11StationConfigEntry.dot11AclMode != ACL_allow || 
++		    (priv->pmib->dot11StationConfigEntry.dot11AclMode == ACL_allow && priv->pmib->dot11StationConfigEntry.dot11AclNum > 0)))
++		{
+ 			if (pmib->wscEntry.wsc_enable && pmib->wscEntry.probe_rsp_ielen) {
+ 				memcpy(pbuf, pmib->wscEntry.probe_rsp_ie, pmib->wscEntry.probe_rsp_ielen);
+ 				pbuf += pmib->wscEntry.probe_rsp_ielen;

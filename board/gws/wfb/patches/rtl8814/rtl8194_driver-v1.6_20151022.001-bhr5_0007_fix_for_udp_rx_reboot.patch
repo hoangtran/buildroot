@@ -1,0 +1,272 @@
+diff --git a/driver/rtl8192cd/8192cd.h b/driver/rtl8192cd/8192cd.h
+index 94bded5..1544133 100644
+--- a/driver/rtl8192cd/8192cd.h
++++ b/driver/rtl8192cd/8192cd.h
+@@ -1688,6 +1688,9 @@ struct extra_stats {
+ 	unsigned long		rx_data_packets;
+ 	unsigned long		rx_data_bytes;
+ #endif
++	unsigned long		rx_enqueue_cnt;
++	unsigned long		rx_dequeue_cnt;
++	unsigned long		rx_rdu_drop;
+ };
+ 
+ 
+@@ -2246,6 +2249,7 @@ struct rf_finetune_var {
+ 	unsigned char		enable_2ndcca;
+ #endif
+ 	unsigned char		print_table;
++	unsigned int		rx_rdu_drop_th;
+ };
+ 
+ //Filen
+@@ -3746,6 +3750,8 @@ struct priv_shared_info {
+ #endif
+ 
+ 	unsigned int		mapMBIDCAM;
++
++	int				is_rdu_interrupt;
+ };
+ 
+ 
+diff --git a/driver/rtl8192cd/8192cd_a4_sta.c b/driver/rtl8192cd/8192cd_a4_sta.c
+index 50f5165..1a3b73a 100644
+--- a/driver/rtl8192cd/8192cd_a4_sta.c
++++ b/driver/rtl8192cd/8192cd_a4_sta.c
+@@ -601,6 +601,7 @@ int a4_rx_dispatch(struct rtl8192cd_priv *priv, struct rx_frinfo *pfrinfo
+ #else
+         SMP_LOCK_RX_DATA(x);
+         list_add_tail(&(pfrinfo->rx_list), &(priv->rx_datalist));
++	priv->ext_stats.rx_enqueue_cnt++;
+         SMP_UNLOCK_RX_DATA(x);
+ #endif
+ 
+diff --git a/driver/rtl8192cd/8192cd_ioctl.c b/driver/rtl8192cd/8192cd_ioctl.c
+index df2f6c4..3970c2b 100644
+--- a/driver/rtl8192cd/8192cd_ioctl.c
++++ b/driver/rtl8192cd/8192cd_ioctl.c
+@@ -1919,6 +1919,7 @@ static struct iwpriv_arg mib_table[] = {
+ #ifdef CONFIG_WLAN_HAL_8814AE
+ 	{"bf_sup_val",		RFFT_T, _OFFSET_RFFT(bf_sup_val), _SIZE_RFFT(bf_sup_val), 0},
+ #endif 
++	{"rx_rdu_drop_th",        RFFT_T, _OFFSET_RFFT(rx_rdu_drop_th), _SIZE_RFFT(rx_rdu_drop_th), NUM_RX_DESC * 3},
+ };
+ 
+ #ifdef _DEBUG_RTL8192CD_
+diff --git a/driver/rtl8192cd/8192cd_osdep.c b/driver/rtl8192cd/8192cd_osdep.c
+index e928876..7f93508 100644
+--- a/driver/rtl8192cd/8192cd_osdep.c
++++ b/driver/rtl8192cd/8192cd_osdep.c
+@@ -1273,9 +1273,11 @@ InterruptRxHandle(
+ 
+ #else	// !(defined RTL8190_ISR_RX && RTL8190_DIRECT_RX)
+     if (caseRxRDU) {
++	priv->pshare->is_rdu_interrupt = 1;	
+         rtl8192cd_rx_isr(priv);
++	priv->pshare->is_rdu_interrupt = 0;	
+         if (priv->pshare->rxInt_useTsklt)
+-        tasklet_hi_schedule(&priv->pshare->rx_tasklet);
++            tasklet_hi_schedule(&priv->pshare->rx_tasklet);
+         else
+             rtl8192cd_rx_dsr((unsigned long)priv);
+     }
+diff --git a/driver/rtl8192cd/8192cd_proc.c b/driver/rtl8192cd/8192cd_proc.c
+index 2ea938f..a1c78a5 100644
+--- a/driver/rtl8192cd/8192cd_proc.c
++++ b/driver/rtl8192cd/8192cd_proc.c
+@@ -5233,6 +5233,11 @@ static int rtl8192cd_proc_stats(char *buf, char **start, off_t offset,
+ 	PRINT_SINGL_ARG("    swq_xmit_out_pkt:    ", priv->ext_stats.swq_xmit_out_pkt, "%lu");
+ 	PRINT_SINGL_ARG("    swq_drop_pkt:    ", priv->ext_stats.swq_drop_pkt, "%lu");
+     #endif
++
++	PRINT_SINGL_ARG("    rx_enqueue_cnt:    ", priv->ext_stats.rx_enqueue_cnt, "%lu");
++	PRINT_SINGL_ARG("    rx_dequeue_cnt:    ", priv->ext_stats.rx_dequeue_cnt, "%lu");
++	PRINT_SINGL_ARG("    rx_rdu_drop:    ", priv->ext_stats.rx_rdu_drop, "%lu");
++
+ 	RESTORE_INT(flags);
+ 
+ 	return pos;
+diff --git a/driver/rtl8192cd/8192cd_rx.c b/driver/rtl8192cd/8192cd_rx.c
+index 1eb2fbb..ed5e0d3 100644
+--- a/driver/rtl8192cd/8192cd_rx.c
++++ b/driver/rtl8192cd/8192cd_rx.c
+@@ -3497,6 +3497,7 @@ static int rtl8192cd_rx_procCtrlPkt(struct rtl8192cd_priv *priv, struct rx_frinf
+ #else
+ 	SMP_LOCK_RX_CTRL(x);
+ 	list_add_tail(&(pfrinfo->rx_list), &(priv->rx_ctrllist));
++	priv->ext_stats.rx_enqueue_cnt++;
+ 	SMP_UNLOCK_RX_CTRL(x);
+ #endif
+ 	return 0;
+@@ -3647,6 +3648,7 @@ static int rtl8192cd_rx_procNullPkt(struct rtl8192cd_priv *priv, struct rx_frinf
+ #else
+ 			SMP_LOCK_RX_DATA(x);
+ 			list_add_tail(&(pfrinfo->rx_list), &(priv->rx_datalist));
++			priv->ext_stats.rx_enqueue_cnt++;
+ 			SMP_UNLOCK_RX_DATA(x);
+ #endif
+ 			return 0;
+@@ -3676,6 +3678,7 @@ static int rtl8192cd_rx_procNullPkt(struct rtl8192cd_priv *priv, struct rx_frinf
+ #else
+ 		SMP_LOCK_RX_DATA(x);
+ 		list_add_tail(&(pfrinfo->rx_list), &(priv->rx_datalist));
++		priv->ext_stats.rx_enqueue_cnt++;
+ 		SMP_UNLOCK_RX_DATA(x);
+ #endif
+ 		DEBUG_INFO("special Null Data in%d \n", pfrinfo->tid);
+@@ -3887,6 +3890,7 @@ static int rtl8192cd_rx_dispatch_mgmt_adhoc(struct rtl8192cd_priv **priv_p, stru
+ #else
+ 		SMP_LOCK_RX_DATA(x);
+ 		list_add_tail(&(pfrinfo->rx_list), &(priv->rx_datalist));
++		priv->ext_stats.rx_enqueue_cnt++;
+ 		SMP_UNLOCK_RX_DATA(x);
+ #endif
+ 		reuse = 0;
+@@ -3976,6 +3980,7 @@ put_in_que:
+ #else
+ 				SMP_LOCK_RX_MGT(x);
+ 				list_add_tail(&(pfrinfo->rx_list), &(priv->rx_mgtlist));
++				priv->ext_stats.rx_enqueue_cnt++;
+ 				SMP_UNLOCK_RX_MGT(x);
+ #endif
+ 			}
+@@ -4009,6 +4014,7 @@ put_in_que:
+ #else
+ 				SMP_LOCK_RX_MGT(x);
+ 				list_add_tail(&(pfrinfo->rx_list), &(priv->rx_mgtlist));
++				priv->ext_stats.rx_enqueue_cnt++;
+ 				SMP_UNLOCK_RX_MGT(x);
+ #endif
+ 			}
+@@ -4032,6 +4038,7 @@ put_in_que:
+ #else
+ 				SMP_LOCK_RX_MGT(x);
+ 				list_add_tail(&(pfrinfo->rx_list), &(priv->rx_mgtlist));
++				priv->ext_stats.rx_enqueue_cnt++;
+ 				SMP_UNLOCK_RX_MGT(x);
+ #endif
+ 				reuse = 0;
+@@ -4047,6 +4054,7 @@ put_in_que:
+ #else
+ 					SMP_LOCK_RX_DATA(x);
+ 					list_add_tail(&(pfrinfo->rx_list), &(priv->rx_datalist));
++					priv->ext_stats.rx_enqueue_cnt++;
+ 					SMP_UNLOCK_RX_DATA(x);
+ #endif
+ 					reuse = 0;
+@@ -4136,6 +4144,7 @@ static int rtl8192cd_rx_dispatch_fromDs(struct rtl8192cd_priv **priv_p, struct r
+ #else
+ 				SMP_LOCK_RX_DATA(x);
+ 				list_add_tail(&(pfrinfo->rx_list), &(priv->rx_datalist));
++				priv->ext_stats.rx_enqueue_cnt++;
+ 				SMP_UNLOCK_RX_DATA(x);
+ #endif
+ 			}
+@@ -4163,6 +4172,7 @@ static int rtl8192cd_rx_dispatch_fromDs(struct rtl8192cd_priv **priv_p, struct r
+ #else
+ 				SMP_LOCK_RX_DATA(x);
+ 				list_add_tail(&(pfrinfo->rx_list), &priv->rx_datalist);
++				priv->ext_stats.rx_enqueue_cnt++;
+ 				SMP_UNLOCK_RX_DATA(x);
+ #endif
+ 			}
+@@ -4242,6 +4252,7 @@ static inline int rtl8192cd_rx_dispatch_toDs(struct rtl8192cd_priv **priv_p, 	st
+ #else
+ 			SMP_LOCK_RX_DATA(x);
+ 			list_add_tail(&(pfrinfo->rx_list), &(priv->rx_datalist));
++			priv->ext_stats.rx_enqueue_cnt++;
+ 			SMP_UNLOCK_RX_DATA(x);
+ #endif
+ 			reuse = 0;
+@@ -4259,6 +4270,7 @@ static inline int rtl8192cd_rx_dispatch_toDs(struct rtl8192cd_priv **priv_p, 	st
+ #else
+ 			SMP_LOCK_RX_DATA(x);
+ 			list_add_tail(&(pfrinfo->rx_list), &(priv->rx_datalist));
++			priv->ext_stats.rx_enqueue_cnt++;
+ 			SMP_UNLOCK_RX_DATA(x);
+ #endif
+ 			reuse = 0;
+@@ -4275,6 +4287,7 @@ static inline int rtl8192cd_rx_dispatch_toDs(struct rtl8192cd_priv **priv_p, 	st
+ #else
+ 			SMP_LOCK_RX_DATA(x);
+ 			list_add_tail(&(pfrinfo->rx_list), &priv->rx_datalist);
++			priv->ext_stats.rx_enqueue_cnt++;
+ 			SMP_UNLOCK_RX_DATA(x);
+ #endif
+ 			reuse = 0;
+@@ -4378,6 +4391,7 @@ static int rtl8192cd_rx_dispatch_wds(struct rtl8192cd_priv *priv, struct rx_frin
+ #else
+ 	SMP_LOCK_RX_DATA(x);
+ 	list_add_tail(&pfrinfo->rx_list, &priv->rx_datalist);
++	priv->ext_stats.rx_enqueue_cnt++;
+ 	SMP_UNLOCK_RX_DATA(x);
+ #endif
+ 	reuse = 0;
+@@ -5405,6 +5419,13 @@ void rtl88XX_rx_isr(struct rtl8192cd_priv *priv)
+ 		}
+ #endif
+ 
++	if (priv->pshare->is_rdu_interrupt) {
++		if ((priv->ext_stats.rx_enqueue_cnt - priv->ext_stats.rx_dequeue_cnt) > priv->pshare->rf_ft_var.rx_rdu_drop_th) {
++			priv->ext_stats.rx_rdu_drop++;
++			goto rx_reuse;
++		}
++	}
++
+ 	#ifdef CONFIG_WLAN_HAL_8192EE
+ 	//translate_CRC32_outsrc(priv, pfrinfo, rx_desc_status.CRC32);
+ 	if(!rx_desc_status.C2HPkt)
+@@ -9367,6 +9388,8 @@ void process_all_queues(struct rtl8192cd_priv *priv)
+ 	{
+ 		SMP_LOCK_RX_DATA(x);
+ 		list = dequeue_frame(priv, &(priv->rx_datalist));
++		if (list != NULL)
++			priv->ext_stats.rx_dequeue_cnt++;
+ 		SMP_UNLOCK_RX_DATA(x);
+ 
+ 		if (list == NULL)
+@@ -9380,6 +9403,8 @@ void process_all_queues(struct rtl8192cd_priv *priv)
+ 	{
+ 		SMP_LOCK_RX_MGT(x);
+ 		list = dequeue_frame(priv, &(priv->rx_mgtlist));
++		if (list != NULL)
++			priv->ext_stats.rx_dequeue_cnt++;
+ 		SMP_UNLOCK_RX_MGT(x);
+ 
+ 		if (list == NULL)
+@@ -9392,6 +9417,8 @@ void process_all_queues(struct rtl8192cd_priv *priv)
+ 	{
+ 		SMP_LOCK_RX_CTRL(x);
+ 		list = dequeue_frame(priv, &(priv->rx_ctrllist));
++		if (list != NULL)
++			priv->ext_stats.rx_dequeue_cnt++;
+ 		SMP_UNLOCK_RX_CTRL(x);
+ 
+ 		if (list == NULL)
+@@ -9576,6 +9603,8 @@ void flush_rx_queue(struct rtl8192cd_priv *priv)
+ 	while(1)
+ 	{
+ 		list = dequeue_frame(priv, &(priv->rx_datalist));
++		if (list != NULL)
++			priv->ext_stats.rx_dequeue_cnt++;
+ 
+ 		if (list == NULL)
+ 			break;
+@@ -9587,6 +9616,8 @@ void flush_rx_queue(struct rtl8192cd_priv *priv)
+ 	while(1)
+ 	{
+ 		list = dequeue_frame(priv, &(priv->rx_mgtlist));
++		if (list != NULL)
++			priv->ext_stats.rx_dequeue_cnt++;
+ 
+ 		if (list == NULL)
+ 			break;
+@@ -9598,6 +9629,8 @@ void flush_rx_queue(struct rtl8192cd_priv *priv)
+ 	while(1)
+ 	{
+ 		list = dequeue_frame(priv, &(priv->rx_ctrllist));
++		if (list != NULL)
++			priv->ext_stats.rx_dequeue_cnt++;
+ 
+ 		if (list == NULL)
+ 			break;

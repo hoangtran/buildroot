@@ -1,0 +1,44 @@
+diff -Naur a/driver/rtl8192cd/8192cd_proc.c b/driver/rtl8192cd/8192cd_proc.c
+--- a/driver/rtl8192cd/8192cd_proc.c	2015-12-01 16:09:32.000000000 +0100
++++ b/driver/rtl8192cd/8192cd_proc.c	2015-12-01 16:09:32.000000000 +0100
+@@ -4167,6 +4167,16 @@
+ 	PRINT_ONE(")", "%s", 1);
+ 	CHECK_LEN_B;
+ 
++	PRINT_ONE("    SNRdB: ", "%s", 0);
++	PRINT_ONE(pstat->rf_info.RxSNRdB[0], " %u", 0);
++	PRINT_ONE(pstat->rf_info.RxSNRdB[1], " %u", 0);
++#ifdef CONFIG_WLAN_HAL_8814AE
++	PRINT_ONE(pstat->rf_info.RxSNRdB[2], " %u", 0);
++	PRINT_ONE(pstat->rf_info.RxSNRdB[3], " %u", 0);
++#endif
++	PRINT_ONE(" ", "%s", 1);
++	CHECK_LEN_B;
++
+ #ifdef WDS
+ 	if (pstat->state & WIFI_WDS
+ #ifdef LAZY_WDS
+diff -Naur a/driver/rtl8192cd/8192cd_rx.h b/driver/rtl8192cd/8192cd_rx.h
+--- a/driver/rtl8192cd/8192cd_rx.h	2015-12-01 16:09:32.000000000 +0100
++++ b/driver/rtl8192cd/8192cd_rx.h	2015-12-01 16:09:32.000000000 +0100
+@@ -255,7 +255,7 @@
+ 					for (i=0; i<4; i++)
+ 						pstat->rf_info.mimorssi[i] = cal_rssi_avg(pstat->rf_info.mimorssi[i], pfrinfo->rf_info.mimorssi[i]);
+ 
+-				if (priv->pshare->rf_ft_var.rssi_dump)
++				//if (priv->pshare->rf_ft_var.rssi_dump)
+ 					memcpy(&pstat->rf_info.mimosq[0], &pfrinfo->rf_info.mimosq[0], sizeof(struct rf_misc_info) - 2);
+ 			}
+ #endif
+@@ -269,9 +269,9 @@
+ 				for (i=0; i<4; i++)
+ 					pstat->rf_info.mimorssi[i] = cal_rssi_avg(pstat->rf_info.mimorssi[i], pfrinfo->rf_info.mimorssi[i]);
+ 
+-			if (priv->pshare->rf_ft_var.rssi_dump)
++			//if (priv->pshare->rf_ft_var.rssi_dump)
+ 				memcpy(&pstat->rf_info.mimosq[0], &pfrinfo->rf_info.mimosq[0], sizeof(struct rf_misc_info) - 2);
+-			}
++			//}
+ #endif
+ 
+ 			if (pstat->highest_rx_rate < pstat->rx_rate)

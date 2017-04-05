@@ -1,0 +1,14 @@
+diff --git a/driver/rtl8192cd/8192cd_tx.c b/driver/rtl8192cd/8192cd_tx.c
+index 22fafbc..1ecae5c 100644
+--- a/driver/rtl8192cd/8192cd_tx.c
++++ b/driver/rtl8192cd/8192cd_tx.c
+@@ -7656,7 +7656,8 @@ __inline__ static int rtl8192cd_swq_enqueue(struct rtl8192cd_priv *priv, struct
+ 
+ 	if (pstat->tx_last_timestamp) {
+ 		diff_time = UINT32_DIFF(skb->tstamp.tv64, pstat->tx_last_timestamp);
+-		fps = 1000000 / diff_time;
++		if (diff_time !=0)
++			fps = 1000000 / diff_time;
+ 	}
+ 	pstat->tx_last_timestamp = skb->tstamp.tv64;
+ 

@@ -1,0 +1,13 @@
+diff --git a/driver/rtl8192cd/OUTSRC/phydm_DIG.c b/driver/rtl8192cd/OUTSRC/phydm_DIG.c
+index a1659de..b085e4e 100755
+--- a/driver/rtl8192cd/OUTSRC/phydm_DIG.c
++++ b/driver/rtl8192cd/OUTSRC/phydm_DIG.c
+@@ -1111,7 +1111,7 @@ odm_DIG(
+ 			pDM_DigTable->ForbiddenIGI = DIG_Dynamic_MIN;
+ 		}
+ 		else
+-			pDM_DigTable->rx_gain_range_min = odm_ForbiddenIGICheck(pDM_Odm, DIG_Dynamic_MIN, CurrentIGI);
++			pDM_DigTable->rx_gain_range_min = DIG_Dynamic_MIN; //odm_ForbiddenIGICheck(pDM_Odm, DIG_Dynamic_MIN, CurrentIGI);
+ 	}
+ 
+ 	//2 Abnormal # beacon case

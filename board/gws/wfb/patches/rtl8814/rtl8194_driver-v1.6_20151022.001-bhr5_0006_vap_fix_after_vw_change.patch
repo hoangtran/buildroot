@@ -1,0 +1,21 @@
+diff --git a/driver/rtl8192cd/8192cd_tx.c b/driver/rtl8192cd/8192cd_tx.c
+index 9f64c4c..52e8544 100644
+--- a/driver/rtl8192cd/8192cd_tx.c
++++ b/driver/rtl8192cd/8192cd_tx.c
+@@ -1206,7 +1206,7 @@ void rtl8192cd_xmit_dsr(unsigned long task_priv)
+ 		memcpy(&skb->cb[10], skb->data, 6);
+ #endif
+ 
+-		__rtl8192cd_start_xmit(skb, priv->dev, TX_NORMAL);
++		__rtl8192cd_start_xmit(skb, skb->dev, TX_NORMAL);
+ 
+ 		RESTORE_INT(x);
+ 		SMP_UNLOCK_XMIT(x);
+@@ -1315,6 +1315,7 @@ int rtl8192cd_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ 		}
+ 	}
+ 	#endif
++	skb->dev = dev;
+ 	skb_queue_tail(&priv->pshare->skb_xmit_queue, skb);
+ 
+ 	#ifndef SW_TX_QUEUE

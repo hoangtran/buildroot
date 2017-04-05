@@ -1,0 +1,302 @@
+diff -Nur a/driver/rtl8192cd/8192cd.h b/driver/rtl8192cd/8192cd.h
+--- a/driver/rtl8192cd/8192cd.h	2017-03-15 14:52:07.726331428 -0700
++++ b/driver/rtl8192cd/8192cd.h	2017-03-15 14:52:07.734331429 -0700
+@@ -1194,6 +1194,8 @@
+ 
+ #ifdef SW_TX_QUEUE
+ 	struct sw_tx_q  swq;
++	unsigned long tx_last_timestamp;
++	unsigned long tx_hw_pending_count;
+ #endif
+ 
+ #ifdef CONFIG_RTK_MESH
+@@ -1632,6 +1634,7 @@
+ 	unsigned long       swq_enque_pkt;	
+ 	unsigned long       swq_xmit_out_pkt;
+     unsigned long       swq_drop_pkt;
++	unsigned long		swq_cnt;
+ #endif	
+ 	unsigned long		rx_retrys;
+ 	unsigned long		rx_decache;
+diff -Nur a/driver/rtl8192cd/8192cd_hw.h b/driver/rtl8192cd/8192cd_hw.h
+--- a/driver/rtl8192cd/8192cd_hw.h	2017-03-15 14:52:07.727331428 -0700
++++ b/driver/rtl8192cd/8192cd_hw.h	2017-03-15 14:52:07.734331429 -0700
+@@ -963,6 +963,7 @@
+ 	u32		buf_len;
+ #endif
+ 	struct rtl8192cd_priv	*priv;
++	unsigned char		da_mac[MACADDRLEN];
+ };
+ 
+ typedef struct _BB_REGISTER_DEFINITION {
+diff -Nur a/driver/rtl8192cd/8192cd_proc.c b/driver/rtl8192cd/8192cd_proc.c
+--- a/driver/rtl8192cd/8192cd_proc.c	2017-03-15 14:52:07.728331428 -0700
++++ b/driver/rtl8192cd/8192cd_proc.c	2017-03-15 14:52:07.735331429 -0700
+@@ -5232,6 +5232,7 @@
+ 	PRINT_SINGL_ARG("    swq_enque_pkt:    ", priv->ext_stats.swq_enque_pkt, "%lu");
+ 	PRINT_SINGL_ARG("    swq_xmit_out_pkt:    ", priv->ext_stats.swq_xmit_out_pkt, "%lu");
+ 	PRINT_SINGL_ARG("    swq_drop_pkt:    ", priv->ext_stats.swq_drop_pkt, "%lu");
++	PRINT_SINGL_ARG("    swq_cnt:    ", priv->ext_stats.swq_cnt, "%lu");
+     #endif
+ 
+ 	PRINT_SINGL_ARG("    rx_enqueue_cnt:    ", priv->ext_stats.rx_enqueue_cnt, "%lu");
+diff -Nur a/driver/rtl8192cd/8192cd_rx.c b/driver/rtl8192cd/8192cd_rx.c
+--- a/driver/rtl8192cd/8192cd_rx.c	2017-03-15 14:52:07.729331428 -0700
++++ b/driver/rtl8192cd/8192cd_rx.c	2017-03-15 14:52:07.737331429 -0700
+@@ -5420,7 +5420,7 @@
+ #endif
+ 
+ 	if (priv->pshare->is_rdu_interrupt) {
+-		if ((priv->ext_stats.rx_enqueue_cnt - priv->ext_stats.rx_dequeue_cnt) > priv->pshare->rf_ft_var.rx_rdu_drop_th) {
++		if (UINT32_DIFF(priv->ext_stats.rx_enqueue_cnt, priv->ext_stats.rx_dequeue_cnt) > priv->pshare->rf_ft_var.rx_rdu_drop_th) {
+ 			priv->ext_stats.rx_rdu_drop++;
+ 			goto rx_reuse;
+ 		}
+diff -Nur a/driver/rtl8192cd/8192cd_tx.c b/driver/rtl8192cd/8192cd_tx.c
+--- a/driver/rtl8192cd/8192cd_tx.c	2017-03-15 14:52:07.731331428 -0700
++++ b/driver/rtl8192cd/8192cd_tx.c	2017-03-15 14:52:07.739331429 -0700
+@@ -1241,6 +1241,7 @@
+ #ifdef CONFIG_CS75XX_RTL8192CD_HW_ACCEL_WIRELESS
+         cs_hw_accel_wireless_tx(skb);
+ #endif /* CONFIG_CS75XX_RTL8192CD_HW_ACCEL_WIRELESS */
++	skb->tstamp.tv64 = RTL_R32(TSFTR);
+ 
+ #if defined(RTK_NL80211) && defined(MBSSID)
+ 	struct net_device *dev_vap = NULL;
+@@ -4788,6 +4789,11 @@
+     }
+ #endif
+ 
++    if (( pdescinfo->type == _SKB_FRAME_TYPE_) && (txcfg->pstat != NULL)) {
++        memcpy(pdescinfo->da_mac, txcfg->pstat->hwaddr, MACADDRLEN);
++        txcfg->pstat->tx_hw_pending_count++;
++    }
++
+     GET_HAL_INTERFACE(priv)->SyncSWTXBDHostIdxToHWHandler(priv, halQNum);
+ 	return 0;
+ }
+@@ -7606,6 +7612,7 @@
+ #endif
+ 
+ 		priv->ext_stats.swq_xmit_out_pkt++;
++		priv->ext_stats.swq_cnt--;
+ 
+ #if defined(CONFIG_RTK_MESH)
+         __rtl8192cd_start_xmit_out(tmpskb, pstat, NULL);
+@@ -7623,15 +7630,15 @@
+         //    priv->pshare->swq_numActiveSTA--;
+         pstat->swq.swq_empty[qnum] = 0;        
+     }
+-        
++
+     return count;
+ }
+ 
+ __inline__ static int rtl8192cd_swq_enqueue(struct rtl8192cd_priv *priv, struct sk_buff *skb, struct stat_info	*pstat)
+ {
+     int q_len, pri, q_num;
+-    unsigned char need_deque = 0;
+-    UINT32 tri_time;
++    unsigned char need_deque = 0, is_full=0;
++    UINT32 tri_time, diff_time, fps;
+     int assoc_num;
+     int i;
+     
+@@ -7643,6 +7650,13 @@
+ #endif
+     
+     if(priv->pshare->swq_use_hw_timer) {
++
++	if (pstat->tx_last_timestamp) {
++		diff_time = UINT32_DIFF(skb->tstamp.tv64, pstat->tx_last_timestamp);
++		fps = 1000000 / diff_time;
++	}
++	pstat->tx_last_timestamp = skb->tstamp.tv64;
++
+         assoc_num = GET_ROOT(priv)->assoc_num;
+         #ifdef MBSSID
+         if (GET_ROOT(priv)->pmib->miscEntry.vap_enable){
+@@ -7717,7 +7731,7 @@
+         if(pstat->swq.swq_en[q_num] == 0) {
+ 			
+ 			priv->ext_stats.swq_xmit_out_pkt++;
+-
++			priv->ext_stats.swq_cnt--;
+ 
+ 			
+             #if defined(CONFIG_RTK_MESH)
+@@ -7744,12 +7758,17 @@
+         #endif		
+             need_deque = 1;
+         } 
++        else if (pstat->tx_hw_pending_count == 0)
++            need_deque = 1;
+     }
+ 
+     if(need_deque) {
+         if (pstat->swq.swq_timer_id[q_num])
+             rtl8192cd_swq_deltimer(priv, pstat, q_num);
+-        if(rtl8192cd_swq_bdfull(priv, pstat, q_num, (pstat->swq.q_aggnum[q_num]+1) *2)) {           
++        if(rtl8192cd_swq_bdfull(priv, pstat, q_num, pstat->swq.q_aggnum[q_num])) {           
++            rtl8192cd_tx_queueDsr(priv, q_num);
++        }
++        if(rtl8192cd_swq_bdfull(priv, pstat, q_num, pstat->swq.q_aggnum[q_num])) {           
+             skb_queue_tail(&pstat->swq.swq_queue[q_num], skb);
+             if(priv->pshare->swq_use_hw_timer && pstat->swq.swq_empty[q_num] == 0) {
+                 //priv->pshare->swq_numActiveSTA++;
+@@ -7759,6 +7778,7 @@
+                 //}
+             }
+             pstat->swq.swq_empty[q_num] = 1;                                       
++            is_full = 1;	
+ #ifdef SW_TXQ_RSVD_DESC
+             if (pstat->ADDBA_ready[pri])
+                 priv->pshare->swq_skb_queue_cnt[q_num - 1]++;
+@@ -7768,13 +7788,24 @@
+             if(pstat->swq.swq_empty[q_num])
+                 rtl8192cd_swq_dequeue(priv, pstat, q_num);
+ 
++	#if 1
++		// queue packet instead of xmit out to avoid out of order
++        	skb_queue_tail(&pstat->swq.swq_queue[q_num], skb);
++        	pstat->swq.swq_empty[q_num] = 1;  
++	#else
+ 			priv->ext_stats.swq_xmit_out_pkt++;
++			priv->ext_stats.swq_cnt--;
+ 
+             #if defined(CONFIG_RTK_MESH)
+             __rtl8192cd_start_xmit_out(skb, pstat, NULL);
+             #else
+             __rtl8192cd_start_xmit_out(skb, pstat);        
+             #endif
++	#endif
++
++		if (skb_queue_len(&pstat->swq.swq_queue[q_num]) > pstat->swq.q_aggnum[q_num]) {
++			is_full = 1;	
++		}
+         }
+     }
+     else {
+@@ -7799,13 +7830,13 @@
+             if(priv->pshare->swq_use_hw_timer) {
+ 		if(priv->pshare->swq_numActiveSTA > 8 && (priv->up_time - priv->pshare->swq_turbo_time) < priv->pshare->rf_ft_var.swqmaxturbotime)
+                     tri_time = 20;
+-                else if (pstat->tx_avarage > 13750000)           // 110M~
++                else if (pstat->tx_avarage > 13750000 || fps > 800)           // 110M~
+                 	tri_time = priv->pshare->rf_ft_var.tri_time1;
+                 else if (pstat->tx_avarage > 1875000)       //15M~110M
+                     tri_time = priv->pshare->rf_ft_var.tri_time2;
+                 else if (pstat->tx_avarage > 625000)        //5M~15M
+                     tri_time = priv->pshare->rf_ft_var.tri_time3;
+-                else if (pstat->tx_avarage > 250000)        //2M~5M
++                else if (pstat->tx_avarage > 250000)        // 2M~5M
+                     tri_time = priv->pshare->rf_ft_var.tri_time4;
+                 else if (pstat->tx_avarage > 100000)        //800K~2M
+                     tri_time = priv->pshare->rf_ft_var.tri_time5;
+@@ -7814,7 +7845,10 @@
+                 else
+                     tri_time = priv->pshare->rf_ft_var.tri_time7;
+                 pstat->swq.swq_tri_time[q_num] = tri_time;
+-                       
++
++		if(is_full)
++                 tri_time = 1;
++                     
+                 if(pstat->swq.swq_prev_timeout[q_num] != tri_time) {
+                     pstat->swq.swq_prev_timeout[q_num] = tri_time;
+                     pstat->swq.swq_timeout_change[q_num] = 1;                                 
+@@ -7912,7 +7946,11 @@
+             
+             add_timer = 0;
+             if(need_dequeue) {  
+-                bdfull = rtl8192cd_swq_bdfull(priv, pstat, qnum, (pstat->swq.q_aggnum[qnum]*2));
++                bdfull = rtl8192cd_swq_bdfull(priv, pstat, qnum, pstat->swq.q_aggnum[qnum]);
++                if(bdfull) {
++			rtl8192cd_tx_queueDsr(priv, qnum);
++	                bdfull = rtl8192cd_swq_bdfull(priv, pstat, qnum, pstat->swq.q_aggnum[qnum]);
++               	}
+                 if(bdfull) {
+                     add_timer = 1;
+                     if(priv->pshare->swq_use_hw_timer) {                        
+@@ -7928,11 +7966,11 @@
+                 }
+                 else {
+                         if(priv->pshare->swq_use_hw_timer) {
+-                        rtl8192cd_swq_dequeue(priv_this, pstat, qnum);
++                            rtl8192cd_swq_dequeue(priv_this, pstat, qnum);
+                             pstat->swq.q_TOCount[qnum]++;                        
+                         }
+                         else {
+-                        pstat->swq.q_TOCount[qnum] += rtl8192cd_swq_dequeue(priv_this, pstat, qnum); 
++                            pstat->swq.q_TOCount[qnum] += rtl8192cd_swq_dequeue(priv_this, pstat, qnum); 
+                         }
+ 			qlen = skb_queue_len(&pstat->swq.swq_queue[qnum]);
+ 			// Becuase swq_dequeue costs time, renew current time for avoid add_timer_timeout overflow
+@@ -7944,7 +7982,7 @@
+ 			}
+ 			if (qlen == 0) {
+                         	add_timer = 0;
+-			} else if (0< qlen < pstat->swq.q_aggnum[qnum]) {
++			} else if (qlen < pstat->swq.q_aggnum[qnum]) {
+ 				add_timer_timeout = pstat->swq.swq_tri_time[qnum];  
+ 				add_timer_timeout = add_timer_timeout*1000;
+ 				add_timer_timeout += current_time; 
+@@ -8768,12 +8806,13 @@
+ 			return __rtl8192cd_start_xmit_out(skb, pstat);
+ #endif
+ 	} else if (priv->pshare->swq_en && !txcfg->is_urg_pkt) {//swq_en=1
+-		if ((priv->ext_stats.swq_enque_pkt - priv->ext_stats.swq_xmit_out_pkt - priv->ext_stats.swq_drop_pkt) > 36000) {
+-			DEBUG_ERR("TX DROP: exceed the SW tx queue!\n");
++		if (priv->ext_stats.swq_cnt > 36000) {	
++			DEBUG_WARN("TX DROP: exceed the SW tx queue!\n");
+ 			priv->ext_stats.tx_drops++;
+ 			goto free_and_stop;
+ 		} else {
+         		priv->ext_stats.swq_enque_pkt++;
++			priv->ext_stats.swq_cnt++;	
+ 			return rtl8192cd_swq_enqueue(priv, skb, pstat);
+ 		}
+ 	} else { //swq_en=0 and swq still have packet queuing
+@@ -10261,6 +10300,10 @@
+ //        }
+ #endif
+ 
++    if ( txcfg->fr_type == _SKB_FRAME_TYPE_) {
++        memcpy(pdescinfo->da_mac, pstat->hwaddr, MACADDRLEN);
++        pstat->tx_hw_pending_count++;
++    }
+ 
+     GET_HAL_INTERFACE(priv)->SyncSWTXBDHostIdxToHWHandler(priv, halQNum);
+ 
+@@ -12158,6 +12201,7 @@
+ 	int				            recycleCnt = 0;
+     unsigned int                halQnum = GET_HAL_INTERFACE(priv)->MappingTxQueueHandler(priv, txRingIdx);
+     PHCI_TX_DMA_MANAGER_88XX    ptx_dma;
++	struct stat_info *pstat;
+ 
+     ptx_dma = (PHCI_TX_DMA_MANAGER_88XX)(_GET_HAL_DATA(priv)->PTxDMA88XX);
+     head = GET_HAL_INTERFACE(priv)->GetTxQueueHWIdxHandler(priv, txRingIdx);
+@@ -12272,6 +12316,12 @@
+ 
+ 			if (pdescinfo->buf_type[cnt] == _SKB_FRAME_TYPE_)
+ 			{
++				pstat = get_stainfo(priv, pdescinfo->da_mac);
++				if (pstat != NULL) {
++					pstat->tx_hw_pending_count--;
++				}
++				memset(pdescinfo->da_mac,0 ,6);
++
+ #ifdef MP_TEST
+ 				if (OPMODE & WIFI_MP_CTX_BACKGROUND) {
+ 					struct sk_buff *skb = (struct sk_buff *)(pdescinfo->buf_pframe[cnt]);
+diff -Nur a/driver/rtl8192cd/8192cd_util.c b/driver/rtl8192cd/8192cd_util.c
+--- a/driver/rtl8192cd/8192cd_util.c	2017-03-15 14:52:07.733331428 -0700
++++ b/driver/rtl8192cd/8192cd_util.c	2017-03-15 14:52:07.740331429 -0700
+@@ -1489,6 +1489,7 @@
+ 		while (skb_queue_len(&pstat->swq.swq_queue[i])) {
+ 			pskb = skb_dequeue(&pstat->swq.swq_queue[i]);
+             		priv->ext_stats.swq_drop_pkt++;
++			priv->ext_stats.swq_cnt--;		
+ 			rtl_kfree_skb(priv, pskb, _SKB_TX_);
+ 		}
+ 	}

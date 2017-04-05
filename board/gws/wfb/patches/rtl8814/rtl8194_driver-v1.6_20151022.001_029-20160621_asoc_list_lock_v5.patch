@@ -1,0 +1,1113 @@
+diff -Naurp rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/8192cd.h patch/8192cd.h
+--- rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/8192cd.h	2016-06-28 16:06:50.355370668 +0200
++++ patch/8192cd.h	2016-06-28 15:41:49.115292823 +0200
+@@ -2946,6 +2946,9 @@ struct priv_shared_info {
+ 	unsigned long			lock_flags;
+ 	unsigned char			lock_xmit_func[50];
+ 	unsigned char			lock_func[50];
++	int                     lock_asoc_list_owner;
++	unsigned long			lock_asoc_list_flags;
++	unsigned char			lock_asoc_list_func[50];
+ #endif
+ 
+ 	// for RF fine tune
+@@ -4151,6 +4154,10 @@ typedef struct rtl8192cd_priv {
+ #endif
+ #elif defined(CONFIG_PCI_HCI)
+ 	spinlock_t			hash_list_lock;
++	spinlock_t			asoc_list_lock;
++	spinlock_t			auth_list_lock;
++	spinlock_t			sleep_list_lock;
++	spinlock_t			wakeup_list_lock;
+ #endif
+ #endif
+ 
+diff -Naurp rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/8192cd_ioctl.c patch/8192cd_ioctl.c
+--- rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/8192cd_ioctl.c	2016-06-28 15:41:34.827292082 +0200
++++ patch/8192cd_ioctl.c	2016-06-28 15:41:49.115292823 +0200
+@@ -5513,11 +5513,11 @@ int del_sta(struct rtl8192cd_priv *priv,
+ {
+ 	struct stat_info *pstat;
+ 	unsigned char macaddr[MACADDRLEN], tmpbuf[3];
+-#ifndef SMP_SYNC
++//#ifndef SMP_SYNC
+ 	unsigned long flags;
+-#endif
++//#endif
+ 	DOT11_DISASSOCIATION_IND Disassociation_Ind;
+-	int i, send_disasoc=1;
++	int i, send_disasoc=1, isEmpty;
+ 
+ 	if (!netif_running(priv->dev))
+ 		return 0;
+@@ -5541,7 +5541,11 @@ int del_sta(struct rtl8192cd_priv *priv,
+ 	if (pstat == NULL)
+ 		return 0;
+ 
+-	if (!list_empty(&pstat->asoc_list))
++	SMP_LOCK_ASOC_LIST(flags);
++	isEmpty = list_empty(&pstat->asoc_list);
++	SMP_UNLOCK_ASOC_LIST(flags);
++
++	if (!isEmpty)
+ 	{
+ 		if (IEEE8021X_FUN)
+ 		{
+@@ -5606,11 +5610,11 @@ int del_sta_enc(struct rtl8192cd_priv *p
+ {
+ 	struct stat_info *pstat;
+ 	unsigned char macaddr[MACADDRLEN], tmpbuf[3];
+-#ifndef SMP_SYNC
++//#ifndef SMP_SYNC
+ 	unsigned long flags;
+-#endif
++//#endif
+ 	DOT11_DEAUTHENTICATION_IND Deauthentication_Ind;
+-	int i;
++	int i, isEmpty;
+ 
+ 	if (!netif_running(priv->dev))
+ 		return 0;
+@@ -5646,7 +5650,11 @@ int del_sta_enc(struct rtl8192cd_priv *p
+ 	if (pstat == NULL)
+ 		return 0;
+ 
+-	if (!list_empty(&pstat->asoc_list))
++	SMP_LOCK_ASOC_LIST(flags);
++	isEmpty = list_empty(&pstat->asoc_list);
++	SMP_UNLOCK_ASOC_LIST(flags);
++
++	if (!isEmpty)
+ 	{
+ 		if (IEEE8021X_FUN)
+ 		{
+@@ -5727,12 +5735,16 @@ static void get_sta_info(struct rtl8192c
+ 	struct stat_info *pstat;
+ 	struct net_device *dev = priv->dev;
+ 	int i;
++	unsigned long flags;
+ 
+ 	memset((char *)pInfo, '\0', sizeof(sta_info_2_web)*size);
+ 
+ 	phead = &priv->asoc_list;
+-	if (!netif_running(dev) || list_empty(phead))
++	SMP_LOCK_ASOC_LIST(flags);
++	if (!netif_running(dev) || list_empty(phead)) {
++		SMP_UNLOCK_ASOC_LIST(flags);
+ 		return;
++	}
+ 
+ 	plist = phead;
+ 	while (((plist = asoc_list_get_next(priv, plist)) != phead) && (size > 0))
+@@ -5838,6 +5850,7 @@ static void get_sta_info(struct rtl8192c
+ 			size--;
+ 		}
+ 	}
++	SMP_UNLOCK_ASOC_LIST(flags);
+ }
+ 
+ #ifdef _SINUX_
+@@ -5868,13 +5881,13 @@ int rtl8192cd_check_wlan_mac(char *wlan_
+     priv = (struct rtl8192cd_priv *)net_dev -> priv;
+ 
+ 	phead = &priv->asoc_list;
++	SMP_LOCK_ASOC_LIST(flags);
+ 	if (!netif_running(net_dev) || list_empty(phead)){
+ 		dev_put(net_dev);
++		SMP_UNLOCK_ASOC_LIST(flags);
+ 		return 0;
+ 	}
+ 
+-	SMP_LOCK_ASOC_LIST(flags);
+-
+ 	plist = phead->next;
+ 	while (plist != phead)
+ 	{
+@@ -5928,14 +5941,14 @@ int rtl8192cd_getMacTable(char *wlan_ifn
+ 
+ 
+ 	phead = &priv->asoc_list;
++	SMP_LOCK_ASOC_LIST(flags);
+ 	if (!netif_running(net_dev) || list_empty(phead))
+ 	{
+ 		dev_put(net_dev);
++		SMP_UNLOCK_ASOC_LIST(flags);
+ 		return -1;
+ 	}
+ 
+-	SMP_LOCK_ASOC_LIST(flags);
+-
+ 	plist = phead->next;
+ 	while (plist != phead && table_num > 0 )
+ 	{
+@@ -9165,10 +9178,12 @@ void AddDelMCASTGroup2STA(struct rtl8192
+ #endif
+ 
+     phead = &priv->asoc_list;
+-    if (NULL == phead->next)
+-        return;
+ 
+ 	SMP_LOCK_ASOC_LIST(flags);
++    if (NULL == phead->next) {
++	SMP_UNLOCK_ASOC_LIST(flags);
++        return;
++    }
+ 
+     plist = phead->next;
+     while (plist != phead) {
+diff -Naurp rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/8192cd_osdep.c patch/8192cd_osdep.c
+--- rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/8192cd_osdep.c	2016-06-28 16:08:27.791375721 +0200
++++ patch/8192cd_osdep.c	2016-06-28 15:41:49.115292823 +0200
+@@ -3473,6 +3473,11 @@ static int rtl8192cd_init_sw(struct rtl8
+ #endif
+ #elif defined(CONFIG_PCI_HCI)
+ 	spin_lock_init(&(priv->hash_list_lock));
++	spin_lock_init(&(priv->asoc_list_lock));
++	spin_lock_init(&(priv->auth_list_lock));
++	spin_lock_init(&(priv->sleep_list_lock));
++	spin_lock_init(&(priv->wakeup_list_lock));
++
+ #endif
+ 	spin_lock_init(&(priv->rx_datalist_lock));
+ 	spin_lock_init(&(priv->rx_mgtlist_lock));
+@@ -7114,6 +7119,11 @@ do_hw_init:
+ 		rc = rtl8192cd_init_hw_PCI(priv);
+ 		//delay_ms(200);		// TODO: need refinement, for 98 watchdog time out
+ 
++		panic_printk("priv->pshare->lock_xmit_owner addr=0x%lx\n", (unsigned long)&priv->pshare->lock_xmit_owner);
++		panic_printk("priv->pshare->lock_xmit_func addr=0x%lx\n", (unsigned long)&priv->pshare->lock_xmit_func);
++		panic_printk("priv->asoc_list addr=0x%lx\n", (unsigned long)&priv->asoc_list);
++
++
+ #if defined(CONFIG_USB_HCI) || defined(CONFIG_SDIO_HCI)
+ 		if (priv->pshare->bSurpriseRemoved) {
+ 			rc = 1;
+@@ -9811,6 +9821,7 @@ void *rtl8192cd_init_one(struct sdio_fun
+ 		priv->pshare->lock_owner=-1;
+ 		priv->pshare->lock_recv_owner=-1;
+ 		priv->pshare->lock_xmit_owner=-1;
++		priv->pshare->lock_asoc_list_owner=-1;
+ #endif
+ 
+ #ifdef MBSSID
+diff -Naurp rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/8192cd_security.c patch/8192cd_security.c
+--- rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/8192cd_security.c	2016-06-28 15:41:34.827292082 +0200
++++ patch/8192cd_security.c	2016-06-28 15:41:49.115292823 +0200
+@@ -1114,7 +1114,8 @@ int __DOT11_Indicate_MIC_Failure(struct
+ 	struct stat_info *pstat_del;
+ 	DOT11_MIC_FAILURE	Mic_Failure;
+ 	DOT11_DISASSOCIATION_IND Disassociation_Ind;
+-	int	i;
++	int	i, isEmpty;
++	unsigned long flags;
+ 
+ 	if (priv->pshare->skip_mic_chk || ((priv->ext_stats.tx_avarage + priv->ext_stats.rx_avarage) > (1024*1024/8)))
+ 		return 0;
+@@ -1179,7 +1180,12 @@ int __DOT11_Indicate_MIC_Failure(struct
+ #endif
+ 
+ 				pstat_del = &(priv->pshare->aidarray[i]->station);
+-				if (!list_empty(&pstat_del->asoc_list))
++
++				SMP_LOCK_ASOC_LIST(flags);
++				isEmpty = list_empty(&pstat_del->asoc_list);
++				SMP_UNLOCK_ASOC_LIST(flags);
++
++				if (!isEmpty)
+ 				{
+ #ifdef _SINUX_
+ 					printk("Second time to detect MIC error in a time period so disassociate the all client\n");
+diff -Naurp rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/8192cd_sme.c patch/8192cd_sme.c
+--- rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/8192cd_sme.c	2016-06-28 16:21:20.427415785 +0200
++++ patch/8192cd_sme.c	2016-06-28 16:20:56.075414523 +0200
+@@ -952,7 +952,7 @@ void usbPkt_timer_handler(struct rtl8192
+ }
+ #endif // USB_PKT_RATE_CTRL_SUPPORT
+ 
+-#if defined(CONFIG_USB_HCI) || defined(CONFIG_SDIO_HCI)
++#if 1//defined(CONFIG_USB_HCI) || defined(CONFIG_SDIO_HCI)
+ static void auth_expire(struct rtl8192cd_priv *priv)
+ {
+ 	struct stat_info	*pstat;
+@@ -1217,11 +1217,14 @@ static void assoc_expire(struct rtl8192c
+     int i,j;
+ 	phead = &priv->asoc_list;
+ 	plist = phead;
++	unsigned long flags;
+ 
++	SMP_LOCK_ASOC_LIST(flags);
+ 	while ((plist = asoc_list_get_next(priv, plist)) != phead)
+ 	{
+ 		pstat = list_entry(plist, struct stat_info, asoc_list);
+ 		pstat->link_time++;
++		SMP_UNLOCK_ASOC_LIST(flags);
+ 
+ #ifdef CLIENT_MODE
+ 		if ((OPMODE & WIFI_STATION_STATE) && (pstat->expire_to > 0)) {
+@@ -2115,9 +2118,11 @@ if(!IS_OUTSRC_CHIP(priv))
+ 		}
+ #endif
+ 		
++		SMP_LOCK_ASOC_LIST(flags);
+ 		if (plist == plist->next)
+ 			break;
+ 	}
++	SMP_UNLOCK_ASOC_LIST(flags);
+ 
+ 
+ 	/*dynamic tuning response date rate*/
+@@ -3603,7 +3608,7 @@ static void process_rtk_ie(struct rtl819
+ 	struct stat_info *pstat;
+ 	int use_long_slottime=0;
+ 	unsigned int threshold;
+-#if defined(SMP_SYNC) && (defined(CONFIG_USB_HCI) || defined(CONFIG_SDIO_HCI))
++#if defined(SMP_SYNC) //&& (defined(CONFIG_USB_HCI) || defined(CONFIG_SDIO_HCI))
+ 	unsigned long flags=0;
+ #endif
+ 
+@@ -3689,10 +3694,11 @@ int cal_statistics_acct(struct rtl8192cd
+ #endif
+ 
+ 	phead = &priv->asoc_list;
+-	if( list_empty(phead) )
+-		goto acct_cal_out;
+-
+ 	SMP_LOCK_ASOC_LIST(flags);
++	if( list_empty(phead) ) {
++		SMP_UNLOCK_ASOC_LIST(flags);
++		goto acct_cal_out;
++	}
+ 	
+ 	plist = phead->next;
+ 	while (plist != phead) {
+@@ -3716,13 +3722,16 @@ int expire_sta_for_radiusacct(struct rtl
+ 	int ret=0;
+ 	struct list_head *phead=NULL, *plist=NULL;
+ 	struct stat_info *pstat=NULL;
++	unsigned long flags;
+ 
+ 	if( (ACCT_FUN_TIME == 0) && (ACCT_FUN_TP == 0))
+ 		goto acct_expire_out;
+ 
+ 	phead = &priv->asoc_list;
+-	if(list_empty(phead))
++	SMP_LOCK_ASOC_LIST(flags);
++	if(list_empty(phead)) {
+ 		goto acct_expire_out;
++	}
+ 
+ 	plist = phead;
+ 	
+@@ -3753,6 +3762,7 @@ int expire_sta_for_radiusacct(struct rtl
+ 	}
+ 
+ acct_expire_out:
++	SMP_UNLOCK_ASOC_LIST(flags);
+ 	return ret;
+ }
+ #endif	//#ifdef RADIUS_ACCOUNTING
+@@ -3894,17 +3904,18 @@ int is_intel_connected(struct rtl8192cd_
+ 	struct list_head *phead, *plist;
+ 	struct stat_info *pstat;
+ 	unsigned char intel_connected=0;
+-#if defined(SMP_SYNC) && (defined(CONFIG_USB_HCI) || defined(CONFIG_SDIO_HCI))
++#if defined(SMP_SYNC) //&& (defined(CONFIG_USB_HCI) || defined(CONFIG_SDIO_HCI))
+ 	unsigned long flags = 0;
+ #endif
+ 
+ 	phead = &priv->asoc_list;
+ 	
++	SMP_LOCK_ASOC_LIST(flags);
+ 	if (list_empty(phead)) {
++		SMP_UNLOCK_ASOC_LIST(flags);
+ 		return 0;
+ 	}
+ 
+-	SMP_LOCK_ASOC_LIST(flags);
+ 
+ 	plist = phead->next;
+ 	while (plist != phead) {
+@@ -3949,7 +3960,9 @@ void check_sta_throughput(struct rtl8192
+ 
+ 	//check every sta throughput
+ 	phead = &priv->asoc_list;
++	SMP_LOCK_ASOC_LIST(flags);
+ 	if (list_empty(phead)) {
++		SMP_UNLOCK_ASOC_LIST(flags);
+ 		return;
+ 	}
+ 	plist = phead->next;
+@@ -4000,6 +4013,8 @@ void check_sta_throughput(struct rtl8192
+ 
+ 		plist = plist->next;
+ 	}
++	SMP_UNLOCK_ASOC_LIST(flags);
++
+ 	priv->rtk->survey_info[chan_idx].tx_time = tx_time;
+ 	priv->rtk->survey_info[chan_idx].rx_time = rx_time;
+ 
+@@ -4908,7 +4923,7 @@ if(!IS_OUTSRC_CHIP(priv))
+ 	{
+ 		struct list_head	*plist, *phead;
+ 		struct stat_info	*pstat;
+-#if defined(SMP_SYNC) && (defined(CONFIG_USB_HCI) || defined(CONFIG_SDIO_HCI))
++#if defined(SMP_SYNC) //&& (defined(CONFIG_USB_HCI) || defined(CONFIG_SDIO_HCI))
+ 		unsigned long local_flags = 0;
+ #endif
+ 		phead = &priv->sleep_list;
+@@ -4993,6 +5008,7 @@ if(!IS_OUTSRC_CHIP(priv))
+ 		memcpy(priv->pmib->dot11StationConfigEntry.deauth_mac,"\xff\xff\xff\xff\xff\xff",6);
+ 		issue_deauth(priv, priv->pmib->dot11StationConfigEntry.deauth_mac, _RSON_UNSPECIFIED_);
+ 
++		SMP_LOCK_ASOC_LIST(flags);
+ 		phead = &priv->asoc_list;
+ 		if (netif_running(priv->dev) && !list_empty(phead)) {
+ 			plist = phead->next;
+@@ -5009,6 +5025,7 @@ if(!IS_OUTSRC_CHIP(priv))
+ 				
+ 			}
+ 		}
++		SMP_UNLOCK_ASOC_LIST(flags);
+ 		priv->pmib->dot11StationConfigEntry.pmftest = 0;
+ 	} else if(priv->pmib->dot11StationConfigEntry.pmftest == 2) {
+ 		PMFDEBUG("%s(%d) issue unicast deauth\n", __FUNCTION__, __LINE__);
+@@ -5078,6 +5095,7 @@ else if(priv->pmib->dot11StationConfigEn
+ 		memcpy(priv->pmib->dot11StationConfigEntry.deauth_mac,"\xff\xff\xff\xff\xff\xff",6);
+ 		issue_disassoc(priv, priv->pmib->dot11StationConfigEntry.deauth_mac, _RSON_UNSPECIFIED_);
+ 
++		SMP_LOCK_ASOC_LIST(flags);
+ 		phead = &priv->asoc_list;
+ 		if (netif_running(priv->dev) && !list_empty(phead)) {
+ 			plist = phead->next;
+@@ -5094,6 +5112,7 @@ else if(priv->pmib->dot11StationConfigEn
+ 				
+ 			}
+ 		}
++		SMP_UNLOCK_ASOC_LIST(flags);
+ 		priv->pmib->dot11StationConfigEntry.pmftest = 0;
+ 	}
+ #endif
+@@ -7033,7 +7052,7 @@ static __inline__ unsigned char *update_
+ #endif
+ 	unsigned int	i, set_pvb;
+ 	unsigned char	val8;
+-#if !defined(SMP_SYNC) || (defined(CONFIG_USB_HCI) || defined(CONFIG_SDIO_HCI))    
++#if 1 //!defined(SMP_SYNC) || (defined(CONFIG_USB_HCI) || defined(CONFIG_SDIO_HCI))    
+ 	unsigned long	flags;
+ #endif
+ 	struct list_head	*plist, *phead;
+diff -Naurp rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/8192cd_tx.c patch/8192cd_tx.c
+--- rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/8192cd_tx.c	2016-06-28 15:41:34.827292082 +0200
++++ patch/8192cd_tx.c	2016-06-28 15:41:49.119292823 +0200
+@@ -1829,6 +1829,7 @@ int mlcst2unicst(struct rtl8192cd_priv *
+ #ifdef CONFIG_MAXED_MULTICAST	
+ 	int M2Uanyway=0;
+ #endif
++	unsigned long flags;
+ 
+ #ifdef HS2_SUPPORT
+ 	// if AP 
+@@ -1858,6 +1859,7 @@ int mlcst2unicst(struct rtl8192cd_priv *
+ 		/*added by qinjunjie,do multicast to unicast conversion, and send to every associated station */
+ 		phead = &priv->asoc_list;
+ 		plist = phead;
++		SMP_LOCK_ASOC_LIST(flags);
+ 		while ((plist = asoc_list_get_next(priv, plist)) != phead) {
+ 			pstat = list_entry(plist, struct stat_info, asoc_list);
+ 
+@@ -1874,6 +1876,7 @@ int mlcst2unicst(struct rtl8192cd_priv *
+ 			
+             if(pstat->leave || pstat->expire_to==0)
+ 				continue; 			
++			SMP_UNLOCK_ASOC_LIST(flags);
+ #ifdef MCAST2UI_REFINE
+ 			privacy = get_sta_encrypt_algthm(priv, pstat);
+ 			if ((privacy == _NO_PRIVACY_ || (privacy == _CCMP_PRIVACY_ &&
+@@ -1930,7 +1933,12 @@ int mlcst2unicst(struct rtl8192cd_priv *
+ 				}
+ 
+ 			}
++
++			SMP_LOCK_ASOC_LIST(flags);
++			if (plist == plist->next)
++				break;
+ 		}
++		SMP_UNLOCK_ASOC_LIST(flags);
+ 		rtl_kfree_skb(priv, skb, _SKB_TX_);
+ 		return TRUE;
+ 	}
+@@ -1948,6 +1956,7 @@ int mlcst2unicst(struct rtl8192cd_priv *
+ 	// for video streaming refine 
+ 	phead = &priv->asoc_list;
+ 	plist = phead;
++	SMP_LOCK_ASOC_LIST(flags);
+ 	while ((plist = asoc_list_get_next(priv, plist)) != phead) {
+ 		pstat = list_entry(plist, struct stat_info, asoc_list);
+ 
+@@ -1971,6 +1980,7 @@ int mlcst2unicst(struct rtl8192cd_priv *
+ 			}
+ 		}
+ 	}
++	SMP_UNLOCK_ASOC_LIST(flags);
+ 
+ #ifdef TV_MODE
+     if(priv->tv_mode_status & BIT0)/*TV mode is enabled*/    
+@@ -2030,6 +2040,7 @@ int mlcst2unicst(struct rtl8192cd_priv *
+ 	// Do multicast to unicast conversion
+ 	phead = &priv->asoc_list;
+ 	plist = phead;
++	SMP_LOCK_ASOC_LIST(flags);
+ 	while ((plist = asoc_list_get_next(priv, plist)) != phead) {
+ 		pstat = list_entry(plist, struct stat_info, asoc_list);
+ 
+@@ -2056,6 +2067,7 @@ int mlcst2unicst(struct rtl8192cd_priv *
+         }
+ #endif
+ 
++		SMP_UNLOCK_ASOC_LIST(flags);
+ #ifdef CONFIG_PCI_HCI
+ 		{
+ 			int *tx_head, *tx_tail, q_num;
+@@ -2254,7 +2266,12 @@ int mlcst2unicst(struct rtl8192cd_priv *
+ 				}
+ 			}
+ 		}
++
++		SMP_LOCK_ASOC_LIST(flags);
++		if (plist == plist->next)
++			break;
+ 	}
++	SMP_UNLOCK_ASOC_LIST(flags);
+ 	
+ #ifdef TV_MODE
+     if((priv->tv_mode_status & BIT0) == 0 && fwdCnt) {
+@@ -7801,6 +7818,7 @@ int __rtl8192cd_start_xmit(struct sk_buf
+ #ifdef SMP_SYNC
+ 	unsigned long flags;
+ #endif
++	int locked=0;	
+ 
+ 
+ 	DECLARE_TXCFG(txcfg, tx_insn);
+@@ -8022,6 +8040,7 @@ int __rtl8192cd_start_xmit(struct sk_buf
+ 				struct list_head *phead, *plist;
+ 
+ 				phead = &priv->asoc_list;
++				SMP_TRY_LOCK_ASOC_LIST(flags, locked);
+ 				plist = phead->next;
+ 				while (phead && (plist != phead)) 
+ 				{
+@@ -8046,6 +8065,8 @@ int __rtl8192cd_start_xmit(struct sk_buf
+ 						__rtl8192cd_start_xmit(newskb, priv->dev, TX_NO_MUL2UNI);
+ 					}
+ 				}
++				if(locked)
++					SMP_UNLOCK_ASOC_LIST(flags);
+ 			}
+ 	        goto free_and_stop;
+ 		}
+@@ -8895,6 +8916,7 @@ int __rtl8192cd_usb_start_xmit(struct rt
+         if ((priv->pshare->swq_en == 0) && (priv->assoc_num > 1) && (AMPDU_ENABLE))
+         {
+             int thd_value;
++            int locked=0;
+ 
+             if ((priv->swq_boost_delay > 0) && (priv->swq_boost_delay < 10))
+                 thd_value = priv->pshare->rf_ft_var.swq_en_highthd / 10;
+@@ -8916,6 +8938,7 @@ int __rtl8192cd_usb_start_xmit(struct rt
+                 struct stat_info	*pstat_highest = NULL;
+ 
+                 phead = &priv->asoc_list;
++		SMP_TRY_LOCK_ASOC_LIST(flags, locked);
+                 plist = phead->next;
+ 
+                 while (plist != phead)
+@@ -8933,6 +8956,8 @@ int __rtl8192cd_usb_start_xmit(struct rt
+ 
+                     plist = plist->next;
+                 }
++		if(locked)
++			SMP_UNLOCK_ASOC_LIST(flags);
+             }
+         }
+ #endif
+diff -Naurp rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/8192cd_util.c patch/8192cd_util.c
+--- rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/8192cd_util.c	2016-06-28 16:22:21.447418950 +0200
++++ patch/8192cd_util.c	2016-06-28 15:41:49.119292823 +0200
+@@ -1847,7 +1847,7 @@ void release_stainfo(struct rtl8192cd_pr
+ 
+ struct	stat_info *alloc_stainfo(struct rtl8192cd_priv *priv, unsigned char *hwaddr, int id)
+ {
+-#if !defined(SMP_SYNC) || (defined(CONFIG_USB_HCI) || defined(CONFIG_SDIO_HCI))
++#if 1 //!defined(SMP_SYNC) || (defined(CONFIG_USB_HCI) || defined(CONFIG_SDIO_HCI))
+ 	unsigned long	flags;
+ #endif
+     unsigned int	i;
+@@ -2137,10 +2137,11 @@ no_free_memory:
+ #ifdef CONFIG_IEEE80211W
+ int del_station(struct rtl8192cd_priv *priv, struct stat_info *pstat)
+ {
+-#ifndef SMP_SYNC
++//#ifndef SMP_SYNC
+ 	unsigned long flags;
+-#endif
++//#endif
+ 	DOT11_DISASSOCIATION_IND Disassociation_Ind;
++	int isEmpty;
+ 
+ 	if (!netif_running(priv->dev))
+ 		return 0;
+@@ -2148,7 +2149,11 @@ int del_station(struct rtl8192cd_priv *p
+ 	if (pstat == NULL)
+ 		return 0;
+ 
+-	if (!list_empty(&pstat->asoc_list))
++	SMP_LOCK_ASOC_LIST(flags);
++	isEmpty = list_empty(&pstat->asoc_list);
++	SMP_UNLOCK_ASOC_LIST(flags);
++
++	if (!isEmpty)
+ 	{
+ 		if (IEEE8021X_FUN)
+ 		{
+@@ -2413,7 +2418,7 @@ struct stat_info *get_aidinfo(struct rtl
+ {
+ 	struct list_head	*plist, *phead;
+ 	struct stat_info	*pstat = NULL;
+-#if defined(SMP_SYNC) && (defined(CONFIG_USB_HCI) || defined(CONFIG_SDIO_HCI))
++#if defined(SMP_SYNC) //&& (defined(CONFIG_USB_HCI) || defined(CONFIG_SDIO_HCI))
+ 	unsigned long flags = 0;
+ #endif
+ 
+@@ -2444,7 +2449,7 @@ struct stat_info *get_macidinfo(struct r
+ {
+ 	struct list_head	*plist, *phead;
+ 	struct stat_info	*pstat = NULL;
+-#if defined(SMP_SYNC) && (defined(CONFIG_USB_HCI) || defined(CONFIG_SDIO_HCI))
++#if defined(SMP_SYNC) //&& (defined(CONFIG_USB_HCI) || defined(CONFIG_SDIO_HCI))
+ 	unsigned long flags = 0;
+ #endif
+ 
+@@ -4864,14 +4869,15 @@ int get_assoc_sta_num(struct rtl8192cd_p
+ 	struct list_head *phead, *plist;
+ 	struct stat_info *pstat;
+ 	int sta_num;
+-#if defined(SMP_SYNC) && (defined(CONFIG_USB_HCI) || defined(CONFIG_SDIO_HCI))
++#if defined(SMP_SYNC) //&& (defined(CONFIG_USB_HCI) || defined(CONFIG_SDIO_HCI))
+ 	unsigned long flags = 0;
++	int locked =0;
+ #endif
+ 
+ 	sta_num = 0;
+ 	phead = &priv->asoc_list;
+ 	
+-	SMP_LOCK_ASOC_LIST(flags);
++	SMP_TRY_LOCK_ASOC_LIST(flags, locked);
+ 	
+ 	plist = phead->next;
+ 	while (plist != phead) {
+@@ -4890,7 +4896,8 @@ int get_assoc_sta_num(struct rtl8192cd_p
+ 		} 
+ 	}
+ 	
+-	SMP_UNLOCK_ASOC_LIST(flags);
++	if (locked)
++		SMP_UNLOCK_ASOC_LIST(flags);
+ 	return sta_num;
+ }
+ 
+@@ -5276,18 +5283,21 @@ unsigned char fw_was_full(struct rtl8192
+ 	struct list_head *phead;
+ 	struct list_head *plist;
+ 	struct stat_info *pstat;
+-#if defined(SMP_SYNC) && (defined(CONFIG_USB_HCI) || defined(CONFIG_SDIO_HCI))
++#if defined(SMP_SYNC) //&& (defined(CONFIG_USB_HCI) || defined(CONFIG_SDIO_HCI))
+ 	unsigned long flags = 0;
+ #endif
+ 	unsigned char is_full;
+ 
+ 	phead = &priv->asoc_list;
+-	if(list_empty(phead))
++
++	SMP_LOCK_ASOC_LIST(flags);
++	if(list_empty(phead)) {
++		SMP_UNLOCK_ASOC_LIST(flags);
+ 		return 0;
++	}
+ 
+ 	is_full = 0;
+ 
+-	SMP_LOCK_ASOC_LIST(flags);
+ 
+ 	plist = phead->next;
+ 	while (plist != phead) {
+@@ -5313,15 +5323,17 @@ int realloc_RATid(struct rtl8192cd_priv
+ 	struct stat_info *pstat =NULL, *pstat_chosen = NULL;
+ 	unsigned int max_through_put = 0;
+ 	unsigned int have_chosen = 0;
+-#if defined(SMP_SYNC) && (defined(CONFIG_USB_HCI) || defined(CONFIG_SDIO_HCI))
++#if defined(SMP_SYNC) //&& (defined(CONFIG_USB_HCI) || defined(CONFIG_SDIO_HCI))
+ 	unsigned long flags = 0;
+ #endif
+ 
+ 	phead = &priv->asoc_list;
+-	if(list_empty(phead))
+-		return 0;
+ 
+ 	SMP_LOCK_ASOC_LIST(flags);
++	if(list_empty(phead)) {
++		SMP_UNLOCK_ASOC_LIST(flags);
++		return 0;
++	}
+ 	
+ 	plist = phead->next;
+ 	while (plist != phead) {
+@@ -7720,12 +7732,14 @@ struct dhcpMessage {
+ 	struct udphdr *udph;
+ 	struct dhcpMessage *dhcph;
+ 	struct list_head *phead, *plist;
++	unsigned long	flags;
+ 	
+ 	iph = (struct iphdr *)(pskb->data + ETH_HLEN);
+ 	udph = (struct udphdr *)((unsigned int)iph + (iph->ihl << 2));
+ 	dhcph = (struct dhcpMessage *)((unsigned int)udph + sizeof(struct udphdr));
+ 
+     phead = &priv->asoc_list;
++    SMP_LOCK_ASOC_LIST(flags);
+     plist = phead->next;
+     while (phead && (plist != phead))
+     {
+@@ -7735,16 +7749,17 @@ struct dhcpMessage {
+         if (!memcmp(pstat->hwaddr, &dhcph->chaddr[0], 6)) {
+ 			if (dhcph->op == 2) //dhcp reply
+ 			{
+-				if (dhcph->yiaddr == 0) 
+-					return;
+-				else {
++				if (dhcph->yiaddr == 0) {
++				} else {
+ 					memcpy(pstat->sta_ip, &dhcph->yiaddr, 4);
+ 					printk("dhcp give yip=%d.%d.%d.%d\n", pstat->sta_ip[0],pstat->sta_ip[1],pstat->sta_ip[2],pstat->sta_ip[3]);
+ 				}
+ 			}
++			SMP_UNLOCK_ASOC_LIST(flags);
+ 			return;
+ 		}
+ 	}
++	SMP_UNLOCK_ASOC_LIST(flags);
+ }
+ 
+ extern __MIPS16 __IRAM_IN_865X int __rtl8192cd_start_xmit_out(struct sk_buff *skb, struct stat_info *pstat);
+@@ -7801,6 +7816,7 @@ int proxy_icmpv6_ndisc(struct rtl8192cd_
+     struct list_head *phead, *plist;
+ 	unsigned int pkt_len;
+ 	int type;
++	unsigned long	flags;
+ 
+ 	HS2_DEBUG_TRACE(2, "proxy_icmpv6_ndisc\n");
+ #ifdef __ECOS
+@@ -7843,6 +7859,7 @@ int proxy_icmpv6_ndisc(struct rtl8192cd_
+ 
+ 			//search target ip mapping pstat mac
+ 			phead = &priv->asoc_list;
++    		SMP_LOCK_ASOC_LIST(flags);
+ 	        plist = phead->next;
+ 		    while (phead && (plist != phead))
+ 			{
+@@ -7864,6 +7881,7 @@ int proxy_icmpv6_ndisc(struct rtl8192cd_
+ 		                priv->ext_stats.tx_drops++;
+ 			            HS2_DEBUG_ERR("alloc icmpv6 neighbor advertisement skb null!!\n");
+ 				        rtl_kfree_skb(priv, skb, _SKB_TX_);
++    						SMP_UNLOCK_ASOC_LIST(flags);
+ 					    return 1;
+ 					}
+ 					else
+@@ -7918,6 +7936,7 @@ int proxy_icmpv6_ndisc(struct rtl8192cd_
+                         {
+                             printk("v6:tip=sip!!\n");
+                             dev_kfree_skb_any(newskb);
++    				SMP_UNLOCK_ASOC_LIST(flags);
+                             return 1;
+                         }
+ 
+@@ -7953,10 +7972,12 @@ int proxy_icmpv6_ndisc(struct rtl8192cd_
+ 						    netif_rx(newskb);
+ #endif		
+ 						}
++    						SMP_UNLOCK_ASOC_LIST(flags);
+ 						return 1;
+ 					}
+ 				}
+ 			}
++   	 		SMP_UNLOCK_ASOC_LIST(flags);
+ 		}
+ 	}
+ 	return 0;
+@@ -7971,6 +7992,7 @@ int proxy_arp_handle(struct rtl8192cd_pr
+ 	struct list_head *phead, *plist;
+ 	int k;
+ 	unsigned char *tmp = (unsigned char *)(skb->data);
++	unsigned long	flags;
+ 	
+ 	/*if((arp->ar_pro == __constant_htons(ETH_P_IP)) && (arp->ar_op == htons(ARPOP_REQUEST)||arp->ar_op == htons(ARPOP_REPLY)))
+ 	{
+@@ -8021,6 +8043,7 @@ int proxy_arp_handle(struct rtl8192cd_pr
+ 
+ 		//search target ip mapping pstat mac
+ 		phead = &priv->asoc_list;
++		SMP_LOCK_ASOC_LIST(flags);
+ 		plist = phead->next;
+ 		while (phead && (plist != phead)) 
+ 		{
+@@ -8041,6 +8064,7 @@ int proxy_arp_handle(struct rtl8192cd_pr
+ 					priv->ext_stats.tx_drops++;
+ 					HS2_DEBUG_ERR("alloc arp rsp skb null!!\n");
+ 					rtl_kfree_skb(priv, skb, _SKB_TX_);
++   	 				SMP_UNLOCK_ASOC_LIST(flags);
+ 					return 1;
+ 				}	
+ 				else
+@@ -8080,6 +8104,7 @@ int proxy_arp_handle(struct rtl8192cd_pr
+ 					{
+ 						HS2_DEBUG_TRACE(2, "target ip = sender ip!!\n");
+ 						dev_kfree_skb_any(newskb);
++   	 					SMP_UNLOCK_ASOC_LIST(flags);
+ 						return 1;
+ 					}
+ 
+@@ -8134,10 +8159,12 @@ int proxy_arp_handle(struct rtl8192cd_pr
+ 						netif_rx(newskb);
+ #endif
+ 					}
++   	 				SMP_UNLOCK_ASOC_LIST(flags);
+ 					return 1;
+ 				}			
+ 			}
+ 		}
++   	 	SMP_UNLOCK_ASOC_LIST(flags);
+ 	}
+ 	
+ 	//drop packet
+diff -Naurp rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/8192cd_util.h patch/8192cd_util.h
+--- rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/8192cd_util.h	2016-06-28 15:43:41.547298653 +0200
++++ patch/8192cd_util.h	2016-06-28 16:57:45.519529092 +0200
+@@ -143,6 +143,7 @@
+ #elif defined(CONFIG_PCI_HCI)
+ #define SMP_LOCK(__x__)	\
+ 	do { \
++		get_cpu(); \
+ 		if(priv->pshare->lock_owner!=smp_processor_id()) \
+ 			spin_lock_irqsave(&priv->pshare->lock, priv->pshare->lock_flags); \
+ 		else {\
+@@ -151,22 +152,28 @@
+ 		} \
+ 		strcpy(priv->pshare->lock_func, __FUNCTION__);\
+ 		priv->pshare->lock_owner=smp_processor_id();\
++		put_cpu(); \
+ 	}while(0)
+ #define SMP_UNLOCK(__x__)				do {priv->pshare->lock_owner=-1;spin_unlock_irqrestore(&priv->pshare->lock, priv->pshare->lock_flags);}while(0)
+ #define SMP_TRY_LOCK(__x__,__y__) \
+ 	do { \
++		get_cpu(); \
+ 		if(priv->pshare->lock_owner != smp_processor_id()) { \
+ 			SMP_LOCK(__x__); \
+ 			__y__ = 1; \
+ 		} else \
+ 			__y__ = 0; \
++		put_cpu();\
+ 	} while(0)
+ #define SMP_LOCK_ASSERT() \
+ 	do { \
++			get_cpu(); \
+ 			if(priv->pshare->lock_owner!=smp_processor_id()) { \
+ 					panic_printk("ERROR: Without obtaining SMP_LOCK(). Please calling SMP_LOCK() before entering into %s()\n\n\n",__FUNCTION__); \
++					put_cpu(); \
+ 					return; \
+ 			} \
++			put_cpu(); \
+ 	}while(0)
+ 
+ //#define SMP_LOCK_XMIT(__x__)			spin_lock_irqsave(&priv->pshare->lock_xmit, (__x__))
+@@ -175,6 +182,7 @@
+ //#define SMP_UNLOCK_XMIT(__x__)			spin_unlock_irqrestore(&priv->pshare->lock_xmit, priv->pshare->lock_xmit_flags)
+ #define SMP_LOCK_XMIT(__x__)	\
+ 										do { \
++											get_cpu(); \
+ 											if(priv->pshare->lock_xmit_owner!=smp_processor_id()) \
+ 												spin_lock_irqsave(&priv->pshare->lock_xmit, priv->pshare->lock_xmit_flags); \
+ 											else {\
+@@ -183,15 +191,18 @@
+ 											}\
+ 											strcpy(priv->pshare->lock_xmit_func, __FUNCTION__);\
+ 											priv->pshare->lock_xmit_owner=smp_processor_id();\
++											put_cpu(); \
+ 										}while(0)
+ #define SMP_UNLOCK_XMIT(__x__) 			do {priv->pshare->lock_xmit_owner=-1;spin_unlock_irqrestore(&priv->pshare->lock_xmit, priv->pshare->lock_xmit_flags);}while(0)
+ #define SMP_TRY_LOCK_XMIT(__x__,__y__) \
+ 	do { \
++		get_cpu(); \
+ 		if(priv->pshare->lock_xmit_owner != smp_processor_id()) { \
+ 			SMP_LOCK_XMIT(__x__); \
+ 			__y__ = 1; \
+ 		} else \
+ 			__y__ = 0; \
++		put_cpu(); \
+ 	} while(0)
+ 
+ #define SMP_LOCK_HASH_LIST(__x__)		spin_lock_irqsave(&priv->hash_list_lock, (__x__))
+@@ -200,10 +211,38 @@
+ 
+ #define SMP_LOCK_ACL(__x__)
+ #define SMP_UNLOCK_ACL(__x__)
+-#define SMP_LOCK_ASOC_LIST(__x__)
+-#define SMP_UNLOCK_ASOC_LIST(__x__)
+-#define SMP_LOCK_SLEEP_LIST(__x__)
+-#define SMP_UNLOCK_SLEEP_LIST(__x__)
++//#define SMP_LOCK_ASOC_LIST(__x__)		spin_lock_irqsave(&priv->asoc_list_lock, (__x__))
++//#define SMP_UNLOCK_ASOC_LIST(__x__)		spin_unlock_irqrestore(&priv->asoc_list_lock, (__x__))
++#define SMP_LOCK_ASOC_LIST(__x__)	\
++										do { \
++											get_cpu(); \
++											if(priv->pshare->lock_asoc_list_owner!=smp_processor_id()) \
++												spin_lock_irqsave(&priv->asoc_list_lock, priv->pshare->lock_asoc_list_flags); \
++											else {\
++												panic_printk("[%s %d] recursion detection, caller=%p\n",__FUNCTION__,__LINE__,__builtin_return_address(0)); \
++												panic_printk("Previous Lock Function is %s\n",priv->pshare->lock_asoc_list_func); \
++											}\
++											strcpy(priv->pshare->lock_asoc_list_func, __FUNCTION__);\
++											priv->pshare->lock_asoc_list_owner=smp_processor_id();\
++											put_cpu(); \
++										}while(0)
++#define SMP_UNLOCK_ASOC_LIST(__x__) 			do {priv->pshare->lock_asoc_list_owner=-1;spin_unlock_irqrestore(&priv->asoc_list_lock, priv->pshare->lock_asoc_list_flags);}while(0)
++#define SMP_TRY_LOCK_ASOC_LIST(__x__,__y__) \
++	do { \
++		get_cpu(); \
++		if(priv->pshare->lock_asoc_list_owner != smp_processor_id()) { \
++			SMP_LOCK_ASOC_LIST(__x__); \
++			__y__ = 1; \
++		} else \
++			__y__ = 0; \
++		put_cpu(); \
++	} while(0)
++#define SMP_LOCK_SLEEP_LIST(__x__)		spin_lock_irqsave(&priv->sleep_list_lock, (__x__))
++#define SMP_UNLOCK_SLEEP_LIST(__x__)	spin_unlock_irqrestore(&priv->sleep_list_lock, (__x__))
++#define SMP_LOCK_AUTH_LIST(__x__)		spin_lock_irqsave(&priv->auth_list_lock, (__x__))
++#define SMP_UNLOCK_AUTH_LIST(__x__)		spin_unlock_irqrestore(&priv->auth_list_lock, (__x__))
++#define SMP_LOCK_WAKEUP_LIST(__x__)		spin_lock_irqsave(&priv->wakeup_list_lock, (__x__))
++#define SMP_UNLOCK_WAKEUP_LIST(__x__)	spin_unlock_irqrestore(&priv->wakeup_list_lock, (__x__))
+ #define SMP_LOCK_MESH_MP_HDR(__X__)
+ #define SMP_UNLOCK_MESH_MP_HDR(__X__)
+ #define SMP_LOCK_MESH_ACL(__x__)
+@@ -221,20 +260,24 @@
+ #endif
+ #define SMP_LOCK_RECV(__x__)	\
+ 	do { \
++		get_cpu(); \
+ 		if(priv->pshare->lock_recv_owner!=smp_processor_id()) \
+ 			spin_lock_irqsave(&priv->pshare->lock_recv, (__x__)); \
+ 		else \
+ 			panic_printk("[%s %d] recursion detection\n",__FUNCTION__,__LINE__); \
+ 		priv->pshare->lock_recv_owner=smp_processor_id();\
++		put_cpu(); \
+ 	}while(0)
+ #define SMP_UNLOCK_RECV(__x__)				do {priv->pshare->lock_recv_owner=-1;spin_unlock_irqrestore(&priv->pshare->lock_recv, (__x__));}while(0)
+ #define SMP_TRY_LOCK_RECV(__x__,__y__) \
+ 	do { \
++		get_cpu(); \
+ 		if(priv->pshare->lock_recv_owner != smp_processor_id()) { \
+ 			SMP_LOCK_RECV(__x__); \
+ 			__y__ = 1; \
+ 		} else \
+ 			__y__ = 0; \
++		put_cpu(); \
+ 	} while(0)
+ 
+ //#define SMP_LOCK_RECV(__x__)			spin_lock_irqsave(&priv->pshare->lock_recv, (__x__))
+@@ -1614,97 +1657,169 @@ static inline void asoc_list_unref(struc
+ 
+ static inline int asoc_list_del(struct rtl8192cd_priv *priv, struct stat_info *pstat)
+ {
++#ifdef SMP_SYNC
++	unsigned long flags = 0;
++	int locked = 0;
++#endif	
+ 	int ret = 0;
+ 	
++	SMP_TRY_LOCK_ASOC_LIST(flags, locked);
++	
+ 	if (!list_empty(&pstat->asoc_list)) {
+ 		list_del_init(&pstat->asoc_list);
+ 		ret = 1;
+ 	}
+ 	
++	if (locked)
++		SMP_UNLOCK_ASOC_LIST(flags);
++	
+ 	return ret;
+ }
+ 
+ static inline int asoc_list_add(struct rtl8192cd_priv *priv, struct stat_info *pstat)
+ {
++#ifdef SMP_SYNC
++	unsigned long flags = 0;
++#endif		
+ 	int ret = 0;
+ 	
++	SMP_LOCK_ASOC_LIST(flags);
++	
+ 	if (list_empty(&pstat->asoc_list)) {
+ 		list_add_tail(&pstat->asoc_list, &priv->asoc_list);
+ 		ret = 1;
+ 	}
+ 	
++	SMP_UNLOCK_ASOC_LIST(flags);
++	
+ 	return ret;
+ }
+ 
+ static inline int auth_list_del(struct rtl8192cd_priv *priv, struct stat_info *pstat)
+ {
++#ifdef SMP_SYNC
++	unsigned long flags = 0;
++#endif
+ 	int ret = 0;
+ 
++#ifdef SMP_SYNC
++	SMP_LOCK_AUTH_LIST(flags);
++#endif
++	
+ 	if (!list_empty(&pstat->auth_list)) {
+ 		list_del_init(&pstat->auth_list);
+ 		ret = 1;
+ 	}
+ 
++#ifdef SMP_SYNC
++	SMP_UNLOCK_AUTH_LIST(flags);
++#endif
+ 	return ret;
+ }
+ 
+ static inline int auth_list_add(struct rtl8192cd_priv *priv, struct stat_info *pstat)
+ {
++#ifdef SMP_SYNC
++	unsigned long flags = 0;
++#endif
+ 	int ret = 0;
+ 
++#ifdef SMP_SYNC
++	SMP_LOCK_AUTH_LIST(flags);
++#endif
+ 	if (list_empty(&pstat->auth_list)) {
+ 		list_add_tail(&pstat->auth_list, &priv->auth_list);
+ 		ret = 1;
+ 	}
+ 
++#ifdef SMP_SYNC
++	SMP_UNLOCK_AUTH_LIST(flags);
++#endif
++	
+ 	return ret;
+ }
+ 
+ static inline int sleep_list_del(struct rtl8192cd_priv *priv, struct stat_info *pstat)
+ {
++#ifdef SMP_SYNC
++		unsigned long flags = 0;
++#endif
+ 	int ret = 0;
+ 
++	SMP_LOCK_SLEEP_LIST(flags);
++	
+ 	if (!list_empty(&pstat->sleep_list)) {
+ 		list_del_init(&pstat->sleep_list);
+ 		ret = 1;
+ 	}
+ 
++	SMP_UNLOCK_SLEEP_LIST(flags);
++	
+ 	return ret;
+ }
+ 
+ static inline int sleep_list_add(struct rtl8192cd_priv *priv, struct stat_info *pstat)
+ {
++#ifdef SMP_SYNC
++	unsigned long flags = 0;
++#endif
+ 	int ret = 0;
+ 
++	SMP_LOCK_SLEEP_LIST(flags);
++	
+ 	if (list_empty(&pstat->sleep_list)) {
+ 		list_add_tail(&pstat->sleep_list, &priv->sleep_list);
+ 		ret = 1;
+ 	}
+ 
++	SMP_UNLOCK_SLEEP_LIST(flags);
++	
+ 	return ret;
+ }
+ 
+ static inline int wakeup_list_del(struct rtl8192cd_priv *priv, struct stat_info *pstat)
+ {
++#ifdef SMP_SYNC
++	unsigned long flags = 0;
++#endif
+ 	int ret = 0;
+ 
++#ifdef SMP_SYNC
++	SMP_LOCK_WAKEUP_LIST(flags);
++#endif
++	
+ 	if (!list_empty(&pstat->wakeup_list)) {
+ 		list_del_init(&pstat->wakeup_list);
+ 		ret = 1;
+ 	}
+ 
++#ifdef SMP_SYNC
++	SMP_UNLOCK_WAKEUP_LIST(flags);
++#endif
++	
+ 	return ret;
+ }
+ 
+ static inline int wakeup_list_add(struct rtl8192cd_priv *priv, struct stat_info *pstat)
+ {
++#ifdef SMP_SYNC
++	unsigned long flags = 0;
++#endif
+ 	int ret = 0;
+ 
++#ifdef SMP_SYNC
++	SMP_LOCK_WAKEUP_LIST(flags);
++#endif
++	
+ 	if (list_empty(&pstat->wakeup_list)) {
+ 		list_add_tail(&pstat->wakeup_list, &priv->wakeup_list);
+ 		ret = 1;
+ 	}
+ 
++#ifdef SMP_SYNC
++	SMP_UNLOCK_WAKEUP_LIST(flags);
++#endif
++	
+ 	return ret;
+ }
+ #endif // CONFIG_PCI_HCI
+diff -Naurp rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/HalDMOutSrc.c patch/HalDMOutSrc.c
+--- rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/HalDMOutSrc.c	2016-06-28 15:41:34.827292082 +0200
++++ patch/HalDMOutSrc.c	2016-06-28 15:41:49.119292823 +0200
+@@ -248,10 +248,11 @@ unsigned char NoLeavingSTA(struct rtl819
+ #endif
+ 
+ 	phead = &priv->asoc_list;
+-	if (!netif_running(priv->dev) || list_empty(phead))
+-		return bStaAllOK;
+-	
+ 	SMP_LOCK_ASOC_LIST(flags);
++	if (!netif_running(priv->dev) || list_empty(phead)) {
++		SMP_UNLOCK_ASOC_LIST(flags);
++		return bStaAllOK;
++	}
+ 
+ 	plist = phead->next;
+ 	while (plist != phead)  {

@@ -1,0 +1,68 @@
+diff --git a/driver/rtl8192cd/8192cd_psk.c b/driver/rtl8192cd/8192cd_psk.c
+index 8ac1411..096fc72 100644
+--- a/driver/rtl8192cd/8192cd_psk.c
++++ b/driver/rtl8192cd/8192cd_psk.c
+@@ -2472,6 +2472,10 @@ static void SendEAPOL(struct rtl8192cd_priv *priv, struct stat_info *pstat, int
+ 			char key_data[128];
+ 			char *key_data_pos = key_data;
+ 			static char GTK_KDE_TYPE[] = { 0xDD, 0x16, 0x00, 0x0F, 0xAC, 0x01, 0x01, 0x00 };
++#ifdef CONFIG_IEEE80211W
++			unsigned char IGTK_KDE_TYPE[] = {0xDD, 0x1C, 0x00, 0x0F, 0xAC, 0x09};
++#endif
++			int i;
+ 			memcpy(key_data_pos, GTK_KDE_TYPE, sizeof(GTK_KDE_TYPE));
+ 
+ //fix the bug of using default KDE length -----------
+@@ -2500,9 +2504,51 @@ static void SendEAPOL(struct rtl8192cd_priv *priv, struct stat_info *pstat, int
+ //------------------------------------- david+2006-04-04
+ 
+ 			memcpy(key_data_pos, pGblInfo->GTK[pGblInfo->GN], (pGblInfo->MulticastCipher == DOT11_ENC_TKIP) ? 32 : 16);
++
++			key_data_pos += (pGblInfo->MulticastCipher == DOT11_ENC_TKIP) ? 32 : 16;
++
++			//=================================================
++			// IGTK KDE
++#ifdef CONFIG_IEEE80211W
++			PMFDEBUG("SendEAPOL, 2-1, mgmt_frame_prot=%d\n", pstat->wpa_sta_info->mgmt_frame_prot);
++			if (pstat->wpa_sta_info->mgmt_frame_prot) {
++				PMFDEBUG("SendEAPOL,PATH 2-1\n");
++				memcpy(key_data_pos, IGTK_KDE_TYPE, sizeof(IGTK_KDE_TYPE));
++				key_data_pos += sizeof(IGTK_KDE_TYPE);
++				// Key ID
++				*(key_data_pos) = (unsigned char)priv->wpa_global_info->GN_igtk;
++				*(key_data_pos + 1) = 0;
++				key_data_pos += 2;
++				// IPN
++				*(key_data_pos++) = priv->wpa_global_info->IGTK_PN._byte_.TSC0;
++				*(key_data_pos++) = priv->wpa_global_info->IGTK_PN._byte_.TSC1;
++				*(key_data_pos++) = priv->wpa_global_info->IGTK_PN._byte_.TSC2;
++				*(key_data_pos++) = priv->wpa_global_info->IGTK_PN._byte_.TSC3;
++				*(key_data_pos++) = priv->wpa_global_info->IGTK_PN._byte_.TSC4;
++				*(key_data_pos++) = priv->wpa_global_info->IGTK_PN._byte_.TSC5;
++				memcpy(key_data_pos, priv->wpa_global_info->IGTK[priv->wpa_global_info->GN_igtk - 4], 16);
++
++				PMFDEBUG("IGTK=");
++				for (i = 0; i < 16; i++)
++					PMFDEBUG("%x", priv->wpa_global_info->IGTK[priv->wpa_global_info->GN_igtk - 4][i]);
++				PMFDEBUG("\n");
++				key_data_pos += 16;
++			}
++#endif
++
++			i = (key_data_pos - key_data) % 8;
++			if ( i != 0 ) {
++				*key_data_pos = 0xdd;
++				key_data_pos++;
++				for (i = i + 1; i < 8; i++) {
++					*key_data_pos = 0x0;
++					key_data_pos++;
++				}
++
++			}
+ 			EncGTK(priv, pstat, pStaInfo->PTK + PTK_LEN_EAPOLMIC, PTK_LEN_EAPOLENC,
+ 				   (unsigned char *)key_data,
+-				   sizeof(GTK_KDE_TYPE) + ((pGblInfo->MulticastCipher == DOT11_ENC_TKIP) ? 32 : 16),
++				   (key_data_pos - key_data),
+ 				   KeyData.Octet, &tmpKeyData_Length);
+ 		} else
+ #endif // RTL_WPA2

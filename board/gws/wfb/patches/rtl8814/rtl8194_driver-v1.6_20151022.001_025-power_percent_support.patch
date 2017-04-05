@@ -1,0 +1,82 @@
+diff -Naur rtl8194_driver_v1.6_20151022.001.old/driver/rtl8192cd/WlanHAL/RTL88XX/Hal88XXPhyCfg.c rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/WlanHAL/RTL88XX/Hal88XXPhyCfg.c
+--- rtl8194_driver_v1.6_20151022.001.old/driver/rtl8192cd/WlanHAL/RTL88XX/Hal88XXPhyCfg.c	2015-11-13 03:18:29.000000000 +0100
++++ rtl8194_driver_v1.6_20151022.001/driver/rtl8192cd/WlanHAL/RTL88XX/Hal88XXPhyCfg.c	2016-03-25 16:52:46.000000000 +0100
+@@ -2506,6 +2506,10 @@
+     u1Byte HAL_VAR_pwrlevelCCK_X[4] = {HAL_VAR_pwrlevelCCK_A(channel - 1), HAL_VAR_pwrlevelCCK_B(channel - 1), 			
+ 		HAL_VAR_pwrlevelCCK_C(channel - 1), HAL_VAR_pwrlevelCCK_D(channel - 1)
+ 		};
++#if CFG_HAL_POWER_PERCENT_ADJUSTMENT
++	s1Byte pwrdiff_percent = HAL_PwrPercent2PwrLevel(HAL_VAR_power_percent);
++	u1Byte path, rate;
++#endif
+ 
+ 	if (channel > 0)
+ 		ch_idx = (channel - 1);
+@@ -2684,6 +2688,16 @@
+         }  
+ 	}
+ 
++#if CFG_HAL_POWER_PERCENT_ADJUSTMENT
++	for(path=0;path<4;path++){
++		for(rate=TX_AGC_CCK_1M;rate<=TX_AGC_CCK_11M;rate++){
++			if (Adapter->pshare->phw->CurrentTxAgcCCK[path][rate])
++				Adapter->pshare->phw->CurrentTxAgcCCK[path][rate] += pwrdiff_percent;
++		}
++	}
++#endif
++
++
+ #if IS_RTL8814A_SERIES	
+ 		if(IS_HARDWARE_TYPE_8814A(Adapter)){
+ 			TxPG_CCK_8814(Adapter);
+@@ -2725,6 +2739,10 @@
+ {
+ 	u1Byte ch_idx = 0, no_cali_data = 0;
+ 	u1Byte phy_band = 0;
++#if CFG_HAL_POWER_PERCENT_ADJUSTMENT
++	s1Byte pwrdiff_percent = HAL_PwrPercent2PwrLevel(HAL_VAR_power_percent);
++	u1Byte path, rate;
++#endif
+ 
+ 	if (channel > 0)
+ 		ch_idx = (channel - 1);
+@@ -2921,6 +2939,39 @@
+ 
+ 
+ 	if (!no_cali_data) {
++#if CFG_HAL_POWER_PERCENT_ADJUSTMENT
++		for(path=0;path<4;path++){
++			for(rate=TX_AGC_OFDM_6M;rate<=TX_AGC_OFDM_54M;rate++){
++				if (Adapter->pshare->phw->CurrentTxAgcOFDM[path][rate-TX_AGC_OFDM_6M])
++					Adapter->pshare->phw->CurrentTxAgcOFDM[path][rate-TX_AGC_OFDM_6M] += pwrdiff_percent;
++			}
++			for(rate=TX_AGC_HT_NSS1_MCS0;rate<=TX_AGC_HT_NSS1_MCS7;rate++){
++				if (Adapter->pshare->phw->CurrentTxAgcMCS[path][rate-TX_AGC_HT_NSS1_MCS0])
++					Adapter->pshare->phw->CurrentTxAgcMCS[path][rate-TX_AGC_HT_NSS1_MCS0] += pwrdiff_percent;
++			}		
++			for(rate=TX_AGC_HT_NSS2_MCS8;rate<=TX_AGC_HT_NSS2_MCS15;rate++){
++				if (Adapter->pshare->phw->CurrentTxAgcMCS[path][rate-TX_AGC_HT_NSS1_MCS0])
++					Adapter->pshare->phw->CurrentTxAgcMCS[path][rate-TX_AGC_HT_NSS1_MCS0] += pwrdiff_percent;
++			}
++			for(rate=TX_AGC_HT_NSS3_MCS16;rate<=TX_AGC_HT_NSS3_MCS23;rate++){
++				if (Adapter->pshare->phw->CurrentTxAgcMCS[path][rate-TX_AGC_HT_NSS1_MCS0])
++					Adapter->pshare->phw->CurrentTxAgcMCS[path][rate-TX_AGC_HT_NSS1_MCS0] += pwrdiff_percent;
++			}
++			for(rate=TX_AGC_VHT_NSS1_MCS0;rate<=TX_AGC_VHT_NSS1_MCS9;rate++){
++				if (Adapter->pshare->phw->CurrentTxAgcVHT[path][rate-TX_AGC_VHT_NSS1_MCS0])
++					Adapter->pshare->phw->CurrentTxAgcVHT[path][rate-TX_AGC_VHT_NSS1_MCS0] += pwrdiff_percent;
++			}			
++			for(rate=TX_AGC_VHT_NSS2_MCS0;rate<=TX_AGC_VHT_NSS2_MCS9;rate++){
++				if (Adapter->pshare->phw->CurrentTxAgcVHT[path][rate-TX_AGC_VHT_NSS1_MCS0])
++					Adapter->pshare->phw->CurrentTxAgcVHT[path][rate-TX_AGC_VHT_NSS1_MCS0] += pwrdiff_percent;
++			}
++			for(rate=TX_AGC_VHT_NSS3_MCS0;rate<=TX_AGC_VHT_NSS3_MCS9;rate++){
++				if (Adapter->pshare->phw->CurrentTxAgcVHT[path][rate-TX_AGC_VHT_NSS1_MCS0])
++					Adapter->pshare->phw->CurrentTxAgcVHT[path][rate-TX_AGC_VHT_NSS1_MCS0] += pwrdiff_percent;
++			}
++		}
++#endif
++
+ #if IS_RTL8814A_SERIES	
+ 		if(IS_HARDWARE_TYPE_8814A(Adapter)){
+ 			TxPG_OFDM_8814(Adapter);
