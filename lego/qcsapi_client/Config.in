@@ -1,0 +1,7 @@
+comment "Quantenna qcsapi client"
+
+config BR2_PACKAGE_QCSAPI_CLIENT
+	bool "qcsapi_client"
+	help
+	  Quantenna qcsapi client
+
